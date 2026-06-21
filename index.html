@@ -1697,12 +1697,12 @@ function closeProgressModal() {
 let selectedGender = 'male';
 let fatChart = null;
 
-function setGender(g) {
+function setGender(g, silent) {
   selectedGender = g;
   document.getElementById('gbtn-male').classList.toggle('active', g === 'male');
   document.getElementById('gbtn-female').classList.toggle('active', g === 'female');
   document.getElementById('hip-row').style.display = g === 'female' ? 'flex' : 'none';
-  saveProfile();
+  if (!silent) saveProfile();
 }
 
 function saveProfile() {
@@ -1710,16 +1710,19 @@ function saveProfile() {
   const height = parseFloat(document.getElementById('m-height').value);
   DB.settings.profile = { gender: selectedGender, age: age || null, height: height || null };
   saveData('settings', DB.settings);
-  document.getElementById('profile-saved-badge').style.display = 'inline';
+  const badge = document.getElementById('profile-saved-badge');
+  if (badge) badge.style.display = (age || height) ? 'inline' : 'none';
+  toast('✅ Profil kaydedildi.');
 }
 
 function loadProfile() {
   const p = DB.settings.profile;
-  if (!p) return;
-  setGender(p.gender || 'male');
+  const badge = document.getElementById('profile-saved-badge');
+  if (!p) { if (badge) badge.style.display = 'none'; return; }
+  setGender(p.gender || 'male', true);
   if (p.age) document.getElementById('m-birthyear').value = p.age;
   if (p.height) document.getElementById('m-height').value = p.height;
-  if (p.gender || p.age || p.height) document.getElementById('profile-saved-badge').style.display = 'inline';
+  if (badge) badge.style.display = (p.age || p.height) ? 'inline' : 'none';
 }
 
 function getProfileAge() {
