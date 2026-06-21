@@ -161,7 +161,7 @@ body {
 .trend-tab.active { background: var(--accent); color: #fff; }
 /* ── PR & 1RM ── */
 .orm-row { display: flex; gap: 10px; }
-.orm-field { flex: 1; }
+.orm-field { flex: 1 1 0; min-width: 0; }
 .orm-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
 .orm-result-val { font-size: 36px; font-weight: 800; color: var(--accent); letter-spacing: -1px; }
 .orm-result-lbl { font-size: 12px; color: var(--text-secondary); margin-top: 2px; margin-bottom: 10px; }
@@ -182,15 +182,24 @@ body {
 .stat-value { font-size: 30px; font-weight: 700; letter-spacing: -1px; margin-top: 2px; }
 .stat-sub { font-size: 12px; color: var(--green); font-weight: 500; margin-top: 1px; }
 /* ── Month Heatmap ── */
-.heatmap-card { padding: 14px 16px; }
-.heatmap-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
-.heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-.heatmap-dow { font-size: 9px; color: var(--text-secondary); text-align: center; font-weight: 500; padding-bottom: 2px; }
-.hday { aspect-ratio: 1; border-radius: 4px; background: var(--bg-tertiary); }
-.hday.done { background: var(--accent); }
-.hday.today { outline: 2px solid var(--accent); outline-offset: 1px; }
-.hday.today:not(.done) { background: var(--accent-light); }
-.heatmap-legend { display: flex; gap: 12px; margin-top: 10px; font-size: 11px; color: var(--text-secondary); align-items: center; }
+.workout-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.workout-cal-title { font-size: 15px; font-weight: 600; }
+.workout-cal-nav { background: var(--bg-secondary); border: none; color: var(--accent); font-size: 16px; cursor: pointer; padding: 4px 10px; border-radius: 8px; line-height: 1; }
+.workout-cal-dows { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 4px; }
+.workout-cal-dow { font-size: 10px; color: var(--text-secondary); text-align: center; font-weight: 600; padding: 2px 0; }
+.workout-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.wcal-day { border-radius: 8px; background: var(--bg-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40px; position: relative; cursor: default; }
+.wcal-day.empty { background: transparent; }
+.wcal-day.has-workout { background: var(--accent); }
+.wcal-day.today:not(.has-workout) { outline: 1.5px solid var(--accent); outline-offset: 0; background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.wcal-day.today.has-workout { outline: 2px solid color-mix(in srgb, var(--accent) 60%, #000); outline-offset: 0; }
+.wcal-num { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.wcal-day.today .wcal-num { color: var(--accent); font-weight: 700; }
+.wcal-day.has-workout .wcal-num { color: #fff; font-weight: 700; }
+.wcal-tag { font-size: 7px; font-weight: 700; color: rgba(255,255,255,0.85); letter-spacing: 0.2px; margin-top: 1px; }
+.workout-cal-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 12px; padding-top: 10px; border-top: 0.5px solid var(--border); font-size: 12px; color: var(--text-secondary); align-items: center; }
+.wcal-legend-item { display: flex; align-items: center; gap: 5px; }
+.wcal-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
 /* ── Recent List ── */
 .recent-list { overflow: hidden; }
@@ -420,13 +429,37 @@ body {
 .suppl-label { flex: 1; font-size: 14px; font-weight: 500; }
 .suppl-label.done { text-decoration: line-through; color: var(--text-secondary); }
 .water-row { display: flex; flex-direction: column; gap: 8px; flex: 1; }
-.water-drops-row { display: flex; align-items: center; gap: 6px; }
-.water-drops { display: flex; gap: 3px; flex-wrap: nowrap; flex: 1; }
-.water-drop { flex: 1; min-width: 0; height: 26px; border-radius: 50%; background: var(--bg-tertiary); font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
-.water-drop.filled { background: #5ac8fa30; }
-.water-drop.filled::after { content: '💧'; font-size: 12px; }
-.water-drop:not(.filled)::after { content: '○'; color: var(--text-tertiary); font-size: 14px; }
-.water-add-btn { background: var(--accent-light); color: var(--accent); border: none; border-radius: 10px; padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; align-self: flex-start; }
+.water-drops { display: flex; gap: 6px; flex-wrap: wrap; }
+.water-drop { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-tertiary); font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; flex-shrink: 0; }
+.water-drop.filled { background: #5ac8fa25; }
+.water-drop.filled::after { content: '💧'; }
+.water-drop:not(.filled)::after { content: '＋'; color: var(--text-tertiary); font-size: 14px; font-weight: 300; }
+.water-add-btn { display: none; }
+/* Supplement calendar */
+.suppl-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.suppl-cal-title { font-size: 15px; font-weight: 600; }
+.suppl-cal-nav { background: var(--bg-secondary); border: none; color: var(--accent); font-size: 16px; cursor: pointer; padding: 4px 10px; border-radius: 8px; line-height: 1; }
+.suppl-cal-dows { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 4px; }
+.suppl-cal-dow { font-size: 10px; color: var(--text-secondary); text-align: center; font-weight: 600; padding: 2px 0; }
+.suppl-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.suppl-cal-day { border-radius: 8px; overflow: hidden; aspect-ratio: 1; background: var(--bg-secondary); position: relative; }
+.suppl-cal-day.today { outline: 2px solid var(--text-primary); outline-offset: -1px; }
+.suppl-cal-day.empty-day { background: transparent; }
+.suppl-cal-fill { display: flex; width: 100%; height: 100%; }
+.suppl-cal-fill-seg { flex: 1; height: 100%; }
+.suppl-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 12px; padding-top: 10px; border-top: 0.5px solid var(--border); }
+.suppl-legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); }
+.suppl-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+/* Supplement settings */
+.suppl-setting-item { display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 0.5px solid var(--border); }
+.suppl-setting-item:last-child { border-bottom: none; }
+.suppl-color-swatch { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.suppl-setting-name { flex: 1; font-size: 15px; font-weight: 500; }
+.suppl-remove-btn { background: none; border: none; color: var(--red); font-size: 20px; cursor: pointer; padding: 2px 8px; line-height: 1; }
+.suppl-add-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px 12px; }
+.suppl-add-input { flex: 1; background: var(--bg-secondary); border: none; border-radius: 8px; padding: 9px 12px; font-size: 14px; color: var(--text-primary); outline: none; }
+.suppl-add-input:focus { outline: 1.5px solid var(--accent); }
+.suppl-add-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .de-header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 16px 20px 14px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
 .de-header h2 { font-size: 20px; font-weight: 700; flex: 1; }
 .de-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 9px; padding: 7px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
@@ -519,20 +552,15 @@ body {
       </div>
     </div>
     <div class="section" style="margin-top:12px;">
-      <div class="card heatmap-card">
-        <div class="heatmap-title" id="heatmap-month-title">Haziran 2026</div>
-        <div style="display:flex; gap:0; margin-bottom:6px;">
-          <div style="width:20px; flex-shrink:0;"></div>
-          <div class="heatmap-grid" id="heatmap-dow-row" style="flex:1; grid-template-rows:auto;"></div>
+      <div class="card" style="padding:14px 16px;">
+        <div class="workout-cal-header">
+          <button class="workout-cal-nav" onclick="shiftWorkoutCal(-1)">‹</button>
+          <span class="workout-cal-title" id="workout-cal-title"></span>
+          <button class="workout-cal-nav" onclick="shiftWorkoutCal(1)">›</button>
         </div>
-        <div style="display:flex; gap:6px;">
-          <div id="heatmap-weeks-labels" style="display:flex;flex-direction:column;gap:4px;width:20px;flex-shrink:0;"></div>
-          <div id="heatmap-grid" style="flex:1; display:grid; grid-template-columns:repeat(7,1fr); gap:4px;"></div>
-        </div>
-        <div class="heatmap-legend" style="margin-top:10px;">
-          <span style="display:flex;align-items:center;gap:4px;"><span class="legend-dot" style="background:var(--bg-tertiary);"></span>Yok</span>
-          <span style="display:flex;align-items:center;gap:4px;"><span class="legend-dot" style="background:var(--accent);"></span>Antrenman yapıldı</span>
-        </div>
+        <div class="workout-cal-dows" id="workout-cal-dows"></div>
+        <div class="workout-cal-grid" id="workout-cal-grid"></div>
+        <div class="workout-cal-legend" id="workout-cal-legend"></div>
       </div>
     </div>
     <div class="section" style="margin-top:12px;">
@@ -555,21 +583,27 @@ body {
     <div class="section" style="margin-top:12px;">
       <div class="section-label">Günlük Rutin</div>
       <div class="card suppl-card">
-        <div class="suppl-row" onclick="toggleSuppl('kreatin')">
-          <div class="suppl-check" id="suppl-check-kreatin"></div>
-          <span class="suppl-label" id="suppl-label-kreatin">Kreatin</span>
-        </div>
-        <div class="suppl-row" onclick="toggleSuppl('protein')">
-          <div class="suppl-check" id="suppl-check-protein"></div>
-          <span class="suppl-label" id="suppl-label-protein">Günlük Protein Hedefi</span>
-        </div>
-        <div class="suppl-row" style="cursor:default;flex-direction:column;align-items:stretch;gap:6px;">
+        <div id="suppl-checklist"></div>
+        <div class="suppl-row" style="cursor:default;flex-direction:column;align-items:stretch;gap:8px;">
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <span class="suppl-label">Su</span>
-            <button class="water-add-btn" onclick="addWater()">+ 250 ml</button>
+            <span id="water-total" style="font-size:13px;font-weight:600;color:#5ac8fa;"></span>
           </div>
           <div class="water-drops" id="water-drops"></div>
         </div>
+      </div>
+    </div>
+    <div class="section" style="margin-top:12px;">
+      <div class="section-label">Supplement Takvimi</div>
+      <div class="card" style="padding:14px 16px;" id="suppl-cal-card">
+        <div class="suppl-cal-header">
+          <button class="suppl-cal-nav" onclick="shiftSupplCal(-1)">‹</button>
+          <span class="suppl-cal-title" id="suppl-cal-title"></span>
+          <button class="suppl-cal-nav" onclick="shiftSupplCal(1)">›</button>
+        </div>
+        <div class="suppl-cal-dows" id="suppl-cal-dows"></div>
+        <div class="suppl-cal-grid" id="suppl-cal-grid"></div>
+        <div class="suppl-legend" id="suppl-legend"></div>
       </div>
     </div>
     <div class="section" style="margin-top:12px; padding-bottom:20px;">
@@ -737,7 +771,7 @@ body {
         <div class="orm-row">
           <div class="orm-field">
             <div class="orm-label">Ağırlık (kg)</div>
-            <div class="kg-stepper" style="height:44px;">
+            <div class="kg-stepper" style="height:44px;width:100%;">
               <button class="stepper-btn" onclick="stepOrm('kg',-2.5)" type="button">−</button>
               <input class="kg-val" type="text" inputmode="decimal" id="orm-kg" placeholder="100">
               <button class="stepper-btn" onclick="stepOrm('kg',2.5)" type="button">+</button>
@@ -745,7 +779,7 @@ body {
           </div>
           <div class="orm-field">
             <div class="orm-label">Tekrar</div>
-            <div class="reps-stepper" style="height:44px;">
+            <div class="reps-stepper" style="height:44px;width:100%;">
               <button class="stepper-btn" onclick="stepOrm('reps',-1)" type="button">−</button>
               <input class="reps-val" type="text" inputmode="numeric" id="orm-reps" placeholder="5">
               <button class="stepper-btn" onclick="stepOrm('reps',1)" type="button">+</button>
@@ -810,6 +844,17 @@ body {
             <button class="dur-btn" onclick="setRestDuration(120)" data-dur="120">2 dk</button>
             <button class="dur-btn" onclick="setRestDuration(180)" data-dur="180">3 dk</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Supplementler</div>
+      <div class="card" style="overflow:hidden;">
+        <div id="suppl-settings-list"></div>
+        <div class="suppl-add-row" style="border-top:0.5px solid var(--border);">
+          <input id="new-suppl-input" class="suppl-add-input" placeholder="Supplement adı ekle…">
+          <button class="suppl-add-btn" onclick="addSupplement()">Ekle</button>
         </div>
       </div>
     </div>
@@ -1167,6 +1212,7 @@ function renderHome() {
   renderRecentList();
   renderWeeklyGoal();
   renderSuppl();
+  renderSupplCalendar();
 }
 
 function renderDaySelectList() {
@@ -1202,41 +1248,67 @@ function renderDaySelectList() {
   }).join('');
 }
 
+let workoutCalOffset = 0;
+function shiftWorkoutCal(d) { workoutCalOffset += d; renderHeatmap(); }
+
 function renderHeatmap() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  document.getElementById('heatmap-month-title').textContent =
-    now.toLocaleDateString('tr-TR', { month:'long', year:'numeric' });
+  const base = new Date();
+  base.setDate(1);
+  base.setMonth(base.getMonth() + workoutCalOffset);
+  const year = base.getFullYear();
+  const month = base.getMonth();
 
-  const dows = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];
-  const dowRow = document.getElementById('heatmap-dow-row');
-  dowRow.innerHTML = dows.map(d => `<div class="heatmap-dow">${d}</div>`).join('');
+  const titleEl = document.getElementById('workout-cal-title');
+  const dowsEl = document.getElementById('workout-cal-dows');
+  const gridEl = document.getElementById('workout-cal-grid');
+  const legendEl = document.getElementById('workout-cal-legend');
+  if (!gridEl) return;
 
-  const grid = document.getElementById('heatmap-grid');
-  grid.innerHTML = '';
+  titleEl.textContent = base.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+  dowsEl.innerHTML = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'].map(d => `<div class="workout-cal-dow">${d}</div>`).join('');
 
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  // Monday-based: Mon=0
-  let startDow = (firstDay.getDay() + 6) % 7;
+  const monthStr = `${year}-${String(month+1).padStart(2,'0')}`;
+  const monthLogs = DB.workoutLogs.filter(l => l.date.startsWith(monthStr));
+  const logByDate = {};
+  monthLogs.forEach(l => { logByDate[l.date] = l; });
 
-  const monthLogs = new Set(DB.workoutLogs.filter(l => l.date.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)).map(l => l.date));
+  // Collect unique day names for legend colors
+  const dayColors = {};
+  const palette = ['#007aff','#34c759','#ff9f0a','#af52de','#ff3b30','#5ac8fa'];
+  DB.workoutDays.forEach((d, i) => { dayColors[d.id] = palette[i % palette.length]; });
+
+  const firstDow = (new Date(year, month, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const todayStr = today();
 
-  for (let i = 0; i < startDow; i++) {
-    const el = document.createElement('div');
-    el.className = 'hday';
-    el.style.background = 'transparent';
-    grid.appendChild(el);
+  let html = '';
+  for (let i = 0; i < firstDow; i++) html += `<div class="wcal-day empty"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${monthStr}-${String(d).padStart(2,'0')}`;
+    const log = logByDate[dateStr];
+    const isToday = dateStr === todayStr ? ' today' : '';
+    if (log) {
+      const color = dayColors[log.dayId] || '#007aff';
+      const day = getDayById(log.dayId);
+      const tag = day ? day.name.slice(0,6) : '';
+      html += `<div class="wcal-day has-workout${isToday}" style="background:${color}${isToday ? ';outline-color:'+color : ''};">
+        <span class="wcal-num">${d}</span>
+      </div>`;
+    } else {
+      html += `<div class="wcal-day${isToday}"><span class="wcal-num">${d}</span></div>`;
+    }
   }
-  for (let d = 1; d <= lastDay.getDate(); d++) {
-    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const el = document.createElement('div');
-    el.className = 'hday';
-    if (monthLogs.has(dateStr)) el.classList.add('done');
-    if (dateStr === todayStr) el.classList.add('today');
-    grid.appendChild(el);
+  gridEl.innerHTML = html;
+
+  // Legend: only days that appear this month
+  const seenDayIds = [...new Set(monthLogs.map(l => l.dayId))];
+  if (seenDayIds.length) {
+    legendEl.innerHTML = seenDayIds.map(id => {
+      const day = getDayById(id);
+      return `<div class="wcal-legend-item"><div class="wcal-legend-dot" style="background:${dayColors[id]||'#007aff'};"></div>${escapeHtml(day ? day.name : id)}</div>`;
+    }).join('');
+  } else {
+    legendEl.innerHTML = `<span style="color:var(--text-secondary);font-size:12px;">Bu ay antrenman yok</span>`;
   }
 }
 
@@ -2123,6 +2195,7 @@ function renderSettings() {
       backupLabel.style.color = daysSince > 14 ? 'var(--orange)' : 'var(--text-secondary)';
     }
   }
+  renderSupplSettings();
 }
 
 function setTheme(t) {
@@ -2266,46 +2339,182 @@ function saveOrder() {
 // ═══════════════════════════════════════════════
 //  SUPPLEMENT / DAILY ROUTINE
 // ═══════════════════════════════════════════════
-function getSuppl() {
-  const raw = lsGet('suppl');
-  const data = raw ? JSON.parse(raw) : {};
-  if (data.date !== today()) return { date: today(), kreatin: false, protein: false, water: 0 };
-  return data;
+const SUPPL_COLORS = ['#5ac8fa','#34c759','#ff9f0a','#af52de','#ff3b30','#007aff','#ff6b6b','#ffd93d'];
+
+function getDefaultSupplements() {
+  return [
+    { id: 'kreatin', name: 'Kreatin', color: '#5ac8fa' },
+    { id: 'protein', name: 'Protein', color: '#34c759' },
+  ];
 }
-function saveSuppl(data) { lsSet('suppl', JSON.stringify(data)); }
-function toggleSuppl(key) {
+
+function getSupplements() {
+  if (!DB.settings.supplements) DB.settings.supplements = getDefaultSupplements();
+  return DB.settings.supplements;
+}
+
+function getSupplHistory() {
+  const raw = lsGet('supplHistory');
+  return raw ? JSON.parse(raw) : {};
+}
+function saveSupplHistory(h) { lsSet('supplHistory', JSON.stringify(h)); }
+
+function getSuppl(date) {
+  const d = date || today();
+  const h = getSupplHistory();
+  // Migrate old format
+  if (!h[d] && !date) {
+    const old = lsGet('suppl');
+    if (old) {
+      const o = JSON.parse(old);
+      if (o.date === d) {
+        const items = {};
+        getSupplements().forEach(s => { items[s.id] = !!o[s.id]; });
+        return { items, water: o.water || 0 };
+      }
+    }
+  }
+  return h[d] || { items: {}, water: 0 };
+}
+function saveTodaySuppl(data) {
+  const h = getSupplHistory();
+  h[today()] = data;
+  saveSupplHistory(h);
+}
+
+function toggleSuppl(id) {
   const data = getSuppl();
-  data[key] = !data[key];
-  saveSuppl(data);
+  data.items = data.items || {};
+  data.items[id] = !data.items[id];
+  saveTodaySuppl(data);
   renderSuppl();
+  renderSupplCalendar();
 }
 function addWater() {
   const data = getSuppl();
   data.water = (data.water || 0) + 1;
-  saveSuppl(data);
+  saveTodaySuppl(data);
   renderSuppl();
+  renderSupplCalendar();
 }
 function removeWater(i) {
   const data = getSuppl();
   data.water = i;
-  saveSuppl(data);
+  saveTodaySuppl(data);
   renderSuppl();
+  renderSupplCalendar();
 }
+
 function renderSuppl() {
   const data = getSuppl();
-  ['kreatin','protein'].forEach(key => {
-    const check = document.getElementById(`suppl-check-${key}`);
-    const label = document.getElementById(`suppl-label-${key}`);
-    if (!check) return;
-    check.className = 'suppl-check' + (data[key] ? ' done' : '');
-    label.className = 'suppl-label' + (data[key] ? ' done' : '');
-  });
+  const supps = getSupplements();
+  const list = document.getElementById('suppl-checklist');
+  if (list) {
+    list.innerHTML = supps.map(s => {
+      const done = !!(data.items && data.items[s.id]);
+      return `<div class="suppl-row" onclick="toggleSuppl('${s.id}')">
+        <div class="suppl-check ${done ? 'done' : ''}" style="${done ? `background:${s.color};border-color:${s.color};` : ''}"></div>
+        <span class="suppl-label ${done ? 'done' : ''}">${escapeHtml(s.name)}</span>
+        <span style="width:10px;height:10px;border-radius:50%;background:${s.color};display:inline-block;flex-shrink:0;"></span>
+      </div>`;
+    }).join('');
+  }
   const drops = document.getElementById('water-drops');
   if (!drops) return;
   const filled = data.water || 0;
-  drops.innerHTML = Array.from({length: 8}, (_, i) =>
+  drops.innerHTML = Array.from({length: filled + 1}, (_, i) =>
     `<button class="water-drop ${i < filled ? 'filled' : ''}" onclick="${i < filled ? `removeWater(${i})` : 'addWater()'}"></button>`
   ).join('');
+  const totalEl = document.getElementById('water-total');
+  if (totalEl) totalEl.textContent = filled > 0 ? `${filled * 250} ml` : '';
+}
+
+let supplCalOffset = 0;
+function shiftSupplCal(d) { supplCalOffset += d; renderSupplCalendar(); }
+
+function renderSupplCalendar() {
+  const titleEl = document.getElementById('suppl-cal-title');
+  const dowsEl = document.getElementById('suppl-cal-dows');
+  const gridEl = document.getElementById('suppl-cal-grid');
+  const legendEl = document.getElementById('suppl-legend');
+  if (!gridEl) return;
+
+  const supps = getSupplements();
+  const history = getSupplHistory();
+  const now = new Date();
+  now.setMonth(now.getMonth() + supplCalOffset);
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  titleEl.textContent = new Date(year, month, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+  dowsEl.innerHTML = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'].map(d => `<div class="suppl-cal-dow">${d}</div>`).join('');
+
+  const firstDow = (new Date(year, month, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayStr = today();
+
+  let html = '';
+  for (let i = 0; i < firstDow; i++) html += `<div class="suppl-cal-day empty-day"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const entry = history[dateStr];
+    const taken = entry ? supps.filter(s => entry.items && entry.items[s.id]) : [];
+    const isToday = dateStr === todayStr ? ' today' : '';
+    let inner = '';
+    if (taken.length) {
+      const segs = taken.map(s => `<div class="suppl-cal-fill-seg" style="background:${s.color};"></div>`).join('');
+      inner = `<div class="suppl-cal-fill">${segs}</div>`;
+    }
+    html += `<div class="suppl-cal-day${isToday}">${inner}</div>`;
+  }
+  gridEl.innerHTML = html;
+
+  legendEl.innerHTML = supps.map(s =>
+    `<div class="suppl-legend-item"><div class="suppl-legend-dot" style="background:${s.color};"></div>${escapeHtml(s.name)}</div>`
+  ).join('');
+}
+
+function renderSupplSettings() {
+  const supps = getSupplements();
+  const el = document.getElementById('suppl-settings-list');
+  if (!el) return;
+  if (!supps.length) {
+    el.innerHTML = '<div style="padding:14px 16px;color:var(--text-secondary);font-size:14px;">Supplement eklenmedi.</div>';
+    return;
+  }
+  el.innerHTML = supps.map((s, i) => `
+    <div class="suppl-setting-item">
+      <div class="suppl-color-swatch" style="background:${s.color};width:12px;height:12px;border-radius:50%;flex-shrink:0;"></div>
+      <span class="suppl-setting-name">${escapeHtml(s.name)}</span>
+      <button class="suppl-remove-btn" onclick="removeSupplement('${s.id}')">−</button>
+    </div>`).join('');
+}
+
+function addSupplement() {
+  const input = document.getElementById('new-suppl-input');
+  const name = input.value.trim();
+  if (!name) { toast('Supplement adı girin.'); return; }
+  const supps = getSupplements();
+  if (supps.find(s => s.name.toLowerCase() === name.toLowerCase())) { toast('Bu supplement zaten var.'); return; }
+  const color = SUPPL_COLORS[supps.length % SUPPL_COLORS.length];
+  supps.push({ id: uid(), name, color });
+  DB.settings.supplements = supps;
+  saveData('settings', DB.settings);
+  input.value = '';
+  renderSupplSettings();
+  renderSuppl();
+  renderSupplCalendar();
+  toast('✅ Supplement eklendi.');
+}
+
+function removeSupplement(id) {
+  if (!confirm('Bu supplementi silmek istiyor musunuz?')) return;
+  DB.settings.supplements = getSupplements().filter(s => s.id !== id);
+  saveData('settings', DB.settings);
+  renderSupplSettings();
+  renderSuppl();
+  renderSupplCalendar();
+  toast('Supplement silindi.');
 }
 
 function saveDays() {
@@ -2338,7 +2547,7 @@ function exportData() {
     measurements: DB.measurements,
     settings: DB.settings,
     workoutOrder: DB.workoutOrder,
-    suppl: getSuppl(),
+    supplHistory: getSupplHistory(),
     exportDate: new Date().toISOString(),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -2381,7 +2590,7 @@ function importData(evt) {
       DB.settings = data.settings || DB.settings;
       DB.workoutOrder = data.workoutOrder || data.workoutDays.map(d => d.id);
       ['workoutDays','workoutLogs','measurements','settings','workoutOrder'].forEach(k => saveData(k, DB[k]));
-      if (data.suppl) saveSuppl(data.suppl);
+      if (data.supplHistory) saveSupplHistory(data.supplHistory);
       applyTheme(); renderHome(); renderSettings();
       toast('✅ Veri içe aktarıldı!');
     } catch { toast('❌ Geçersiz dosya formatı.'); }
