@@ -159,6 +159,26 @@ body {
 .trend-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
 .trend-tab { background: var(--bg-tertiary); color: var(--text-secondary); border: none; border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
 .trend-tab.active { background: var(--accent); color: #fff; }
+/* ── PR & 1RM ── */
+.orm-row { display: flex; gap: 10px; }
+.orm-field { flex: 1; }
+.orm-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+.orm-result-val { font-size: 36px; font-weight: 800; color: var(--accent); letter-spacing: -1px; }
+.orm-result-lbl { font-size: 12px; color: var(--text-secondary); margin-top: 2px; margin-bottom: 10px; }
+.orm-result-grid { background: var(--bg-secondary); border-radius: 10px; overflow: hidden; margin-top: 4px; }
+.orm-pct-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.orm-pct-row:last-child { border-bottom: none; }
+.orm-pct-label { color: var(--text-secondary); }
+.orm-pct-val { font-weight: 700; color: var(--text-primary); }
+.pr-list { overflow: hidden; }
+.pr-item { padding: 14px 16px; border-bottom: 0.5px solid var(--border); }
+.pr-item:last-child { border-bottom: none; }
+.pr-name { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.pr-stats { display: flex; gap: 6px; }
+.pr-stat { flex: 1; background: var(--bg-secondary); border-radius: 8px; padding: 8px; text-align: center; }
+.pr-stat-val { display: block; font-size: 14px; font-weight: 700; color: var(--accent); }
+.pr-stat-lbl { display: block; font-size: 10px; color: var(--text-secondary); margin-top: 2px; font-weight: 500; }
+.pr-date { font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
 .stat-value { font-size: 30px; font-weight: 700; letter-spacing: -1px; margin-top: 2px; }
 .stat-sub { font-size: 12px; color: var(--green); font-weight: 500; margin-top: 1px; }
 /* ── Month Heatmap ── */
@@ -226,12 +246,14 @@ body {
 }
 @media (max-width: 430px) { #workout-screen { left: 0; margin-left: 0; } }
 #workout-screen.open { transform: translateX(0); }
-.ws-header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 16px 20px 14px; display: flex; align-items: flex-start; gap: 12px; }
-.back-btn { background: none; border: none; color: var(--accent); font-size: 17px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; margin-top: 2px; flex-shrink: 0; }
-.ws-title { flex: 1; }
-.ws-title h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
-.ws-title p { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
-.ws-done-btn { background: var(--green); color: #fff; border: none; border-radius: 9px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+.ws-header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 14px 16px 12px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+.back-btn { background: var(--bg-secondary); border: none; color: var(--accent); font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 2px; padding: 7px 12px 7px 8px; border-radius: 20px; justify-self: start; transition: opacity 0.15s; }
+.back-btn:active { opacity: 0.6; }
+.back-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+.ws-title { text-align: center; }
+.ws-title h2 { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; }
+.ws-title p { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.ws-done-btn { background: var(--green); color: #fff; border: none; border-radius: 20px; padding: 7px 16px; font-size: 14px; font-weight: 700; cursor: pointer; justify-self: end; transition: opacity 0.15s; letter-spacing: 0.1px; }
 .ws-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 24px; }
 .ws-body::-webkit-scrollbar { display: none; }
 
@@ -259,6 +281,7 @@ body {
 .set-done-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border-strong); background: none; color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
 .set-done-btn.done { background: var(--green); border-color: var(--green); color: #fff; }
 .set-col-header { display: flex; align-items: center; gap: 8px; padding: 0 0 4px; }
+.set-col-header .set-num { width: 16px; flex-shrink: 0; display: inline-block; }
 .set-col-label { flex: 1; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-align: center; letter-spacing: 0.2px; }
 .set-count-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
 .set-count-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
@@ -331,6 +354,14 @@ body {
 .result-label { font-size: 14px; opacity: 0.88; margin-top: 4px; }
 .result-cat { font-size: 13px; font-weight: 600; margin-top: 8px; background: rgba(255,255,255,0.2); display: inline-block; padding: 4px 12px; border-radius: 20px; }
 .meas-chart-card { padding: 16px; }
+.meas-summary-card { padding: 16px; }
+.meas-sum-date { font-size: 12px; color: var(--text-secondary); font-weight: 500; margin-bottom: 10px; }
+.meas-sum-row { display: flex; align-items: center; gap: 0; }
+.meas-sum-item { flex: 1; }
+.meas-sum-val { font-size: 32px; font-weight: 800; letter-spacing: -1px; color: var(--accent); }
+.meas-sum-lbl { font-size: 12px; color: var(--text-secondary); margin-top: 2px; display: flex; align-items: center; }
+.meas-sum-divider { width: 1px; height: 48px; background: var(--border); margin: 0 16px; flex-shrink: 0; }
+.meas-sum-sub { font-size: 12px; color: var(--text-secondary); margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--border); }
 .meas-history { overflow: hidden; }
 .meas-history-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 0.5px solid var(--border); gap: 12px; }
 .meas-history-item:last-child { border-bottom: none; }
@@ -385,7 +416,9 @@ body {
 .add-day-btn { margin: 12px 16px; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--bg-primary); border: 1.5px dashed var(--border-strong); border-radius: var(--card-radius); padding: 14px; color: var(--accent); font-size: 15px; font-weight: 500; cursor: pointer; }
 .remove-day-btn { background: none; border: none; color: var(--red); font-size: 20px; cursor: pointer; padding: 4px; }
 /* Duration display */
-.ws-timer { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-top: 4px; }
+.ws-timer-bar { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 0 8px; background: var(--bg-primary); border-bottom: 0.5px solid var(--border); font-size: 13px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.5px; }
+.ws-timer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
 /* Duration selector */
 .dur-selector { display: flex; gap: 8px; }
@@ -503,7 +536,12 @@ body {
       <h1>Ölçümler & Yağ Oranı</h1>
       <p>US Navy formülü</p>
     </div>
+
     <div class="section" style="margin-top:14px;">
+      <div id="meas-summary-card" style="display:none;"></div>
+    </div>
+
+    <div class="section" style="margin-top:12px;">
       <div class="section-label">Yeni Ölçüm</div>
       <div class="card meas-form">
         <div class="form-row">
@@ -627,6 +665,51 @@ body {
     </div>
   </div>
 
+  <!-- TAB: PR & 1RM -->
+  <div class="screen" id="tab-stats" style="display:none;flex-direction:column;">
+    <div class="nav-header">
+      <h1>PR & 1RM</h1>
+      <p>Kişisel rekорlar ve hesaplayıcı</p>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">1RM Hesaplayıcı</div>
+      <div class="card" style="padding:16px;">
+        <div class="orm-row">
+          <div class="orm-field">
+            <div class="orm-label">Ağırlık (kg)</div>
+            <div class="kg-stepper" style="height:44px;">
+              <button class="stepper-btn" onclick="stepOrm('kg',-2.5)" type="button">−</button>
+              <input class="kg-val" type="text" inputmode="decimal" id="orm-kg" placeholder="100">
+              <button class="stepper-btn" onclick="stepOrm('kg',2.5)" type="button">+</button>
+            </div>
+          </div>
+          <div class="orm-field">
+            <div class="orm-label">Tekrar</div>
+            <div class="reps-stepper" style="height:44px;">
+              <button class="stepper-btn" onclick="stepOrm('reps',-1)" type="button">−</button>
+              <input class="reps-val" type="text" inputmode="numeric" id="orm-reps" placeholder="5">
+              <button class="stepper-btn" onclick="stepOrm('reps',1)" type="button">+</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" style="margin-top:12px;" onclick="calculateOrm()">Hesapla</button>
+        <div id="orm-result" style="display:none;margin-top:14px;text-align:center;">
+          <div class="orm-result-val" id="orm-result-val">—</div>
+          <div class="orm-result-lbl">Tahmini 1 Tekrar Maksimum</div>
+          <div class="orm-result-grid" id="orm-result-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px; padding-bottom:20px;">
+      <div class="section-label">Kişisel Rekорlar</div>
+      <div class="card pr-list" id="pr-list">
+        <div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydı yok.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- TAB: Ayarlar -->
   <div class="screen" id="tab-settings" style="display:none;flex-direction:column;">
     <div class="nav-header">
@@ -726,6 +809,10 @@ body {
       <span class="tab-icon">📊</span>
       <span>Ölçümler</span>
     </div>
+    <div class="tab-item" id="tab-btn-stats" onclick="switchTab('stats')">
+      <span class="tab-icon">🏆</span>
+      <span>PR</span>
+    </div>
     <div class="tab-item" id="tab-btn-settings" onclick="switchTab('settings')">
       <span class="tab-icon">⚙️</span>
       <span>Ayarlar</span>
@@ -736,13 +823,19 @@ body {
 <!-- Workout Screen (slides in) -->
 <div id="workout-screen">
   <div class="ws-header">
-    <button class="back-btn" onclick="closeWorkoutScreen()">‹ Geri</button>
+    <button class="back-btn" onclick="closeWorkoutScreen()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Geri
+    </button>
     <div class="ws-title">
       <h2 id="ws-day-name">Antrenman</h2>
       <p id="ws-day-sub" class="subtitle"></p>
-      <div class="ws-timer" id="ws-elapsed">00:00</div>
     </div>
-    <button class="ws-done-btn" onclick="finishWorkout()">Bitir ✓</button>
+    <button class="ws-done-btn" onclick="finishWorkout()">Bitir</button>
+  </div>
+  <div class="ws-timer-bar">
+    <span class="ws-timer-dot"></span>
+    <span id="ws-elapsed">00:00</span>
   </div>
   <div class="ws-body" id="ws-body">
     <!-- Exercise cards rendered here -->
@@ -953,7 +1046,7 @@ function toast(msg, dur = 2200) {
 // ═══════════════════════════════════════════════
 let currentTab = 'workout';
 function switchTab(tab) {
-  ['workout','meas','settings'].forEach(t => {
+  ['workout','meas','stats','settings'].forEach(t => {
     document.getElementById('tab-' + t).style.display = 'none';
     document.getElementById('tab-btn-' + t).classList.remove('active');
   });
@@ -962,6 +1055,7 @@ function switchTab(tab) {
   currentTab = tab;
   if (tab === 'workout') renderHome();
   if (tab === 'meas') renderMeasurements();
+  if (tab === 'stats') renderStats();
   if (tab === 'settings') renderSettings();
 }
 
@@ -1271,8 +1365,8 @@ function renderExerciseCards(day) {
       <div class="ex-sets-container">
         <div class="set-col-header">
           <span class="set-num"></span>
-          <span class="set-col-label">Kilogram</span>
-          <span class="set-col-label">Tekrar</span>
+          <span class="set-col-label" style="flex:1.2;">Kilogram</span>
+          <span class="set-col-label" style="flex:1;">Tekrar</span>
           <span style="width:34px;flex-shrink:0;"></span>
         </div>
         <div id="sets-list-${ex.id}">${setRows}</div>
@@ -1668,8 +1762,49 @@ function calculateFat() {
 }
 
 function renderMeasurements() {
+  renderMeasSummaryCard();
   renderFatChart();
   renderMeasHistory();
+}
+
+function renderMeasSummaryCard() {
+  const card = document.getElementById('meas-summary-card');
+  if (!card) return;
+  const data = DB.measurements;
+  if (!data.length) { card.style.display = 'none'; return; }
+
+  const last = data[data.length - 1];
+  const prev = data.length > 1 ? data[data.length - 2] : null;
+
+  const fatDiff = prev && prev.fat ? (last.fat - prev.fat) : null;
+  const wDiff   = prev && prev.weight && last.weight ? (last.weight - prev.weight) : null;
+
+  const diffBadge = (diff, unit, reverse) => {
+    if (diff === null) return '';
+    const better = reverse ? diff < 0 : diff > 0;
+    const color = diff === 0 ? 'var(--text-secondary)' : better ? 'var(--green)' : '#ff3b30';
+    const sign = diff > 0 ? '+' : '';
+    return `<span style="font-size:12px;font-weight:600;color:${color};margin-left:6px;">${sign}${Math.round(diff*10)/10}${unit}</span>`;
+  };
+
+  card.style.display = 'block';
+  card.innerHTML = `<div class="card meas-summary-card">
+    <div class="meas-sum-date">${fmtDate(last.date)} · Son ölçüm</div>
+    <div class="meas-sum-row">
+      <div class="meas-sum-item">
+        <div class="meas-sum-val">%${last.fat}</div>
+        <div class="meas-sum-lbl">Yağ Oranı ${diffBadge(fatDiff, '%', false)}</div>
+      </div>
+      ${last.weight ? `<div class="meas-sum-divider"></div>
+      <div class="meas-sum-item">
+        <div class="meas-sum-val">${last.weight} kg</div>
+        <div class="meas-sum-lbl">Vücut Ağırlığı ${diffBadge(wDiff, ' kg', false)}</div>
+      </div>` : ''}
+    </div>
+    ${last.fat && last.weight ? `<div class="meas-sum-sub">
+      Yağ kütlesi: ~${Math.round(last.fat/100*last.weight)} kg &nbsp;·&nbsp; Yağsız kütle: ~${Math.round((1-last.fat/100)*last.weight)} kg
+    </div>` : ''}
+  </div>`;
 }
 
 let currentTrendKey = 'fat';
@@ -1760,6 +1895,82 @@ function deleteMeasurement(date) {
   saveData('measurements', DB.measurements);
   renderMeasurements();
   toast('Ölçüm silindi.');
+}
+
+// ═══════════════════════════════════════════════
+//  PR & 1RM
+// ═══════════════════════════════════════════════
+function epley(kg, reps) {
+  if (reps === 1) return kg;
+  return Math.round(kg * (1 + reps / 30) * 10) / 10;
+}
+
+function stepOrm(field, delta) {
+  const input = document.getElementById(`orm-${field}`);
+  const base = parseFloat(input.value) || 0;
+  if (field === 'kg') input.value = Math.max(0, Math.round((base + delta) * 10) / 10) || '';
+  else input.value = Math.max(1, Math.round(base + delta)) || '';
+}
+
+function calculateOrm() {
+  const kg = parseFloat(document.getElementById('orm-kg').value);
+  const reps = parseInt(document.getElementById('orm-reps').value);
+  if (!kg || !reps) { toast('Ağırlık ve tekrar girin.'); return; }
+  const orm = epley(kg, reps);
+  document.getElementById('orm-result').style.display = 'block';
+  document.getElementById('orm-result-val').textContent = orm + ' kg';
+  const pcts = [100,95,90,85,80,75,70];
+  document.getElementById('orm-result-grid').innerHTML = pcts.map(p => {
+    const w = Math.round(orm * p / 100 * 10) / 10;
+    const r = p === 100 ? 1 : p >= 95 ? 2 : p >= 90 ? 3 : p >= 85 ? 4 : p >= 80 ? 5 : p >= 75 ? 7 : 10;
+    return `<div class="orm-pct-row"><span class="orm-pct-label">%${p} · ~${r} tk</span><span class="orm-pct-val">${w} kg</span></div>`;
+  }).join('');
+}
+
+function renderStats() {
+  renderPrList();
+}
+
+function renderPrList() {
+  const list = document.getElementById('pr-list');
+  if (!DB.workoutLogs.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydı yok.</div>';
+    return;
+  }
+
+  // Her egzersiz için en iyi kg, en iyi 1RM, en iyi hacim bul
+  const prMap = {}; // exName -> { bestKg, best1RM, bestVol, bestKgDate, best1RMDate }
+  DB.workoutLogs.forEach(log => {
+    (log.sets || []).forEach(s => {
+      if (!s.exName || (!s.kg && !s.reps)) return;
+      const name = s.exName.trim();
+      if (!prMap[name]) prMap[name] = { bestKg: 0, best1RM: 0, bestVol: 0, bestKgDate: '', best1RMDate: '' };
+      const pr = prMap[name];
+      if (s.kg > pr.bestKg) { pr.bestKg = s.kg; pr.bestKgDate = log.date; }
+      const orm = epley(s.kg || 0, s.reps || 0);
+      if (orm > pr.best1RM) { pr.best1RM = orm; pr.best1RMDate = log.date; }
+      const vol = (s.kg || 0) * (s.reps || 0);
+      if (vol > pr.bestVol) pr.bestVol = vol;
+    });
+  });
+
+  const entries = Object.entries(prMap).sort((a,b) => a[0].localeCompare(b[0], 'tr'));
+  if (!entries.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Kayıtlı set bulunamadı.</div>';
+    return;
+  }
+
+  list.innerHTML = entries.map(([name, pr]) => `
+    <div class="pr-item">
+      <div class="pr-name">${name}</div>
+      <div class="pr-stats">
+        <div class="pr-stat"><span class="pr-stat-val">${pr.bestKg} kg</span><span class="pr-stat-lbl">Max ağırlık</span></div>
+        <div class="pr-stat"><span class="pr-stat-val">${pr.best1RM} kg</span><span class="pr-stat-lbl">Tahmini 1RM</span></div>
+        <div class="pr-stat"><span class="pr-stat-val">${pr.bestVol} kg</span><span class="pr-stat-lbl">Max hacim/set</span></div>
+      </div>
+      <div class="pr-date">Son güncelleme: ${fmtDate(pr.best1RMDate)}</div>
+    </div>
+  `).join('');
 }
 
 // ═══════════════════════════════════════════════
