@@ -228,6 +228,11 @@ body {
 .set-done-btn.done { background: var(--green); border-color: var(--green); color: #fff; }
 .set-col-header { display: flex; align-items: center; gap: 8px; padding: 0 0 4px; }
 .set-col-label { flex: 1; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-align: center; letter-spacing: 0.2px; }
+.set-count-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.set-count-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+.set-count-btn { background: var(--bg-tertiary); color: var(--text-primary); border: none; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+.set-count-btn:active { opacity: 0.6; }
+.set-count-btn.accent { background: var(--accent-light); color: var(--accent); }
 .pr-chip { background: #ff9f0a20; color: var(--orange); font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px; display: inline-block; margin-top: 4px; }
 /* Note section */
 .ex-note-section { border-top: 0.5px solid var(--border); padding: 10px 16px 14px; }
@@ -1055,7 +1060,12 @@ function renderExerciseCards(day) {
           <span class="set-col-label">Tekrar</span>
           <span style="width:34px;flex-shrink:0;"></span>
         </div>
-        ${setRows}
+        <div id="sets-list-${ex.id}">${setRows}</div>
+        <div class="set-count-row">
+          <button class="set-count-btn" onclick="removeSet('${ex.id}','${day.id}')">− Set</button>
+          <span class="set-count-label" id="set-count-${ex.id}">${ex.sets} set</span>
+          <button class="set-count-btn accent" onclick="addSet('${ex.id}','${day.id}')">+ Set</button>
+        </div>
       </div>
       <div class="ex-note-section">
         ${prevNote}
@@ -1087,6 +1097,67 @@ function stepReps(exId, setIdx, delta) {
   const base = parseInt(input.value) || 0;
   const next = Math.max(0, base + delta);
   input.value = next > 0 ? next : '';
+}
+
+// runtime set counts per exercise (overrides day definition during workout)
+const runtimeSets = {};
+
+function getSetCount(exId, dayId) {
+  if (runtimeSets[exId] !== undefined) return runtimeSets[exId];
+  const day = getDayById(dayId);
+  const ex = day ? day.exercises.find(e => e.id === exId) : null;
+  return ex ? ex.sets : 0;
+}
+
+function buildSetRow(exId, dayId, s, prevSetsAll) {
+  const ps = prevSetsAll[s];
+  const prevKg  = ps && ps.kg   ? ps.kg   : '';
+  const prevRep = ps && ps.reps ? ps.reps : '';
+  return `<div class="set-row" id="set-row-${exId}-${s}">
+    <span class="set-num">${s+1}</span>
+    <div class="kg-stepper">
+      <button class="stepper-btn" onclick="stepKg('${exId}',${s},-2.5)" type="button">−</button>
+      <input class="kg-val" type="text" inputmode="decimal" placeholder="${prevKg || 'kg'}" data-prev="${prevKg}" id="kg-${exId}-${s}">
+      <button class="stepper-btn" onclick="stepKg('${exId}',${s},2.5)" type="button">+</button>
+    </div>
+    <div class="reps-stepper">
+      <button class="stepper-btn" onclick="stepReps('${exId}',${s},-1)" type="button">−</button>
+      <input class="reps-val" type="text" inputmode="numeric" placeholder="${prevRep || 'tk'}" data-prev="${prevRep}" id="reps-${exId}-${s}">
+      <button class="stepper-btn" onclick="stepReps('${exId}',${s},1)" type="button">+</button>
+    </div>
+    <button class="set-done-btn" onclick="completeSet('${exId}',${s},'${dayId}')" id="set-done-${exId}-${s}">✓</button>
+  </div>`;
+}
+
+function addSet(exId, dayId) {
+  const day = getDayById(dayId);
+  const ex = day ? day.exercises.find(e => e.id === exId) : null;
+  if (!ex) return;
+  const prevEntry = getPrevSetsForExName(ex.name);
+  const prevSetsAll = prevEntry ? prevEntry.sets : [];
+  const current = getSetCount(exId, dayId);
+  runtimeSets[exId] = current + 1;
+  const container = document.getElementById(`sets-list-${exId}`);
+  if (container) {
+    const div = document.createElement('div');
+    div.innerHTML = buildSetRow(exId, dayId, current, prevSetsAll);
+    container.appendChild(div.firstElementChild);
+  }
+  const label = document.getElementById(`set-count-${exId}`);
+  if (label) label.textContent = `${runtimeSets[exId]} set`;
+}
+
+function removeSet(exId, dayId) {
+  const current = getSetCount(exId, dayId);
+  if (current <= 1) return;
+  runtimeSets[exId] = current - 1;
+  const container = document.getElementById(`sets-list-${exId}`);
+  if (container && container.lastElementChild) {
+    container.lastElementChild.remove();
+  }
+  if (pendingSets[exId]) pendingSets[exId].splice(current - 1, 1);
+  const label = document.getElementById(`set-count-${exId}`);
+  if (label) label.textContent = `${runtimeSets[exId]} set`;
 }
 
 function completeSet(exId, setIdx, dayId) {
@@ -1126,7 +1197,11 @@ function startRest(exId, dayId) {
   updateRestDisplay();
   document.getElementById('rest-banner').classList.add('visible');
   restInterval = setInterval(() => {
-    if (Date.now() >= restEndTime) { stopRest(); return; }
+    if (Date.now() >= restEndTime) {
+      stopRest();
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+      return;
+    }
     updateRestDisplay();
   }, 500);
 }
