@@ -173,12 +173,13 @@ body {
 .pr-list { overflow: hidden; }
 .pr-item { padding: 14px 16px; border-bottom: 0.5px solid var(--border); }
 .pr-item:last-child { border-bottom: none; }
-.pr-name { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
-.pr-stats { display: flex; gap: 6px; }
-.pr-stat { flex: 1; background: var(--bg-secondary); border-radius: 8px; padding: 8px; text-align: center; }
-.pr-stat-val { display: block; font-size: 14px; font-weight: 700; color: var(--accent); }
-.pr-stat-lbl { display: block; font-size: 10px; color: var(--text-secondary); margin-top: 2px; font-weight: 500; }
-.pr-date { font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
+.pr-name { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.pr-stats { display: flex; gap: 8px; }
+.pr-stat { flex: 1; background: var(--bg-secondary); border-radius: 10px; padding: 10px 8px 8px; display: flex; flex-direction: column; align-items: center; gap: 0; }
+.pr-stat-val { font-size: 17px; font-weight: 700; color: var(--accent); line-height: 1.1; }
+.pr-stat-sub { font-size: 11px; color: var(--text-secondary); margin-top: 3px; font-weight: 500; }
+.pr-stat-lbl { font-size: 10px; color: var(--text-tertiary); margin-top: 5px; font-weight: 500; letter-spacing: 0.2px; }
+.pr-date { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; }
 .stat-value { font-size: 30px; font-weight: 700; letter-spacing: -1px; margin-top: 2px; }
 .stat-sub { font-size: 12px; color: var(--green); font-weight: 500; margin-top: 1px; }
 /* ── Month Heatmap ── */
@@ -276,7 +277,9 @@ body {
 .ex-prev-hint { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
 .ex-prev-hint b { color: var(--accent); font-weight: 600; }
 .ex-sets-container { padding: 0 16px 12px; }
-.set-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; height: 38px; }
+.set-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; height: 38px; border-radius: 8px; transition: background 0.2s; }
+.set-row.overload { background: color-mix(in srgb, #34c759 15%, transparent); }
+.set-row.overload .kg-val, .set-row.overload .reps-val { border-color: #34c759; }
 .set-num { width: 16px; font-size: 12px; color: var(--text-secondary); font-weight: 600; text-align: center; flex-shrink: 0; }
 .kg-stepper { display: flex; align-items: center; background: var(--bg-secondary); border-radius: 9px; overflow: hidden; height: 38px; flex: 1.2; min-width: 0; }
 .stepper-btn { background: none; border: none; color: var(--accent); font-size: 18px; font-weight: 400; cursor: pointer; padding: 0 10px; height: 100%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.1s; user-select: none; }
@@ -797,6 +800,7 @@ body {
 
     <div class="section" style="margin-top:14px; padding-bottom:20px;">
       <div class="section-label">Kişisel Rekорlar</div>
+      <input type="search" id="pr-search" placeholder="Hareket ara…" oninput="filterPR(this.value)" style="width:100%;box-sizing:border-box;background:var(--bg-primary);border:none;border-radius:12px;padding:10px 14px;font-size:14px;color:var(--text-primary);margin-bottom:8px;outline:none;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
       <div class="card pr-list" id="pr-list">
         <div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydı yok.</div>
       </div>
@@ -1503,12 +1507,12 @@ function renderExerciseCards(day) {
         <span class="set-num">${s+1}</span>
         <div class="kg-stepper">
           <button class="stepper-btn" onclick="stepKg('${ex.id}',${s},-2.5)" type="button">−</button>
-          <input class="kg-val" type="text" inputmode="decimal" placeholder="${prevKg || 'kg'}" data-prev="${prevKg}" id="kg-${ex.id}-${s}">
+          <input class="kg-val" type="text" inputmode="decimal" placeholder="${prevKg || 'kg'}" data-prev="${prevKg}" id="kg-${ex.id}-${s}" oninput="checkOverload('${ex.id}',${s})" onkeydown="handleSetNav(event,'kg','${ex.id}',${s})">
           <button class="stepper-btn" onclick="stepKg('${ex.id}',${s},2.5)" type="button">+</button>
         </div>
         <div class="reps-stepper">
           <button class="stepper-btn" onclick="stepReps('${ex.id}',${s},-1)" type="button">−</button>
-          <input class="reps-val" type="text" inputmode="numeric" placeholder="${prevRep || 'tk'}" data-prev="${prevRep}" id="reps-${ex.id}-${s}">
+          <input class="reps-val" type="text" inputmode="numeric" placeholder="${prevRep || 'tk'}" data-prev="${prevRep}" id="reps-${ex.id}-${s}" oninput="checkOverload('${ex.id}',${s})" onkeydown="handleSetNav(event,'reps','${ex.id}',${s})">
           <button class="stepper-btn" onclick="stepReps('${ex.id}',${s},1)" type="button">+</button>
         </div>
         <button class="set-done-btn" onclick="completeSet('${ex.id}',${s},'${day.id}')" id="set-done-${ex.id}-${s}">✓</button>
@@ -1544,6 +1548,33 @@ function renderExerciseCards(day) {
       </div>
     </div>`;
   }).join('');
+}
+
+function checkOverload(exId, setIdx) {
+  const kgEl   = document.getElementById(`kg-${exId}-${setIdx}`);
+  const repsEl = document.getElementById(`reps-${exId}-${setIdx}`);
+  const rowEl  = document.getElementById(`set-row-${exId}-${setIdx}`);
+  if (!kgEl || !repsEl || !rowEl) return;
+  const kg   = parseFloat(kgEl.value);
+  const reps = parseInt(repsEl.value);
+  const prevKg   = parseFloat(kgEl.dataset.prev)   || 0;
+  const prevReps = parseInt(repsEl.dataset.prev)    || 0;
+  const isOverload = !isNaN(kg) && !isNaN(reps) && prevKg > 0 && prevReps > 0
+    && (kg > prevKg || (kg >= prevKg && reps > prevReps));
+  rowEl.classList.toggle('overload', isOverload);
+}
+
+function handleSetNav(e, type, exId, setIdx) {
+  if (e.key !== 'Enter' && e.key !== 'Tab') return;
+  e.preventDefault();
+  if (type === 'kg') {
+    const next = document.getElementById(`reps-${exId}-${setIdx}`);
+    if (next) next.focus();
+  } else {
+    // reps → next set's kg
+    const next = document.getElementById(`kg-${exId}-${setIdx + 1}`);
+    if (next) next.focus();
+  }
 }
 
 function stepKg(exId, setIdx, delta) {
@@ -1588,12 +1619,12 @@ function buildSetRow(exId, dayId, s, prevSetsAll) {
     <span class="set-num">${s+1}</span>
     <div class="kg-stepper">
       <button class="stepper-btn" onclick="stepKg('${exId}',${s},-2.5)" type="button">−</button>
-      <input class="kg-val" type="text" inputmode="decimal" placeholder="${prevKg || 'kg'}" data-prev="${prevKg}" id="kg-${exId}-${s}">
+      <input class="kg-val" type="text" inputmode="decimal" placeholder="${prevKg || 'kg'}" data-prev="${prevKg}" id="kg-${exId}-${s}" oninput="checkOverload('${exId}',${s})" onkeydown="handleSetNav(event,'kg','${exId}',${s})">
       <button class="stepper-btn" onclick="stepKg('${exId}',${s},2.5)" type="button">+</button>
     </div>
     <div class="reps-stepper">
       <button class="stepper-btn" onclick="stepReps('${exId}',${s},-1)" type="button">−</button>
-      <input class="reps-val" type="text" inputmode="numeric" placeholder="${prevRep || 'tk'}" data-prev="${prevRep}" id="reps-${exId}-${s}">
+      <input class="reps-val" type="text" inputmode="numeric" placeholder="${prevRep || 'tk'}" data-prev="${prevRep}" id="reps-${exId}-${s}" oninput="checkOverload('${exId}',${s})" onkeydown="handleSetNav(event,'reps','${exId}',${s})">
       <button class="stepper-btn" onclick="stepReps('${exId}',${s},1)" type="button">+</button>
     </div>
     <button class="set-done-btn" onclick="completeSet('${exId}',${s},'${dayId}')" id="set-done-${exId}-${s}">✓</button>
@@ -1671,6 +1702,7 @@ function startRest(exId, dayId) {
     if (Date.now() >= restEndTime) {
       stopRest();
       if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+      playBeep();
       return;
     }
     updateRestDisplay();
@@ -1680,6 +1712,29 @@ function updateRestDisplay() {
   const remaining = Math.max(0, Math.ceil((restEndTime - Date.now()) / 1000));
   document.getElementById('rest-display').textContent = fmtDuration(remaining);
 }
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const beeps = [
+      { freq: 880, start: 0,   dur: 0.12 },
+      { freq: 880, start: 0.18, dur: 0.12 },
+      { freq: 1320, start: 0.36, dur: 0.28 },
+    ];
+    beeps.forEach(({ freq, start, dur }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime + start);
+      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + start + 0.01);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur + 0.05);
+    });
+  } catch(e) {}
+}
+
 function stopRest() {
   clearInterval(restInterval);
   restInterval = null;
@@ -2117,8 +2172,17 @@ function calculateOrm() {
   }).join('');
 }
 
+function filterPR(query) {
+  const q = query.trim().toLocaleLowerCase('tr');
+  document.querySelectorAll('#pr-list .pr-item').forEach(el => {
+    el.style.display = el.dataset.name.toLocaleLowerCase('tr').includes(q) ? '' : 'none';
+  });
+}
+
 function renderStats() {
   renderPrList();
+  const search = document.getElementById('pr-search');
+  if (search) search.value = '';
 }
 
 function renderPrList() {
@@ -2134,9 +2198,9 @@ function renderPrList() {
     (log.sets || []).forEach(s => {
       if (!s.exName || (!s.kg && !s.reps)) return;
       const name = s.exName.trim();
-      if (!prMap[name]) prMap[name] = { bestKg: 0, best1RM: 0, bestVol: 0, bestKgDate: '', best1RMDate: '' };
+      if (!prMap[name]) prMap[name] = { bestKg: 0, bestKgReps: 0, best1RM: 0, bestVol: 0, bestKgDate: '', best1RMDate: '' };
       const pr = prMap[name];
-      if (s.kg > pr.bestKg) { pr.bestKg = s.kg; pr.bestKgDate = log.date; }
+      if (s.kg > pr.bestKg) { pr.bestKg = s.kg; pr.bestKgReps = s.reps || 0; pr.bestKgDate = log.date; }
       const orm = epley(s.kg || 0, s.reps || 0);
       if (orm > pr.best1RM) { pr.best1RM = orm; pr.best1RMDate = log.date; }
       const vol = (s.kg || 0) * (s.reps || 0);
@@ -2151,12 +2215,12 @@ function renderPrList() {
   }
 
   list.innerHTML = entries.map(([name, pr]) => `
-    <div class="pr-item">
+    <div class="pr-item" data-name="${escapeHtml(name)}">
       <div class="pr-name">${escapeHtml(name)}</div>
       <div class="pr-stats">
-        <div class="pr-stat"><span class="pr-stat-val">${pr.bestKg} kg</span><span class="pr-stat-lbl">Max ağırlık</span></div>
-        <div class="pr-stat"><span class="pr-stat-val">${pr.best1RM} kg</span><span class="pr-stat-lbl">Tahmini 1RM</span></div>
-        <div class="pr-stat"><span class="pr-stat-val">${pr.bestVol} kg</span><span class="pr-stat-lbl">Max hacim/set</span></div>
+        <div class="pr-stat"><span class="pr-stat-val">${pr.bestKg} kg</span><span class="pr-stat-sub">${pr.bestKgReps} tekrar</span><span class="pr-stat-lbl">Max ağırlık</span></div>
+        <div class="pr-stat"><span class="pr-stat-val">${pr.best1RM} kg</span><span class="pr-stat-sub">&nbsp;</span><span class="pr-stat-lbl">Tahmini 1RM</span></div>
+        <div class="pr-stat"><span class="pr-stat-val">${pr.bestVol} kg</span><span class="pr-stat-sub">&nbsp;</span><span class="pr-stat-lbl">Max hacim/set</span></div>
       </div>
       <div class="pr-date">Son güncelleme: ${fmtDate(pr.best1RMDate)}</div>
     </div>
