@@ -6,7 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Antrenman">
-<meta name="theme-color" content="#007AFF">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
 <meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='26' fill='%23007AFF'/%3E%3Ctext x='60' y='82' text-anchor='middle' font-size='64' font-family='system-ui'%3E💪%3C/text%3E%3C/svg%3E">
 <title>Antrenman Takip</title>
@@ -151,21 +152,37 @@ body {
 .recent-date { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 .recent-dur { font-size: 13px; color: var(--text-secondary); }
 /* ── Rest Banner ── */
+/* ── Dynamic Island Rest Timer ── */
 #rest-banner {
-  position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-100%);
-  width: 100%; max-width: 430px;
-  background: var(--green);
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%) scaleX(0.3) scaleY(0.4);
+  transform-origin: top center;
+  width: 260px;
+  background: #111;
   color: #fff;
-  z-index: 500;
+  z-index: 600;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px;
-  padding-top: calc(14px + env(safe-area-inset-top, 0px));
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 10px 14px 10px 16px;
+  border-radius: 26px;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease, width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3);
+  overflow: hidden;
 }
-#rest-banner.visible { transform: translateX(-50%) translateY(0); }
-.rest-time-display { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
-.rest-label-text { font-size: 13px; opacity: 0.88; margin-top: 1px; }
-.rest-skip { background: rgba(255,255,255,0.25); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+#rest-banner.visible {
+  transform: translateX(-50%) scaleX(1) scaleY(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+.rest-banner-inner { display: flex; align-items: center; gap: 8px; }
+.rest-icon { font-size: 18px; line-height: 1; }
+.rest-time-display { font-size: 19px; font-weight: 700; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+.rest-label-text { font-size: 11px; opacity: 0.65; margin-top: 1px; }
+.rest-skip { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 14px; padding: 5px 11px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+.rest-skip:active { background: rgba(255,255,255,0.28); }
 
 /* ── Workout Day Screen ── */
 #workout-screen {
@@ -364,11 +381,14 @@ body {
 <body>
 <div id="app">
 
-  <!-- Rest Banner -->
+  <!-- Dynamic Island Rest Timer -->
   <div id="rest-banner">
-    <div>
-      <div class="rest-time-display" id="rest-display">01:30</div>
-      <div class="rest-label-text" id="rest-exercise-label">Dinlenme süresi</div>
+    <div class="rest-banner-inner">
+      <div class="rest-icon">⏱</div>
+      <div>
+        <div class="rest-time-display" id="rest-display">01:30</div>
+        <div class="rest-label-text" id="rest-exercise-label">Dinlenme</div>
+      </div>
     </div>
     <button class="rest-skip" onclick="skipRest()">Atla ✕</button>
   </div>
@@ -1094,27 +1114,29 @@ function completeSet(exId, setIdx, dayId) {
 //  REST TIMER
 // ═══════════════════════════════════════════════
 let restInterval = null;
-let restRemaining = 0;
+let restEndTime = 0;
 
 function startRest(exId, dayId) {
   stopRest();
   const day = getDayById(dayId);
   const ex = day ? day.exercises.find(e => e.id === exId) : null;
   document.getElementById('rest-exercise-label').textContent = ex ? ex.name + ' sonrası' : 'Dinlenme';
-  restRemaining = DB.settings.restDuration;
+  const dur = (DB.settings.restDuration || 90);
+  restEndTime = Date.now() + dur * 1000;
   updateRestDisplay();
   document.getElementById('rest-banner').classList.add('visible');
   restInterval = setInterval(() => {
-    restRemaining--;
+    if (Date.now() >= restEndTime) { stopRest(); return; }
     updateRestDisplay();
-    if (restRemaining <= 0) stopRest();
-  }, 1000);
+  }, 500);
 }
 function updateRestDisplay() {
-  document.getElementById('rest-display').textContent = fmtDuration(Math.max(0, restRemaining));
+  const remaining = Math.max(0, Math.ceil((restEndTime - Date.now()) / 1000));
+  document.getElementById('rest-display').textContent = fmtDuration(remaining);
 }
 function stopRest() {
   clearInterval(restInterval);
+  restInterval = null;
   document.getElementById('rest-banner').classList.remove('visible');
 }
 function skipRest() { stopRest(); }
@@ -1558,6 +1580,10 @@ applyTheme();
 setGender('male');
 renderHome();
 renderSettings();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/antrenman/sw.js').catch(() => {});
+}
 
 window.addEventListener('popstate', (e) => {
   const screen = e.state?.screen;
