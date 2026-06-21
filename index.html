@@ -865,7 +865,6 @@ body {
 <!-- Workout History Detail Modal -->
 <div id="history-modal" onclick="closeHistoryModal()">
   <div class="progress-sheet" onclick="event.stopPropagation()">
-    <button class="close-modal-btn" onclick="closeHistoryModal()">✕</button>
     <div class="modal-handle"></div>
     <h3 id="hm-day-name">Antrenman</h3>
     <p class="sub" id="hm-meta"></p>
@@ -876,7 +875,6 @@ body {
 <!-- Progress Modal -->
 <div id="progress-modal" onclick="closeProgressModal()">
   <div class="progress-sheet" onclick="event.stopPropagation()">
-    <button class="close-modal-btn" onclick="closeProgressModal()">✕</button>
     <div class="modal-handle"></div>
     <h3 id="modal-ex-name">Egzersiz</h3>
     <p class="sub" id="modal-ex-sub">Geçmiş performans</p>
@@ -2159,16 +2157,15 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/antrenman/sw.js').catch(() => {});
 }
 
-window.addEventListener('popstate', (e) => {
-  const screen = e.state?.screen;
-  if (screen === 'progressModal') {
+window.addEventListener('popstate', () => {
+  if (document.getElementById('progress-modal').classList.contains('open')) {
     closeProgressModal();
-  } else if (screen === 'dayEditor') {
-    closeDayEditor();
-  } else if (screen === 'workout') {
-    closeWorkoutScreen();
-  } else if (screen === 'historyModal') {
+  } else if (document.getElementById('history-modal').classList.contains('open')) {
     closeHistoryModal();
+  } else if (document.getElementById('day-editor-screen') && document.getElementById('day-editor-screen').classList.contains('open')) {
+    closeDayEditor();
+  } else if (document.getElementById('workout-screen').classList.contains('open')) {
+    closeWorkoutScreen();
   }
 });
 </script>
