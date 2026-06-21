@@ -1330,14 +1330,12 @@ function renderExerciseCards(day) {
     // Previous note (isim bazlı arama)
     let prevNote = '';
     if (prevLog && prevLog.notes) {
-      // Önce aynı exId ile, bulamazsa tüm notlara bak
-      const noteVal = prevLog.notes[ex.id] ||
-        Object.values(prevLog.notes).find((_, i) => {
-          const prevDay = getDayById(prevLog.dayId);
-          if (!prevDay) return false;
-          const prevEx = prevDay.exercises[i];
-          return prevEx && prevEx.name.trim().toLowerCase() === ex.name.trim().toLowerCase();
-        });
+      // Önce aynı exId ile, bulamazsa isim eşleştirmesiyle bak
+      const prevDay = getDayById(prevLog.dayId);
+      const matchedExId = prevDay
+        ? (prevDay.exercises.find(e => e.name.trim().toLowerCase() === ex.name.trim().toLowerCase()) || {}).id
+        : null;
+      const noteVal = prevLog.notes[ex.id] || (matchedExId ? prevLog.notes[matchedExId] : null);
       if (noteVal) prevNote = `<div class="ex-note-prev">📝 Önceki not: "${noteVal}"</div>`;
     }
     // Per-set previous values
@@ -1548,7 +1546,7 @@ function finishWorkout() {
   const allSets = [];
   day.exercises.forEach(ex => {
     const exSets = pendingSets[ex.id] || [];
-    for (let s = 0; s < ex.sets; s++) {
+    for (let s = 0; s < getSetCount(ex.id, currentDayId); s++) {
       const row = exSets[s];
       const kg = parseFloat(document.getElementById(`kg-${ex.id}-${s}`)?.value) || 0;
       const reps = parseInt(document.getElementById(`reps-${ex.id}-${s}`)?.value) || 0;
