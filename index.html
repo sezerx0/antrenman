@@ -82,7 +82,7 @@ body {
 }
 .tab-item {
   flex: 1; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 3px;
+  justify-content: center; gap: 3px; background: none; border: none; padding: 0;
   font-size: 10px; font-weight: 500; color: var(--text-secondary);
   cursor: pointer;
   border-radius: 18px;
@@ -419,13 +419,14 @@ body {
 .suppl-check.done::after { content: '✓'; color: #fff; font-size: 13px; font-weight: 700; }
 .suppl-label { flex: 1; font-size: 14px; font-weight: 500; }
 .suppl-label.done { text-decoration: line-through; color: var(--text-secondary); }
-.water-row { display: flex; align-items: center; gap: 8px; flex: 1; }
-.water-drops { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
-.water-drop { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-tertiary); font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+.water-row { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.water-drops-row { display: flex; align-items: center; gap: 6px; }
+.water-drops { display: flex; gap: 3px; flex-wrap: nowrap; flex: 1; }
+.water-drop { flex: 1; min-width: 0; height: 26px; border-radius: 50%; background: var(--bg-tertiary); font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
 .water-drop.filled { background: #5ac8fa30; }
-.water-drop.filled::after { content: '💧'; font-size: 13px; }
-.water-drop:not(.filled)::after { content: '○'; color: var(--text-tertiary); font-size: 15px; }
-.water-add-btn { background: var(--accent-light); color: var(--accent); border: none; border-radius: 10px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.water-drop.filled::after { content: '💧'; font-size: 12px; }
+.water-drop:not(.filled)::after { content: '○'; color: var(--text-tertiary); font-size: 14px; }
+.water-add-btn { background: var(--accent-light); color: var(--accent); border: none; border-radius: 10px; padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; align-self: flex-start; }
 .de-header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 16px 20px 14px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
 .de-header h2 { font-size: 20px; font-weight: 700; flex: 1; }
 .de-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 9px; padding: 7px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
@@ -562,12 +563,12 @@ body {
           <div class="suppl-check" id="suppl-check-protein"></div>
           <span class="suppl-label" id="suppl-label-protein">Günlük Protein Hedefi</span>
         </div>
-        <div class="suppl-row" style="cursor:default;">
-          <span class="suppl-label" style="flex:none;">Su</span>
-          <div class="water-row">
-            <div class="water-drops" id="water-drops"></div>
-            <button class="water-add-btn" onclick="addWater()">+250ml</button>
+        <div class="suppl-row" style="cursor:default;flex-direction:column;align-items:stretch;gap:6px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span class="suppl-label">Su</span>
+            <button class="water-add-btn" onclick="addWater()">+ 250 ml</button>
           </div>
+          <div class="water-drops" id="water-drops"></div>
         </div>
       </div>
     </div>
@@ -837,6 +838,7 @@ body {
         <button class="data-btn" onclick="exportData()">
           <div class="settings-icon" style="background:#34c75920;">📤</div>
           <span>Veriyi Dışa Aktar (JSON)</span>
+          <span id="last-backup-label" style="font-size:11px;color:var(--text-secondary);margin-left:auto;"></span>
         </button>
         <div style="height:0.5px;background:var(--border);"></div>
         <label class="data-btn" style="cursor:pointer;">
@@ -858,23 +860,23 @@ body {
   </div>
 
   <!-- Tab Bar -->
-  <div class="tab-bar">
-    <div class="tab-item active" id="tab-btn-workout" onclick="switchTab('workout')">
-      <span class="tab-icon">💪</span>
+  <div class="tab-bar" role="tablist">
+    <button class="tab-item active" id="tab-btn-workout" onclick="switchTab('workout')" role="tab" aria-selected="true" aria-label="Antrenman">
+      <span class="tab-icon" aria-hidden="true">💪</span>
       <span>Antrenman</span>
-    </div>
-    <div class="tab-item" id="tab-btn-meas" onclick="switchTab('meas')">
-      <span class="tab-icon">📊</span>
+    </button>
+    <button class="tab-item" id="tab-btn-meas" onclick="switchTab('meas')" role="tab" aria-selected="false" aria-label="Ölçümler">
+      <span class="tab-icon" aria-hidden="true">📊</span>
       <span>Ölçümler</span>
-    </div>
-    <div class="tab-item" id="tab-btn-stats" onclick="switchTab('stats')">
-      <span class="tab-icon">🏆</span>
+    </button>
+    <button class="tab-item" id="tab-btn-stats" onclick="switchTab('stats')" role="tab" aria-selected="false" aria-label="PR ve 1RM">
+      <span class="tab-icon" aria-hidden="true">🏆</span>
       <span>PR</span>
-    </div>
-    <div class="tab-item" id="tab-btn-settings" onclick="switchTab('settings')">
-      <span class="tab-icon">⚙️</span>
+    </button>
+    <button class="tab-item" id="tab-btn-settings" onclick="switchTab('settings')" role="tab" aria-selected="false" aria-label="Ayarlar">
+      <span class="tab-icon" aria-hidden="true">⚙️</span>
       <span>Ayarlar</span>
-    </div>
+    </button>
   </div>
 </div>
 
@@ -954,6 +956,9 @@ body {
   <div id="day-editor-body" style="padding-bottom:24px;"></div>
 </div>
 
+<!-- Exercise name autocomplete -->
+<datalist id="ex-names-list"></datalist>
+
 <!-- Order Editor -->
 <div id="order-editor">
   <div class="de-header">
@@ -966,7 +971,7 @@ body {
 </div>
 
 <!-- Toast -->
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 // ═══════════════════════════════════════════════
@@ -1015,14 +1020,23 @@ function escapeHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+const DB_VERSION = 1;
+
 function loadData() {
   return {
+    version: parseInt(lsGet('dbVersion') || '0'),
     workoutDays: JSON.parse(lsGet('workoutDays') || 'null') || DEFAULT_DAYS,
     workoutLogs: JSON.parse(lsGet('workoutLogs') || '[]'),
     measurements: JSON.parse(lsGet('measurements') || '[]'),
     settings: JSON.parse(lsGet('settings') || '{"theme":"light","restTimerEnabled":true,"restDuration":90}'),
     workoutOrder: JSON.parse(lsGet('workoutOrder') || 'null'),
   };
+}
+function migrateDB() {
+  if (DB.version < DB_VERSION) {
+    DB.version = DB_VERSION;
+    lsSet('dbVersion', DB_VERSION);
+  }
 }
 function saveData(key, value) {
   lsSet(key, JSON.stringify(value));
@@ -1033,6 +1047,7 @@ if (!DB.workoutOrder) {
   DB.workoutOrder = DB.workoutDays.map(d => d.id);
   saveData('workoutOrder', DB.workoutOrder);
 }
+migrateDB();
 
 // ═══════════════════════════════════════════════
 //  HELPERS
@@ -1118,10 +1133,14 @@ let currentTab = 'workout';
 function switchTab(tab) {
   ['workout','meas','stats','settings'].forEach(t => {
     document.getElementById('tab-' + t).style.display = 'none';
-    document.getElementById('tab-btn-' + t).classList.remove('active');
+    const btn = document.getElementById('tab-btn-' + t);
+    btn.classList.remove('active');
+    btn.setAttribute('aria-selected', 'false');
   });
   document.getElementById('tab-' + tab).style.display = 'flex';
-  document.getElementById('tab-btn-' + tab).classList.add('active');
+  const activeBtn = document.getElementById('tab-btn-' + tab);
+  activeBtn.classList.add('active');
+  activeBtn.setAttribute('aria-selected', 'true');
   currentTab = tab;
   if (tab === 'workout') renderHome();
   if (tab === 'meas') renderMeasurements();
@@ -2091,6 +2110,19 @@ function renderSettings() {
   // Order label
   const orderNames = DB.workoutOrder.map(id => { const d = getDayById(id); return d ? d.name : id; });
   document.getElementById('order-label').textContent = orderNames.length ? orderNames.slice(0,2).join(' → ') + (orderNames.length > 2 ? ' → ...' : '') : '—';
+  // Backup reminder
+  const lastBackup = lsGet('lastBackup');
+  const backupLabel = document.getElementById('last-backup-label');
+  if (backupLabel) {
+    if (!lastBackup) {
+      backupLabel.textContent = 'Hiç yedek alınmadı';
+      backupLabel.style.color = 'var(--red)';
+    } else {
+      const daysSince = Math.floor((new Date(today()) - new Date(lastBackup)) / 86400000);
+      backupLabel.textContent = daysSince === 0 ? 'Bugün' : `${daysSince} gün önce`;
+      backupLabel.style.color = daysSince > 14 ? 'var(--orange)' : 'var(--text-secondary)';
+    }
+  }
 }
 
 function setTheme(t) {
@@ -2128,6 +2160,12 @@ function closeDayEditor() {
   document.getElementById('day-editor').classList.remove('open');
 }
 function renderDayEditor() {
+  // Datalist: tüm geçmiş ve mevcut egzersiz adları
+  const nameSet = new Set();
+  DB.workoutDays.forEach(d => d.exercises.forEach(e => e.name && nameSet.add(e.name)));
+  DB.workoutLogs.forEach(l => (l.sets||[]).forEach(s => s.exName && nameSet.add(s.exName)));
+  document.getElementById('ex-names-list').innerHTML = [...nameSet].sort((a,b) => a.localeCompare(b,'tr')).map(n => `<option value="${escapeHtml(n)}">`).join('');
+
   const body = document.getElementById('day-editor-body');
   body.innerHTML = editorDays.map((day, di) => `
     <div class="day-item">
@@ -2139,7 +2177,11 @@ function renderDayEditor() {
       <div class="day-exercises open" id="day-exs-${di}">
         ${day.exercises.map((ex, ei) => `
           <div class="day-ex-row">
-            <input class="day-ex-name-input" value="${escapeHtml(ex.name)}" onchange="editorDays[${di}].exercises[${ei}].name=this.value" placeholder="Hareket adı">
+            <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">
+              <button class="order-arrow-btn" style="width:24px;height:22px;font-size:12px;" onclick="moveEx(${di},${ei},-1)" ${ei === 0 ? 'disabled' : ''}>↑</button>
+              <button class="order-arrow-btn" style="width:24px;height:22px;font-size:12px;" onclick="moveEx(${di},${ei},1)" ${ei === day.exercises.length - 1 ? 'disabled' : ''}>↓</button>
+            </div>
+            <input class="day-ex-name-input" list="ex-names-list" value="${escapeHtml(ex.name)}" onchange="editorDays[${di}].exercises[${ei}].name=this.value" placeholder="Hareket adı">
             <input class="day-ex-sets-input" type="number" value="${ex.sets}" min="1" max="10" onchange="editorDays[${di}].exercises[${ei}].sets=parseInt(this.value)||1" title="Set sayısı">
             <button class="remove-ex-btn" onclick="removeEx(${di},${ei})">−</button>
           </div>
@@ -2164,14 +2206,21 @@ function removeEx(di, ei) {
   editorDays[di].exercises.splice(ei, 1);
   renderDayEditor();
 }
+function moveEx(di, ei, dir) {
+  const exs = editorDays[di].exercises;
+  const j = ei + dir;
+  if (j < 0 || j >= exs.length) return;
+  [exs[ei], exs[j]] = [exs[j], exs[ei]];
+  renderDayEditor();
+}
+
+function uid() { return crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2); }
 function addEx(di) {
-  const id = 'ex-' + Date.now();
-  editorDays[di].exercises.push({ id, name: '', sets: 3 });
+  editorDays[di].exercises.push({ id: uid(), name: '', sets: 3 });
   renderDayEditor();
 }
 function addDay() {
-  const id = 'day-' + Date.now();
-  editorDays.push({ id, name: 'Yeni Gün', exercises: [] });
+  editorDays.push({ id: uid(), name: 'Yeni Gün', exercises: [] });
   renderDayEditor();
 }
 // ═══════════════════════════════════════════════
@@ -2263,7 +2312,7 @@ function saveDays() {
   // Sync IDs for new exercises
   editorDays.forEach(day => {
     day.exercises.forEach(ex => {
-      if (!ex.id) ex.id = 'ex-' + Date.now() + Math.random();
+      if (!ex.id) ex.id = uid();
     });
   });
   DB.workoutDays = editorDays;
@@ -2289,6 +2338,7 @@ function exportData() {
     measurements: DB.measurements,
     settings: DB.settings,
     workoutOrder: DB.workoutOrder,
+    suppl: getSuppl(),
     exportDate: new Date().toISOString(),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -2296,8 +2346,25 @@ function exportData() {
   const a = document.createElement('a');
   a.href = url; a.download = `antrenman-yedek-${today()}.json`; a.click();
   URL.revokeObjectURL(url);
+  lsSet('lastBackup', today());
+  renderSettings();
   toast('📤 Veri dışa aktarıldı.');
 }
+
+function validateImport(data) {
+  if (!Array.isArray(data.workoutDays) || !Array.isArray(data.workoutLogs)) return 'workoutDays ve workoutLogs dizisi gerekli.';
+  for (const d of data.workoutDays) {
+    if (!d.id || !d.name || !Array.isArray(d.exercises)) return `Geçersiz gün: id/name/exercises eksik.`;
+    for (const ex of d.exercises) {
+      if (!ex.id || !ex.name || typeof ex.sets !== 'number') return `Geçersiz egzersiz: ${d.name} içinde.`;
+    }
+  }
+  for (const log of data.workoutLogs) {
+    if (!log.date || !log.dayId || !Array.isArray(log.sets)) return `Geçersiz antrenman logu: date/dayId/sets eksik.`;
+  }
+  return null;
+}
+
 function importData(evt) {
   const file = evt.target.files[0];
   if (!file) return;
@@ -2305,7 +2372,8 @@ function importData(evt) {
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-      if (!data.workoutDays || !data.workoutLogs) throw new Error('Geçersiz dosya');
+      const err = validateImport(data);
+      if (err) { toast('❌ ' + err); return; }
       if (!confirm('Mevcut tüm veriler bu yedekle değiştirilecek. Emin misiniz?')) return;
       DB.workoutDays = data.workoutDays;
       DB.workoutLogs = data.workoutLogs;
@@ -2313,6 +2381,7 @@ function importData(evt) {
       DB.settings = data.settings || DB.settings;
       DB.workoutOrder = data.workoutOrder || data.workoutDays.map(d => d.id);
       ['workoutDays','workoutLogs','measurements','settings','workoutOrder'].forEach(k => saveData(k, DB[k]));
+      if (data.suppl) saveSuppl(data.suppl);
       applyTheme(); renderHome(); renderSettings();
       toast('✅ Veri içe aktarıldı!');
     } catch { toast('❌ Geçersiz dosya formatı.'); }
@@ -2340,7 +2409,7 @@ renderHome();
 renderSettings();
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/antrenman/sw.js').catch(() => {});
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
 
 window.addEventListener('popstate', () => {
