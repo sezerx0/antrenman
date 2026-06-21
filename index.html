@@ -106,11 +106,19 @@ body {
 /* ── Cards ── */
 .card { background: var(--bg-primary); border-radius: var(--card-radius); box-shadow: var(--shadow); }
 .card + .card { margin-top: 10px; }
-/* ── Next Workout ── */
-.next-card { padding: 16px; }
+/* ── Day Select List ── */
+.day-select-card { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: opacity 0.15s, transform 0.1s; margin-bottom: 0; }
+.day-select-card:active { opacity: 0.7; transform: scale(0.98); }
+.day-select-card + .day-select-card { margin-top: 8px; }
+.day-select-next { border-left: 3px solid var(--accent); }
+.day-select-left { display: flex; align-items: center; gap: 12px; }
+.day-select-badge { width: 38px; height: 38px; border-radius: 12px; background: var(--accent-light); color: var(--accent); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.day-select-next .day-select-badge { background: var(--accent); color: #fff; }
+.day-select-name { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
+.day-select-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.next-tag { display: inline-block; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.2px; }
+.day-select-arrow { color: var(--text-secondary); font-size: 20px; font-weight: 300; }
 .day-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; letter-spacing: 0.3px; }
-.next-card h2 { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
-.next-card .subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
 .btn-primary { display: block; width: 100%; margin-top: 14px; background: var(--accent); color: #fff; border: none; border-radius: 11px; padding: 13px; font-size: 15px; font-weight: 600; text-align: center; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
 .btn-primary:active { opacity: 0.85; transform: scale(0.98); }
 /* ── Stats Row ── */
@@ -372,13 +380,8 @@ body {
       <p id="home-date"></p>
     </div>
     <div class="section" style="margin-top:14px;">
-      <div class="section-label">Sıradaki Antrenman</div>
-      <div class="card next-card" id="next-workout-card">
-        <div class="day-badge" id="next-day-badge">—</div>
-        <h2 id="next-day-name">—</h2>
-        <p class="subtitle" id="next-day-sub">—</p>
-        <button class="btn-primary" onclick="openWorkoutScreen()">Başla</button>
-      </div>
+      <div class="section-label">Antrenman Seç</div>
+      <div id="day-select-list"></div>
     </div>
     <div class="section" style="margin-top:12px;">
       <div class="stats-grid">
@@ -816,15 +819,7 @@ function renderHome() {
   const now = new Date();
   document.getElementById('home-date').textContent = now.toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
-  const nextId = getNextDayId();
-  const nextDay = getDayById(nextId);
-  if (nextDay) {
-    document.getElementById('next-day-badge').textContent = nextDay.name;
-    document.getElementById('next-day-name').textContent = nextDay.name;
-    const exCount = nextDay.exercises.length;
-    const setCount = nextDay.exercises.reduce((a, e) => a + e.sets, 0);
-    document.getElementById('next-day-sub').textContent = `${exCount} hareket · ${setCount} set`;
-  }
+  renderDaySelectList();
 
   // Month stats
   const monthStr = today().slice(0,7);
@@ -834,6 +829,39 @@ function renderHome() {
 
   renderHeatmap();
   renderRecentList();
+}
+
+function renderDaySelectList() {
+  const nextId = getNextDayId();
+  const container = document.getElementById('day-select-list');
+  if (!container) return;
+
+  // Son antrenman tarihini her gün için bul
+  const lastLogByDay = {};
+  DB.workoutLogs.forEach(log => {
+    if (!lastLogByDay[log.dayId] || log.date > lastLogByDay[log.dayId].date) {
+      lastLogByDay[log.dayId] = log;
+    }
+  });
+
+  container.innerHTML = DB.workoutDays.map(day => {
+    const isNext = day.id === nextId;
+    const exCount = day.exercises.length;
+    const setCount = day.exercises.reduce((a, e) => a + e.sets, 0);
+    const lastLog = lastLogByDay[day.id];
+    const lastDateStr = lastLog ? fmtDate(lastLog.date) : null;
+
+    return `<div class="card day-select-card ${isNext ? 'day-select-next' : ''}" onclick="openWorkoutScreen('${day.id}')">
+      <div class="day-select-left">
+        <div class="day-select-badge">${day.name.slice(0,1)}</div>
+        <div>
+          <div class="day-select-name">${day.name}${isNext ? ' <span class="next-tag">Sıradaki</span>' : ''}</div>
+          <div class="day-select-meta">${exCount} hareket · ${setCount} set${lastDateStr ? ` · Son: ${lastDateStr}` : ''}</div>
+        </div>
+      </div>
+      <div class="day-select-arrow">›</div>
+    </div>`;
+  }).join('');
 }
 
 function renderHeatmap() {
@@ -906,8 +934,8 @@ let elapsedInterval = null;
 let pendingSets = {}; // exId -> [{kg, reps}]
 let pendingNotes = {}; // exId -> string
 
-function openWorkoutScreen() {
-  currentDayId = getNextDayId();
+function openWorkoutScreen(dayId) {
+  currentDayId = dayId || getNextDayId();
   const day = getDayById(currentDayId);
   if (!day) return;
   document.getElementById('ws-day-name').textContent = day.name;
@@ -926,6 +954,7 @@ function openWorkoutScreen() {
   renderExerciseCards(day);
   document.getElementById('workout-screen').classList.add('open');
   document.body.style.overflow = 'hidden';
+  history.pushState({ screen: 'workout' }, '');
 }
 
 function closeWorkoutScreen() {
@@ -1211,6 +1240,7 @@ function openProgressModal(exId, dayId, exName) {
     }).join('');
   }
   document.getElementById('progress-modal').classList.add('open');
+  history.pushState({ screen: 'progressModal' }, '');
 }
 function closeProgressModal() {
   document.getElementById('progress-modal').classList.remove('open');
@@ -1397,6 +1427,7 @@ function openDayEditor() {
   editorDays = JSON.parse(JSON.stringify(DB.workoutDays));
   renderDayEditor();
   document.getElementById('day-editor').classList.add('open');
+  history.pushState({ screen: 'dayEditor' }, '');
 }
 function closeDayEditor() {
   document.getElementById('day-editor').classList.remove('open');
@@ -1527,6 +1558,17 @@ applyTheme();
 setGender('male');
 renderHome();
 renderSettings();
+
+window.addEventListener('popstate', (e) => {
+  const screen = e.state?.screen;
+  if (screen === 'progressModal') {
+    closeProgressModal();
+  } else if (screen === 'dayEditor') {
+    closeDayEditor();
+  } else if (screen === 'workout') {
+    closeWorkoutScreen();
+  }
+});
 </script>
 </body>
 </html>
