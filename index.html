@@ -275,7 +275,7 @@ body {
 .kg-val { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; width: 0; }
 .kg-val::placeholder { color: var(--text-tertiary); font-size: 12px; font-weight: 400; text-align: center; }
 .reps-stepper { display: flex; align-items: center; background: var(--bg-secondary); border-radius: 9px; overflow: hidden; height: 38px; flex: 1; min-width: 0; }
-.reps-val { flex: 1; font-size: 15px; font-weight: 500; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; -moz-appearance: textfield; }
+.reps-val { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; -moz-appearance: textfield; }
 .reps-val::-webkit-outer-spin-button, .reps-val::-webkit-inner-spin-button { -webkit-appearance: none; }
 .reps-val::placeholder { color: var(--text-tertiary); font-size: 12px; }
 .set-done-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border-strong); background: none; color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
@@ -398,6 +398,34 @@ body {
 }
 @media (max-width: 430px) { #day-editor { left: 0; margin-left: 0; } }
 #day-editor.open { transform: translateX(0); }
+#order-editor {
+  position: fixed; inset: 0; background: var(--bg-secondary);
+  z-index: 300; transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(0.32,0.72,0,1);
+  overflow-y: auto; max-width: 430px; left: 50%; margin-left: -215px;
+}
+@media (max-width: 430px) { #order-editor { left: 0; margin-left: 0; } }
+#order-editor.open { transform: translateX(0); }
+.order-item { background: var(--bg-primary); border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; padding: 14px; gap: 12px; }
+.order-item-name { flex: 1; font-size: 15px; font-weight: 600; }
+.order-item-num { width: 24px; height: 24px; border-radius: 8px; background: var(--accent-light); color: var(--accent); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.order-arrow-btn { background: var(--bg-secondary); border: none; border-radius: 8px; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-primary); }
+.order-arrow-btn:disabled { opacity: 0.25; }
+.suppl-card { padding: 14px 16px; }
+.suppl-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--border); cursor: pointer; }
+.suppl-row:last-child { border-bottom: none; cursor: default; }
+.suppl-check { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border-strong); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.2s, border-color 0.2s; }
+.suppl-check.done { background: var(--green); border-color: var(--green); }
+.suppl-check.done::after { content: '✓'; color: #fff; font-size: 13px; font-weight: 700; }
+.suppl-label { flex: 1; font-size: 14px; font-weight: 500; }
+.suppl-label.done { text-decoration: line-through; color: var(--text-secondary); }
+.water-row { display: flex; align-items: center; gap: 8px; flex: 1; }
+.water-drops { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
+.water-drop { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-tertiary); font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+.water-drop.filled { background: #5ac8fa30; }
+.water-drop.filled::after { content: '💧'; font-size: 13px; }
+.water-drop:not(.filled)::after { content: '○'; color: var(--text-tertiary); font-size: 15px; }
+.water-add-btn { background: var(--accent-light); color: var(--accent); border: none; border-radius: 10px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .de-header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 16px 20px 14px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
 .de-header h2 { font-size: 20px; font-weight: 700; flex: 1; }
 .de-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 9px; padding: 7px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
@@ -523,6 +551,26 @@ body {
         <div class="weekly-goal-days" id="weekly-goal-days"></div>
       </div>
     </div>
+    <div class="section" style="margin-top:12px;">
+      <div class="section-label">Günlük Rutin</div>
+      <div class="card suppl-card">
+        <div class="suppl-row" onclick="toggleSuppl('kreatin')">
+          <div class="suppl-check" id="suppl-check-kreatin"></div>
+          <span class="suppl-label" id="suppl-label-kreatin">Kreatin</span>
+        </div>
+        <div class="suppl-row" onclick="toggleSuppl('protein')">
+          <div class="suppl-check" id="suppl-check-protein"></div>
+          <span class="suppl-label" id="suppl-label-protein">Günlük Protein Hedefi</span>
+        </div>
+        <div class="suppl-row" style="cursor:default;">
+          <span class="suppl-label" style="flex:none;">Su</span>
+          <div class="water-row">
+            <div class="water-drops" id="water-drops"></div>
+            <button class="water-add-btn" onclick="addWater()">+250ml</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="section" style="margin-top:12px; padding-bottom:20px;">
       <div class="section-label">Son Antrenmanlar</div>
       <div class="card recent-list" id="recent-list">
@@ -563,7 +611,7 @@ body {
           <span class="form-unit">cm</span>
         </div>
         <div style="padding: 10px 16px 12px; display:flex; justify-content:flex-end;">
-          <button class="set-count-btn accent" onclick="saveProfile()">Kaydet</button>
+          <button class="set-count-btn accent" onclick="saveProfile(true)">Kaydet</button>
         </div>
       </div>
     </div>
@@ -774,10 +822,10 @@ body {
           <span class="settings-value" id="day-count-label">4 gün</span>
           <span class="settings-chevron">›</span>
         </div>
-        <div class="settings-row" style="cursor:pointer;" onclick="openDayEditor()">
+        <div class="settings-row" style="cursor:pointer;" onclick="openOrderEditor()">
           <div class="settings-icon" style="background:#007aff20;">🔄</div>
           <span class="settings-label">Antrenman Sırası</span>
-          <span class="settings-value" id="order-label">Torso A → ...</span>
+          <span class="settings-value" id="order-label"></span>
           <span class="settings-chevron">›</span>
         </div>
       </div>
@@ -906,6 +954,17 @@ body {
   <div id="day-editor-body" style="padding-bottom:24px;"></div>
 </div>
 
+<!-- Order Editor -->
+<div id="order-editor">
+  <div class="de-header">
+    <button class="back-btn" onclick="closeOrderEditor()">‹ Geri</button>
+    <h2>Antrenman Sırası</h2>
+    <button class="de-save-btn" onclick="saveOrder()">Kaydet</button>
+  </div>
+  <div style="padding:12px 16px 4px;color:var(--text-secondary);font-size:13px;">Ok tuşlarıyla sırayı değiştir.</div>
+  <div id="order-editor-body" style="padding:8px 16px 24px;"></div>
+</div>
+
 <!-- Toast -->
 <div id="toast"></div>
 
@@ -952,6 +1011,9 @@ const DEFAULT_DAYS = [
 
 function lsGet(key) { try { return localStorage.getItem(key); } catch(e) { return null; } }
 function lsSet(key, val) { try { localStorage.setItem(key, val); } catch(e) {} }
+function escapeHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
 function loadData() {
   return {
@@ -1085,6 +1147,7 @@ function renderHome() {
   renderHeatmap();
   renderRecentList();
   renderWeeklyGoal();
+  renderSuppl();
 }
 
 function renderDaySelectList() {
@@ -1111,7 +1174,7 @@ function renderDaySelectList() {
       <div class="day-select-left">
         <div class="day-select-badge">${day.name.slice(0,1)}</div>
         <div>
-          <div class="day-select-name">${day.name}${isNext ? ' <span class="next-tag">Sıradaki</span>' : ''}</div>
+          <div class="day-select-name">${escapeHtml(day.name)}${isNext ? ' <span class="next-tag">Sıradaki</span>' : ''}</div>
           <div class="day-select-meta">${exCount} hareket · ${setCount} set${lastDateStr ? ` · Son: ${lastDateStr}` : ''}</div>
         </div>
       </div>
@@ -1174,7 +1237,7 @@ function renderRecentList() {
     return `<div class="recent-item" onclick="openHistoryModal('${log.date}','${log.dayId}')">
       <div class="recent-dot"><span>${initial}</span></div>
       <div class="recent-info">
-        <div class="recent-name">${name}</div>
+        <div class="recent-name">${escapeHtml(name)}</div>
         <div class="recent-date">${fmtDate(log.date)}${vol ? ' · ' + vol + ' kg hacim' : ''}</div>
       </div>
       ${dur ? `<div class="recent-dur">${dur}</div>` : ''}
@@ -1213,7 +1276,7 @@ function openHistoryModal(date, dayId) {
       </div>`;
     }).join('');
     return `<div class="hm-ex-block">
-      <div class="hm-ex-name">${exName}</div>
+      <div class="hm-ex-name">${escapeHtml(exName)}</div>
       ${rows}
     </div>`;
   }).join('');
@@ -1316,26 +1379,26 @@ function renderExerciseCards(day) {
 
     // Previous hint
     let prevHint = '';
-    if (prevSets.length) {
-      const kgs  = prevSets.map(s => s.kg).filter(Boolean);
-      const reps = prevSets.map(s => s.reps).filter(Boolean);
-      const avgKg  = kgs.length  ? (kgs.reduce((a,b)=>a+b,0)/kgs.length).toFixed(1) : '?';
-      const avgRep = reps.length ? Math.round(reps.reduce((a,b)=>a+b,0)/reps.length) : '?';
-      const dayLabel = prevEntry.dayName ? ` (${prevEntry.dayName})` : '';
-      prevHint = `<div class="ex-prev-hint">Son antrenman${dayLabel}: <b>${prevSets.length}×${avgRep} @ ${avgKg} kg</b></div>`;
+    if (prevSets.length && prevLog) {
+      const validSets = prevSets.filter(s => s.kg || s.reps);
+      if (validSets.length) {
+        const dateLabel = fmtDateShort(prevLog.date);
+        const dayLabel = prevEntry.dayName ? ` · ${prevEntry.dayName}` : '';
+        const rows = validSets.map((s, i) =>
+          `<div>Set ${i+1}: <b>${s.kg||'?'} kg × ${s.reps||'?'} tekrar</b></div>`
+        ).join('');
+        prevHint = `<div class="ex-prev-hint">${dateLabel}${dayLabel}${rows}</div>`;
+      }
     }
     // Previous note (isim bazlı arama)
     let prevNote = '';
     if (prevLog && prevLog.notes) {
-      // Önce aynı exId ile, bulamazsa tüm notlara bak
-      const noteVal = prevLog.notes[ex.id] ||
-        Object.values(prevLog.notes).find((_, i) => {
-          const prevDay = getDayById(prevLog.dayId);
-          if (!prevDay) return false;
-          const prevEx = prevDay.exercises[i];
-          return prevEx && prevEx.name.trim().toLowerCase() === ex.name.trim().toLowerCase();
-        });
-      if (noteVal) prevNote = `<div class="ex-note-prev">📝 Önceki not: "${noteVal}"</div>`;
+      const prevDay = getDayById(prevLog.dayId);
+      const matchedExId = prevDay
+        ? (prevDay.exercises.find(e => e.name.trim().toLowerCase() === ex.name.trim().toLowerCase()) || {}).id
+        : null;
+      const noteVal = prevLog.notes[ex.id] || (matchedExId ? prevLog.notes[matchedExId] : null);
+      if (noteVal) prevNote = `<div class="ex-note-prev">📝 Önceki not: "${escapeHtml(noteVal)}"</div>`;
     }
     // Per-set previous values
     const prevSetsAll = prevSets;
@@ -1363,9 +1426,9 @@ function renderExerciseCards(day) {
     return `<div class="ex-card" id="ex-card-${ex.id}">
       <div class="ex-card-header">
         <div class="ex-card-top">
-          <span class="ex-name">${ex.name}</span>
+          <span class="ex-name">${escapeHtml(ex.name)}</span>
           <div class="ex-actions">
-            <button class="ex-graph-btn" onclick="openProgressModal('${ex.id}','${day.id}','${ex.name}')">Grafik</button>
+            <button class="ex-graph-btn" data-ex-id="${ex.id}" data-day-id="${day.id}" data-ex-name="${escapeHtml(ex.name)}" onclick="openProgressModal(this.dataset.exId,this.dataset.dayId,this.dataset.exName)">Grafik</button>
           </div>
         </div>
         ${prevHint}
@@ -1386,7 +1449,7 @@ function renderExerciseCards(day) {
       </div>
       <div class="ex-note-section">
         ${prevNote}
-        <textarea class="ex-note-input" placeholder="Not ekle..." id="note-${ex.id}" oninput="pendingNotes['${ex.id}']=this.value" rows="2"></textarea>
+        <textarea class="ex-note-input" placeholder="Not ekle..." id="note-${ex.id}" oninput="pendingNotes['${ex.id}']=this.value" onblur="if(this.value.trim())toast('📝 Not eklendi.')" rows="2"></textarea>
       </div>
     </div>`;
   }).join('');
@@ -1545,7 +1608,7 @@ function finishWorkout() {
   const allSets = [];
   day.exercises.forEach(ex => {
     const exSets = pendingSets[ex.id] || [];
-    for (let s = 0; s < ex.sets; s++) {
+    for (let s = 0; s < getSetCount(ex.id, currentDayId); s++) {
       const row = exSets[s];
       const kg = parseFloat(document.getElementById(`kg-${ex.id}-${s}`)?.value) || 0;
       const reps = parseInt(document.getElementById(`reps-${ex.id}-${s}`)?.value) || 0;
@@ -1592,7 +1655,7 @@ function finishWorkout() {
     const vol = Math.round(exSets.reduce((a,s) => a+(s.kg||0)*(s.reps||0),0));
     const detail = exSets.map(s => `${s.kg}×${s.reps}`).join(', ');
     return `<div class="sum-ex-item">
-      <div class="sum-ex-name">${ex.name}</div>
+      <div class="sum-ex-name">${escapeHtml(ex.name)}</div>
       <div class="sum-ex-detail">${detail} · ${vol} kg</div>
     </div>`;
   }).filter(Boolean).join('');
@@ -1705,14 +1768,14 @@ function setGender(g, silent) {
   if (!silent) saveProfile();
 }
 
-function saveProfile() {
+function saveProfile(showToast) {
   const age = parseInt(document.getElementById('m-birthyear').value);
   const height = parseFloat(document.getElementById('m-height').value);
   DB.settings.profile = { gender: selectedGender, age: age || null, height: height || null };
   saveData('settings', DB.settings);
   const badge = document.getElementById('profile-saved-badge');
   if (badge) badge.style.display = (age || height) ? 'inline' : 'none';
-  toast('✅ Profil kaydedildi.');
+  if (showToast) toast('✅ Profil kaydedildi.');
 }
 
 function loadProfile() {
@@ -1998,7 +2061,7 @@ function renderPrList() {
 
   list.innerHTML = entries.map(([name, pr]) => `
     <div class="pr-item">
-      <div class="pr-name">${name}</div>
+      <div class="pr-name">${escapeHtml(name)}</div>
       <div class="pr-stats">
         <div class="pr-stat"><span class="pr-stat-val">${pr.bestKg} kg</span><span class="pr-stat-lbl">Max ağırlık</span></div>
         <div class="pr-stat"><span class="pr-stat-val">${pr.best1RM} kg</span><span class="pr-stat-lbl">Tahmini 1RM</span></div>
@@ -2027,7 +2090,7 @@ function renderSettings() {
   document.getElementById('day-count-label').textContent = DB.workoutDays.length + ' gün';
   // Order label
   const orderNames = DB.workoutOrder.map(id => { const d = getDayById(id); return d ? d.name : id; });
-  document.getElementById('order-label').textContent = orderNames.slice(0,2).join(' → ') + (orderNames.length > 2 ? ' → ...' : '');
+  document.getElementById('order-label').textContent = orderNames.length ? orderNames.slice(0,2).join(' → ') + (orderNames.length > 2 ? ' → ...' : '') : '—';
 }
 
 function setTheme(t) {
@@ -2069,14 +2132,14 @@ function renderDayEditor() {
   body.innerHTML = editorDays.map((day, di) => `
     <div class="day-item">
       <div class="day-item-header">
-        <input class="day-item-name-input" value="${day.name}" onchange="editorDays[${di}].name=this.value" placeholder="Gün adı">
+        <input class="day-item-name-input" value="${escapeHtml(day.name)}" onchange="editorDays[${di}].name=this.value" placeholder="Gün adı">
         <button class="remove-day-btn" onclick="removeDay(${di})">−</button>
         <button class="day-toggle-btn" onclick="toggleDayExercises(${di})" id="day-toggle-${di}">▾</button>
       </div>
       <div class="day-exercises open" id="day-exs-${di}">
         ${day.exercises.map((ex, ei) => `
           <div class="day-ex-row">
-            <input class="day-ex-name-input" value="${ex.name}" onchange="editorDays[${di}].exercises[${ei}].name=this.value" placeholder="Hareket adı">
+            <input class="day-ex-name-input" value="${escapeHtml(ex.name)}" onchange="editorDays[${di}].exercises[${ei}].name=this.value" placeholder="Hareket adı">
             <input class="day-ex-sets-input" type="number" value="${ex.sets}" min="1" max="10" onchange="editorDays[${di}].exercises[${ei}].sets=parseInt(this.value)||1" title="Set sayısı">
             <button class="remove-ex-btn" onclick="removeEx(${di},${ei})">−</button>
           </div>
@@ -2111,6 +2174,91 @@ function addDay() {
   editorDays.push({ id, name: 'Yeni Gün', exercises: [] });
   renderDayEditor();
 }
+// ═══════════════════════════════════════════════
+//  ORDER EDITOR
+// ═══════════════════════════════════════════════
+let editorOrder = [];
+function openOrderEditor() {
+  editorOrder = [...DB.workoutOrder];
+  renderOrderEditor();
+  document.getElementById('order-editor').classList.add('open');
+  history.pushState({ screen: 'orderEditor' }, '');
+}
+function closeOrderEditor() {
+  document.getElementById('order-editor').classList.remove('open');
+}
+function renderOrderEditor() {
+  document.getElementById('order-editor-body').innerHTML = editorOrder.map((id, i) => {
+    const day = getDayById(id);
+    const name = escapeHtml(day ? day.name : id);
+    return `<div class="order-item">
+      <div class="order-item-num">${i + 1}</div>
+      <div class="order-item-name">${name}</div>
+      <button class="order-arrow-btn" onclick="moveOrder(${i},-1)" ${i === 0 ? 'disabled' : ''}>↑</button>
+      <button class="order-arrow-btn" onclick="moveOrder(${i},1)" ${i === editorOrder.length - 1 ? 'disabled' : ''}>↓</button>
+    </div>`;
+  }).join('');
+}
+function moveOrder(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= editorOrder.length) return;
+  [editorOrder[i], editorOrder[j]] = [editorOrder[j], editorOrder[i]];
+  renderOrderEditor();
+}
+function saveOrder() {
+  DB.workoutOrder = editorOrder;
+  saveData('workoutOrder', DB.workoutOrder);
+  closeOrderEditor();
+  toast('✅ Sıra kaydedildi!');
+  renderHome();
+  renderSettings();
+}
+
+// ═══════════════════════════════════════════════
+//  SUPPLEMENT / DAILY ROUTINE
+// ═══════════════════════════════════════════════
+function getSuppl() {
+  const raw = lsGet('suppl');
+  const data = raw ? JSON.parse(raw) : {};
+  if (data.date !== today()) return { date: today(), kreatin: false, protein: false, water: 0 };
+  return data;
+}
+function saveSuppl(data) { lsSet('suppl', JSON.stringify(data)); }
+function toggleSuppl(key) {
+  const data = getSuppl();
+  data[key] = !data[key];
+  saveSuppl(data);
+  renderSuppl();
+}
+function addWater() {
+  const data = getSuppl();
+  data.water = (data.water || 0) + 1;
+  saveSuppl(data);
+  renderSuppl();
+}
+function removeWater(i) {
+  const data = getSuppl();
+  data.water = i;
+  saveSuppl(data);
+  renderSuppl();
+}
+function renderSuppl() {
+  const data = getSuppl();
+  ['kreatin','protein'].forEach(key => {
+    const check = document.getElementById(`suppl-check-${key}`);
+    const label = document.getElementById(`suppl-label-${key}`);
+    if (!check) return;
+    check.className = 'suppl-check' + (data[key] ? ' done' : '');
+    label.className = 'suppl-label' + (data[key] ? ' done' : '');
+  });
+  const drops = document.getElementById('water-drops');
+  if (!drops) return;
+  const filled = data.water || 0;
+  drops.innerHTML = Array.from({length: 8}, (_, i) =>
+    `<button class="water-drop ${i < filled ? 'filled' : ''}" onclick="${i < filled ? `removeWater(${i})` : 'addWater()'}"></button>`
+  ).join('');
+}
+
 function saveDays() {
   // Sync IDs for new exercises
   editorDays.forEach(day => {
@@ -2200,7 +2348,9 @@ window.addEventListener('popstate', () => {
     closeProgressModal();
   } else if (document.getElementById('history-modal').classList.contains('open')) {
     closeHistoryModal();
-  } else if (document.getElementById('day-editor-screen') && document.getElementById('day-editor-screen').classList.contains('open')) {
+  } else if (document.getElementById('order-editor').classList.contains('open')) {
+    closeOrderEditor();
+  } else if (document.getElementById('day-editor').classList.contains('open')) {
     closeDayEditor();
   } else if (document.getElementById('workout-screen').classList.contains('open')) {
     closeWorkoutScreen();
