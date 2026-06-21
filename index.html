@@ -128,6 +128,37 @@ body {
 .stats-grid .card + .card { margin-top: 0; }
 .stat-card { padding: 14px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+/* ── Weekly Goal ── */
+.weekly-goal-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.weekly-goal-label { font-size: 14px; font-weight: 600; }
+.weekly-goal-stepper { display: flex; align-items: center; gap: 10px; }
+.weekly-goal-stepper span { font-size: 16px; font-weight: 700; min-width: 20px; text-align: center; }
+.weekly-goal-bar-bg { height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; }
+.weekly-goal-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+.weekly-goal-days { display: flex; gap: 6px; margin-top: 10px; justify-content: flex-start; }
+.wg-day { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+.wg-day.done { background: var(--accent); color: #fff; }
+.wg-day.today { border: 2px solid var(--accent); color: var(--accent); background: var(--accent-light); }
+.wg-day.empty { background: var(--bg-tertiary); color: var(--text-secondary); }
+/* ── History Modal ── */
+.hm-ex-block { margin-bottom: 14px; }
+.hm-ex-name { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+.hm-set-row { display: flex; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.hm-set-row:last-child { border-bottom: none; }
+.hm-set-num { width: 22px; color: var(--text-secondary); font-size: 11px; font-weight: 600; }
+.hm-set-val { flex: 1; font-weight: 500; }
+.hm-set-vol { color: var(--text-secondary); font-size: 12px; }
+/* ── Summary enhancements ── */
+.sum-emoji { font-size: 40px; margin-bottom: 4px; }
+.sum-pr-banner { background: #ff9f0a20; color: var(--orange); border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 600; margin: 8px 0; }
+.sum-ex-item { padding: 8px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.sum-ex-item:last-child { border-bottom: none; }
+.sum-ex-name { font-weight: 600; margin-bottom: 2px; }
+.sum-ex-detail { color: var(--text-secondary); font-size: 12px; }
+/* ── Trend tabs ── */
+.trend-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.trend-tab { background: var(--bg-tertiary); color: var(--text-secondary); border: none; border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.trend-tab.active { background: var(--accent); color: #fff; }
 .stat-value { font-size: 30px; font-weight: 700; letter-spacing: -1px; margin-top: 2px; }
 .stat-sub { font-size: 12px; color: var(--green); font-weight: 500; margin-top: 1px; }
 /* ── Month Heatmap ── */
@@ -441,6 +472,23 @@ body {
         </div>
       </div>
     </div>
+    <div class="section" style="margin-top:12px;">
+      <div class="section-label">Haftalık Hedef</div>
+      <div class="card" style="padding:16px;" id="weekly-goal-card">
+        <div class="weekly-goal-top">
+          <span class="weekly-goal-label" id="weekly-goal-label">0 / 0 antrenman</span>
+          <div class="weekly-goal-stepper">
+            <button class="stepper-btn" onclick="changeWeeklyGoal(-1)">−</button>
+            <span id="weekly-goal-num">4</span>
+            <button class="stepper-btn" onclick="changeWeeklyGoal(1)">+</button>
+          </div>
+        </div>
+        <div class="weekly-goal-bar-bg">
+          <div class="weekly-goal-bar-fill" id="weekly-goal-bar"></div>
+        </div>
+        <div class="weekly-goal-days" id="weekly-goal-days"></div>
+      </div>
+    </div>
     <div class="section" style="margin-top:12px; padding-bottom:20px;">
       <div class="section-label">Son Antrenmanlar</div>
       <div class="card recent-list" id="recent-list">
@@ -558,7 +606,15 @@ body {
     <div class="section" style="margin-top:12px;">
       <div class="section-label">Trend</div>
       <div class="card meas-chart-card">
-        <div class="chart-container" style="height:160px;">
+        <div class="trend-tabs" id="trend-tabs">
+          <button class="trend-tab active" onclick="switchTrend('fat',this)">Yağ %</button>
+          <button class="trend-tab" onclick="switchTrend('weight',this)">Ağırlık</button>
+          <button class="trend-tab" onclick="switchTrend('armR',this)">Kol</button>
+          <button class="trend-tab" onclick="switchTrend('chest',this)">Göğüs</button>
+          <button class="trend-tab" onclick="switchTrend('waist',this)">Bel</button>
+          <button class="trend-tab" onclick="switchTrend('thighR',this)">Uyluk</button>
+        </div>
+        <div class="chart-container" style="height:160px;margin-top:10px;">
           <canvas id="fat-chart"></canvas>
         </div>
       </div>
@@ -696,15 +752,31 @@ body {
 <!-- Summary Overlay -->
 <div id="summary-overlay" onclick="closeSummary()">
   <div class="summary-sheet" onclick="event.stopPropagation()">
-    <h3>🎉 Antrenman Tamamlandı!</h3>
+    <div class="sum-emoji">🎉</div>
+    <h3>Antrenman Tamamlandı!</h3>
     <p class="sub" id="sum-sub">Harika iş!</p>
     <div class="summary-stats">
       <div class="ss-item"><div class="ss-val" id="sum-dur">0 dk</div><div class="ss-lbl">Süre</div></div>
       <div class="ss-item"><div class="ss-val" id="sum-sets">0</div><div class="ss-lbl">Set</div></div>
-      <div class="ss-item"><div class="ss-val" id="sum-vol">0</div><div class="ss-lbl">Volume (kg)</div></div>
+      <div class="ss-item"><div class="ss-val" id="sum-vol">0</div><div class="ss-lbl">Hacim (kg)</div></div>
     </div>
+    <div id="sum-pr-section" style="display:none;">
+      <div class="sum-pr-banner" id="sum-pr-banner"></div>
+    </div>
+    <div id="sum-ex-list" style="margin:12px 0;text-align:left;"></div>
     <button class="btn-primary" onclick="saveSummary()">Kaydet</button>
     <button class="btn-secondary" onclick="closeSummary()">Vazgeç</button>
+  </div>
+</div>
+
+<!-- Workout History Detail Modal -->
+<div id="history-modal" onclick="closeHistoryModal()">
+  <div class="progress-sheet" onclick="event.stopPropagation()">
+    <button class="close-modal-btn" onclick="closeHistoryModal()">✕</button>
+    <div class="modal-handle"></div>
+    <h3 id="hm-day-name">Antrenman</h3>
+    <p class="sub" id="hm-meta"></p>
+    <div id="hm-body" style="margin-top:12px;overflow-y:auto;max-height:60vh;"></div>
   </div>
 </div>
 
@@ -910,6 +982,7 @@ function renderHome() {
 
   renderHeatmap();
   renderRecentList();
+  renderWeeklyGoal();
 }
 
 function renderDaySelectList() {
@@ -985,7 +1058,7 @@ function renderHeatmap() {
 
 function renderRecentList() {
   const list = document.getElementById('recent-list');
-  const logs = [...DB.workoutLogs].reverse().slice(0, 5);
+  const logs = [...DB.workoutLogs].reverse().slice(0, 7);
   if (!logs.length) {
     list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydedilmedi.</div>';
     return;
@@ -995,14 +1068,100 @@ function renderRecentList() {
     const name = day ? day.name : log.dayId;
     const initial = name.slice(0,2).toUpperCase();
     const dur = log.duration ? `${Math.round(log.duration/60)} dk` : '';
-    return `<div class="recent-item">
+    const vol = log.sets ? Math.round(log.sets.reduce((a,s) => a+(s.kg||0)*(s.reps||0),0)) : 0;
+    return `<div class="recent-item" onclick="openHistoryModal('${log.date}','${log.dayId}')">
       <div class="recent-dot"><span>${initial}</span></div>
       <div class="recent-info">
         <div class="recent-name">${name}</div>
-        <div class="recent-date">${fmtDate(log.date)}</div>
+        <div class="recent-date">${fmtDate(log.date)}${vol ? ' · ' + vol + ' kg hacim' : ''}</div>
       </div>
       ${dur ? `<div class="recent-dur">${dur}</div>` : ''}
+      <span style="color:var(--text-secondary);font-size:18px;margin-left:2px;">›</span>
     </div>`;
+  }).join('');
+}
+
+// ── Workout History Detail ──
+function openHistoryModal(date, dayId) {
+  const log = DB.workoutLogs.find(l => l.date === date && l.dayId === dayId);
+  if (!log) return;
+  const day = getDayById(dayId);
+  const name = day ? day.name : dayId;
+  document.getElementById('hm-day-name').textContent = name;
+  const dur = log.duration ? `${Math.round(log.duration/60)} dk · ` : '';
+  const vol = log.sets ? Math.round(log.sets.reduce((a,s) => a+(s.kg||0)*(s.reps||0),0)) : 0;
+  document.getElementById('hm-meta').textContent = `${fmtDate(date)} · ${dur}${vol} kg hacim`;
+
+  // Group sets by exercise
+  const byEx = {};
+  (log.sets||[]).forEach(s => {
+    const key = s.exName || s.exId;
+    if (!byEx[key]) byEx[key] = [];
+    byEx[key].push(s);
+  });
+
+  const body = document.getElementById('hm-body');
+  body.innerHTML = Object.entries(byEx).map(([exName, sets]) => {
+    const rows = sets.map((s, i) => {
+      const vol = s.kg && s.reps ? Math.round(s.kg * s.reps) : 0;
+      return `<div class="hm-set-row">
+        <span class="hm-set-num">${i+1}</span>
+        <span class="hm-set-val">${s.kg||0} kg × ${s.reps||0} tk</span>
+        ${vol ? `<span class="hm-set-vol">${vol} kg</span>` : ''}
+      </div>`;
+    }).join('');
+    return `<div class="hm-ex-block">
+      <div class="hm-ex-name">${exName}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  document.getElementById('history-modal').classList.add('open');
+  history.pushState({ screen: 'historyModal' }, '');
+}
+function closeHistoryModal() {
+  document.getElementById('history-modal').classList.remove('open');
+}
+
+// ── Weekly Goal ──
+function getWeeklyGoal() {
+  return DB.settings.weeklyGoal || 4;
+}
+function changeWeeklyGoal(delta) {
+  const cur = getWeeklyGoal();
+  const next = Math.max(1, Math.min(7, cur + delta));
+  DB.settings.weeklyGoal = next;
+  saveData('settings', DB.settings);
+  renderWeeklyGoal();
+}
+function renderWeeklyGoal() {
+  const goal = getWeeklyGoal();
+  document.getElementById('weekly-goal-num').textContent = goal;
+
+  // Bu haftanın Pazartesi - Pazar
+  const now = new Date();
+  const dow = (now.getDay() + 6) % 7; // Mon=0
+  const weekDays = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - dow + i);
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    weekDays.push({ str, label: ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'][i], isPast: i <= dow });
+  }
+
+  const loggedDates = new Set(DB.workoutLogs.map(l => l.date));
+  const doneThisWeek = weekDays.filter(d => loggedDates.has(d.str)).length;
+  const todayStr = today();
+
+  document.getElementById('weekly-goal-label').textContent = `${doneThisWeek} / ${goal} antrenman`;
+  const pct = Math.min(100, Math.round(doneThisWeek / goal * 100));
+  document.getElementById('weekly-goal-bar').style.width = pct + '%';
+
+  document.getElementById('weekly-goal-days').innerHTML = weekDays.map(d => {
+    const done = loggedDates.has(d.str);
+    const isToday = d.str === todayStr;
+    const cls = done ? 'done' : isToday ? 'today' : 'empty';
+    return `<div class="wg-day ${cls}">${d.label}</div>`;
   }).join('');
 }
 
@@ -1305,6 +1464,37 @@ function finishWorkout() {
   document.getElementById('sum-dur').textContent = durMins + ' dk';
   document.getElementById('sum-sets').textContent = totalSets;
   document.getElementById('sum-vol').textContent = totalVol;
+
+  // PR'lar
+  const prList = [];
+  day.exercises.forEach(ex => {
+    const exSets = allSets.filter(s => s.exId === ex.id && s.kg && s.reps);
+    exSets.forEach(s => {
+      if (isPR(ex.name, s.kg * s.reps)) prList.push(ex.name);
+    });
+  });
+  const prSection = document.getElementById('sum-pr-section');
+  const prBanner = document.getElementById('sum-pr-banner');
+  if (prList.length) {
+    prSection.style.display = 'block';
+    prBanner.textContent = '🏆 ' + [...new Set(prList)].join(', ') + ' — Yeni kişisel rekor!';
+  } else {
+    prSection.style.display = 'none';
+  }
+
+  // Egzersiz özeti
+  const exList = document.getElementById('sum-ex-list');
+  exList.innerHTML = day.exercises.map(ex => {
+    const exSets = allSets.filter(s => s.exId === ex.id && (s.kg || s.reps));
+    if (!exSets.length) return '';
+    const vol = Math.round(exSets.reduce((a,s) => a+(s.kg||0)*(s.reps||0),0));
+    const detail = exSets.map(s => `${s.kg}×${s.reps}`).join(', ');
+    return `<div class="sum-ex-item">
+      <div class="sum-ex-name">${ex.name}</div>
+      <div class="sum-ex-detail">${detail} · ${vol} kg</div>
+    </div>`;
+  }).filter(Boolean).join('');
+
   document.getElementById('summary-overlay').classList.add('open');
 }
 
@@ -1482,10 +1672,29 @@ function renderMeasurements() {
   renderMeasHistory();
 }
 
+let currentTrendKey = 'fat';
+function switchTrend(key, btn) {
+  currentTrendKey = key;
+  document.querySelectorAll('.trend-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFatChart();
+}
+
+const trendMeta = {
+  fat:    { label: 'Yağ Oranı', unit: '%', color: '#007AFF', suffix: v => '%' + v },
+  weight: { label: 'Ağırlık',   unit: 'kg', color: '#34c759', suffix: v => v + ' kg' },
+  armR:   { label: 'Kol',       unit: 'cm', color: '#ff9f0a', suffix: v => v + ' cm' },
+  chest:  { label: 'Göğüs',     unit: 'cm', color: '#ff3b30', suffix: v => v + ' cm' },
+  waist:  { label: 'Bel',       unit: 'cm', color: '#af52de', suffix: v => v + ' cm' },
+  thighR: { label: 'Uyluk',     unit: 'cm', color: '#5ac8fa', suffix: v => v + ' cm' },
+};
+
 function renderFatChart() {
   const canvas = document.getElementById('fat-chart');
   if (fatChart) { fatChart.destroy(); fatChart = null; }
-  const data = DB.measurements;
+  const key = currentTrendKey;
+  const meta = trendMeta[key] || trendMeta.fat;
+  const data = DB.measurements.filter(m => m[key] != null);
   if (data.length < 2) return;
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
@@ -1495,11 +1704,11 @@ function renderFatChart() {
     data: {
       labels: data.map(m => fmtDateShort(m.date)),
       datasets: [{
-        label: 'Yağ Oranı %',
-        data: data.map(m => m.fat),
-        borderColor: '#007AFF',
-        backgroundColor: 'rgba(0,122,255,0.08)',
-        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#007AFF',
+        label: meta.label,
+        data: data.map(m => m[key]),
+        borderColor: meta.color,
+        backgroundColor: meta.color + '18',
+        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: meta.color,
       }]
     },
     options: {
@@ -1507,7 +1716,7 @@ function renderFatChart() {
       plugins: { legend: { display: false } },
       scales: {
         x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
-        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: v => '%' + v }, min: 0 }
+        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: meta.suffix }, min: 0 }
       }
     }
   });
@@ -1747,6 +1956,8 @@ window.addEventListener('popstate', (e) => {
     closeDayEditor();
   } else if (screen === 'workout') {
     closeWorkoutScreen();
+  } else if (screen === 'historyModal') {
+    closeHistoryModal();
   }
 });
 </script>
