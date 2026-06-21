@@ -288,6 +288,7 @@ body {
 .meas-form { background: var(--bg-primary); border-radius: var(--card-radius); overflow: hidden; box-shadow: var(--shadow); }
 .form-row { display: flex; align-items: center; padding: 12px 16px; border-bottom: 0.5px solid var(--border); gap: 10px; }
 .form-row:last-child { border-bottom: none; }
+.meas-section-title { font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; padding: 10px 16px 4px; background: var(--bg-secondary); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); text-transform: uppercase; }
 .form-label { font-size: 15px; flex: 1; }
 .form-input { background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 10px; font-size: 15px; font-weight: 500; color: var(--text-primary); text-align: right; width: 90px; outline: none; font-family: inherit; }
 .form-unit { font-size: 13px; color: var(--text-secondary); width: 30px; }
@@ -475,8 +476,25 @@ body {
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
+          <span class="form-label">Vücut Ağırlığı</span>
+          <input class="form-input" type="number" id="m-weight" placeholder="80" min="30" max="300">
+          <span class="form-unit">kg</span>
+        </div>
+
+        <div class="meas-section-title">Çevre Ölçüleri</div>
+        <div class="form-row">
           <span class="form-label">Boyun</span>
           <input class="form-input" type="number" id="m-neck" placeholder="38" min="20" max="70">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Göğüs</span>
+          <input class="form-input" type="number" id="m-chest" placeholder="100" min="40" max="200">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Omuz</span>
+          <input class="form-input" type="number" id="m-shoulder" placeholder="115" min="40" max="200">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
@@ -489,10 +507,47 @@ body {
           <input class="form-input" type="number" id="m-hip" placeholder="95" min="40" max="200">
           <span class="form-unit">cm</span>
         </div>
+
+        <div class="meas-section-title">Kol & Bacak</div>
         <div class="form-row">
-          <span class="form-label">Vücut Ağırlığı</span>
-          <input class="form-input" type="number" id="m-weight" placeholder="80" min="30" max="300">
-          <span class="form-unit">kg</span>
+          <span class="form-label">Sağ Kol</span>
+          <input class="form-input" type="number" id="m-arm-r" placeholder="38" min="10" max="80">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sol Kol</span>
+          <input class="form-input" type="number" id="m-arm-l" placeholder="38" min="10" max="80">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sağ Ön Kol</span>
+          <input class="form-input" type="number" id="m-forearm-r" placeholder="28" min="10" max="60">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sol Ön Kol</span>
+          <input class="form-input" type="number" id="m-forearm-l" placeholder="28" min="10" max="60">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sağ Uyluk</span>
+          <input class="form-input" type="number" id="m-thigh-r" placeholder="58" min="20" max="120">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sol Uyluk</span>
+          <input class="form-input" type="number" id="m-thigh-l" placeholder="58" min="20" max="120">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sağ Baldır</span>
+          <input class="form-input" type="number" id="m-calf-r" placeholder="38" min="10" max="80">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sol Baldır</span>
+          <input class="form-input" type="number" id="m-calf-l" placeholder="38" min="10" max="80">
+          <span class="form-unit">cm</span>
         </div>
       </div>
       <button class="btn-primary" style="margin-top:10px;" onclick="calculateFat()">Hesapla & Kaydet</button>
@@ -1390,7 +1445,21 @@ function calculateFat() {
     else cat = 'Obez';
   }
   // Save
-  const entry = { date: today(), gender: selectedGender, fat, weight: weight||null, age: age||null };
+  const entry = {
+    date: today(), gender: selectedGender, fat,
+    weight: weight||null, age: age||null,
+    neck: neck||null, waist: waist||null, hip: hip||null,
+    chest: parseFloat(document.getElementById('m-chest').value)||null,
+    shoulder: parseFloat(document.getElementById('m-shoulder').value)||null,
+    armR: parseFloat(document.getElementById('m-arm-r').value)||null,
+    armL: parseFloat(document.getElementById('m-arm-l').value)||null,
+    forearmR: parseFloat(document.getElementById('m-forearm-r').value)||null,
+    forearmL: parseFloat(document.getElementById('m-forearm-l').value)||null,
+    thighR: parseFloat(document.getElementById('m-thigh-r').value)||null,
+    thighL: parseFloat(document.getElementById('m-thigh-l').value)||null,
+    calfR: parseFloat(document.getElementById('m-calf-r').value)||null,
+    calfL: parseFloat(document.getElementById('m-calf-l').value)||null,
+  };
   DB.measurements = DB.measurements.filter(m => m.date !== today()); // one per day
   DB.measurements.push(entry);
   DB.measurements.sort((a,b) => a.date.localeCompare(b.date));
@@ -1451,18 +1520,27 @@ function renderMeasHistory() {
     list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz ölçüm kaydedilmedi.</div>';
     return;
   }
-  list.innerHTML = data.map((m, i) => {
+  list.innerHTML = data.map((m) => {
     const d = new Date(m.date + 'T00:00:00');
     const day = d.getDate();
     const mo = d.toLocaleDateString('tr-TR', { month:'short' });
-    return `<div class="meas-history-item">
-      <div class="meas-date-badge"><span>${day}<br>${mo}</span></div>
-      <div>
-        <div style="font-size:14px;font-weight:500;">%${m.fat} yağ</div>
-        <div style="font-size:12px;color:var(--text-secondary);">${m.weight ? m.weight + ' kg · ' : ''}${m.gender === 'male' ? 'Erkek' : 'Kadın'}</div>
+    const extras = [
+      m.chest    ? `Göğüs ${m.chest} cm` : null,
+      m.shoulder ? `Omuz ${m.shoulder} cm` : null,
+      m.armR     ? `Kol ${m.armR} cm` : null,
+      m.thighR   ? `Uyluk ${m.thighR} cm` : null,
+      m.calfR    ? `Baldır ${m.calfR} cm` : null,
+    ].filter(Boolean).join(' · ');
+    return `<div class="meas-history-item" style="flex-direction:column;align-items:stretch;gap:6px;padding:14px 16px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="meas-date-badge"><span>${day}<br>${mo}</span></div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:600;">%${m.fat} yağ oranı</div>
+          <div style="font-size:12px;color:var(--text-secondary);">${m.weight ? m.weight + ' kg · ' : ''}${m.gender === 'male' ? 'Erkek' : 'Kadın'}</div>
+        </div>
+        <button class="delete-btn" onclick="deleteMeasurement('${m.date}')">✕</button>
       </div>
-      <div class="meas-pct-big" style="color:var(--accent);">%${m.fat}</div>
-      <button class="delete-btn" onclick="deleteMeasurement('${m.date}')">✕</button>
+      ${extras ? `<div style="font-size:12px;color:var(--text-secondary);padding-left:2px;">${extras}</div>` : ''}
     </div>`;
   }).join('');
 }
