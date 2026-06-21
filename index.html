@@ -882,6 +882,17 @@ body {
     </div>
 
     <div class="section" style="margin-top:14px;">
+      <div class="card settings-group" style="overflow:hidden;">
+        <button class="settings-row" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;color:inherit;" onclick="toggleLogHistory(this)">
+          <div class="settings-icon" style="background:#ff3b3020;">🗂️</div>
+          <span class="settings-label">Antrenman Geçmişi</span>
+          <span class="settings-chevron" id="log-history-chevron">›</span>
+        </button>
+        <div id="log-delete-list" style="display:none;border-top:0.5px solid var(--border);"></div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
       <div class="section-label">Veri</div>
       <div class="card settings-group">
         <button class="data-btn" onclick="exportData()">
@@ -2230,6 +2241,53 @@ function renderPrList() {
 // ═══════════════════════════════════════════════
 //  SETTINGS
 // ═══════════════════════════════════════════════
+function toggleLogHistory(btn) {
+  const list = document.getElementById('log-delete-list');
+  const chevron = document.getElementById('log-history-chevron');
+  const isOpen = list.style.display !== 'none';
+  list.style.display = isOpen ? 'none' : 'block';
+  chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
+  chevron.style.transition = 'transform 0.2s';
+  if (!isOpen) renderLogDeleteList();
+}
+
+function renderLogDeleteList() {
+  const el = document.getElementById('log-delete-list');
+  if (!el) return;
+  const logs = [...DB.workoutLogs].reverse();
+  if (!logs.length) {
+    el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-secondary);font-size:14px;">Kayıtlı antrenman yok.</div>';
+    return;
+  }
+  el.innerHTML = logs.map((log, i) => {
+    const day = getDayById(log.dayId);
+    const name = day ? day.name : log.dayId;
+    const dur = log.duration ? ` · ${Math.round(log.duration/60)} dk` : '';
+    const setCount = (log.sets || []).length;
+    return `<div class="suppl-setting-item">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:600;">${escapeHtml(name)}</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${fmtDate(log.date)}${dur} · ${setCount} set</div>
+      </div>
+      <button class="suppl-remove-btn" onclick="deleteWorkoutLog('${log.date}','${log.dayId}')" aria-label="Sil">−</button>
+    </div>`;
+  }).join('');
+}
+
+function deleteWorkoutLog(date, dayId) {
+  const idx = DB.workoutLogs.findIndex(l => l.date === date && l.dayId === dayId);
+  if (idx === -1) return;
+  const day = getDayById(dayId);
+  const name = day ? day.name : dayId;
+  if (!confirm(`"${name}" – ${fmtDate(date)} tarihli antrenman silinsin mi?`)) return;
+  DB.workoutLogs.splice(idx, 1);
+  saveData('workoutLogs', DB.workoutLogs);
+  renderLogDeleteList();
+  renderHome();
+  renderStats();
+  toast('Antrenman silindi.');
+}
+
 function renderSettings() {
   const s = DB.settings;
   // Theme
@@ -2260,6 +2318,7 @@ function renderSettings() {
     }
   }
   renderSupplSettings();
+  renderLogDeleteList();
 }
 
 function setTheme(t) {
