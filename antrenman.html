@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Antrenman">
+<meta name="theme-color" content="#007AFF">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='26' fill='%23007AFF'/%3E%3Ctext x='60' y='82' text-anchor='middle' font-size='64' font-family='system-ui'%3E💪%3C/text%3E%3C/svg%3E">
+<title>Antrenman Takip</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --accent: #007AFF;
+  --accent-light: #007AFF18;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f2f2f7;
+  --bg-tertiary: #e5e5ea;
+  --text-primary: #1c1c1e;
+  --text-secondary: #8e8e93;
+  --text-tertiary: #aeaeb2;
+  --border: rgba(0,0,0,0.1);
+  --border-strong: rgba(0,0,0,0.18);
+  --card-radius: 14px;
+  --green: #34c759;
+  --red: #ff3b30;
+  --orange: #ff9f0a;
+  --purple: #5856d6;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --tab-height: 72px;
+}
+[data-theme="dark"] {
+  --bg-primary: #1c1c1e;
+  --bg-secondary: #2c2c2e;
+  --bg-tertiary: #3a3a3c;
+  --text-primary: #ffffff;
+  --text-secondary: #8e8e93;
+  --text-tertiary: #636366;
+  --border: rgba(255,255,255,0.1);
+  --border-strong: rgba(255,255,255,0.18);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+/* ── Layout ── */
+#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-width: 430px; margin: 0 auto; position: relative; }
+.screen { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 96px; -webkit-overflow-scrolling: touch; }
+.screen::-webkit-scrollbar { display: none; }
+/* ── Tab Bar — iOS 26 Liquid Glass ── */
+.tab-bar {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+  width: calc(100% - 32px); max-width: 398px;
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 0.5px solid rgba(255,255,255,0.7);
+  border-bottom: 0.5px solid rgba(255,255,255,0.4);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 1px 0 rgba(255,255,255,0.6) inset;
+  display: flex;
+  height: 60px;
+  border-radius: 22px;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 100;
+  overflow: hidden;
+}
+[data-theme="dark"] .tab-bar {
+  background: rgba(30,30,32,0.6);
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.08) inset;
+}
+.tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 3px;
+  font-size: 10px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 18px;
+  margin: 6px 2px;
+  transition: color 0.2s, background 0.2s;
+  position: relative;
+}
+.tab-item.active {
+  color: var(--accent);
+  background: rgba(0,122,255,0.12);
+}
+[data-theme="dark"] .tab-item.active {
+  background: rgba(0,122,255,0.18);
+}
+.tab-icon { font-size: 22px; line-height: 1; }
+/* ── Nav Header ── */
+.nav-header { background: var(--bg-primary); padding: 16px 20px 14px; border-bottom: 0.5px solid var(--border); }
+.nav-header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+.nav-header p { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+/* ── Section ── */
+.section { padding: 16px 16px 0; }
+.section-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 8px; padding: 0 4px; }
+/* ── Cards ── */
+.card { background: var(--bg-primary); border-radius: var(--card-radius); box-shadow: var(--shadow); }
+.card + .card { margin-top: 10px; }
+/* ── Next Workout ── */
+.next-card { padding: 16px; }
+.day-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; letter-spacing: 0.3px; }
+.next-card h2 { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
+.next-card .subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
+.btn-primary { display: block; width: 100%; margin-top: 14px; background: var(--accent); color: #fff; border: none; border-radius: 11px; padding: 13px; font-size: 15px; font-weight: 600; text-align: center; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+.btn-primary:active { opacity: 0.85; transform: scale(0.98); }
+/* ── Stats Row ── */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; }
+.stats-grid .card + .card { margin-top: 0; }
+.stat-card { padding: 14px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+.stat-value { font-size: 30px; font-weight: 700; letter-spacing: -1px; margin-top: 2px; }
+.stat-sub { font-size: 12px; color: var(--green); font-weight: 500; margin-top: 1px; }
+/* ── Month Heatmap ── */
+.heatmap-card { padding: 14px 16px; }
+.heatmap-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+.heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.heatmap-dow { font-size: 9px; color: var(--text-secondary); text-align: center; font-weight: 500; padding-bottom: 2px; }
+.hday { aspect-ratio: 1; border-radius: 4px; background: var(--bg-tertiary); }
+.hday.done { background: var(--accent); }
+.hday.today { outline: 2px solid var(--accent); outline-offset: 1px; }
+.hday.today:not(.done) { background: var(--accent-light); }
+.heatmap-legend { display: flex; gap: 12px; margin-top: 10px; font-size: 11px; color: var(--text-secondary); align-items: center; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+/* ── Recent List ── */
+.recent-list { overflow: hidden; }
+.recent-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 0.5px solid var(--border); gap: 12px; cursor: pointer; transition: background 0.1s; }
+.recent-item:last-child { border-bottom: none; }
+.recent-item:active { background: var(--bg-secondary); }
+.recent-dot { width: 36px; height: 36px; border-radius: 10px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.recent-dot span { font-size: 13px; font-weight: 700; color: var(--accent); }
+.recent-info { flex: 1; }
+.recent-name { font-size: 15px; font-weight: 500; }
+.recent-date { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.recent-dur { font-size: 13px; color: var(--text-secondary); }
+/* ── Rest Banner ── */
+#rest-banner {
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-100%);
+  width: 100%; max-width: 430px;
+  background: var(--green);
+  color: #fff;
+  z-index: 500;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#rest-banner.visible { transform: translateX(-50%) translateY(0); }
+.rest-time-display { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+.rest-label-text { font-size: 13px; opacity: 0.88; margin-top: 1px; }
+.rest-skip { background: rgba(255,255,255,0.25); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+/* ── Workout Day Screen ── */
+#workout-screen {
+  position: fixed; inset: 0; background: var(--bg-secondary);
+  z-index: 200; transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; flex-direction: column;
+  max-width: 430px; left: 50%; margin-left: -215px;
+}
+@media (max-width: 430px) { #workout-screen { left: 0; margin-left: 0; } }
+#workout-screen.open { transform: translateX(0); }
+.ws-header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 16px 20px 14px; display: flex; align-items: flex-start; gap: 12px; }
+.back-btn { background: none; border: none; color: var(--accent); font-size: 17px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; margin-top: 2px; flex-shrink: 0; }
+.ws-title { flex: 1; }
+.ws-title h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+.ws-title p { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+.ws-done-btn { background: var(--green); color: #fff; border: none; border-radius: 9px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+.ws-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 24px; }
+.ws-body::-webkit-scrollbar { display: none; }
+
+/* ── Exercise Card ── */
+.ex-card { background: var(--bg-primary); margin: 12px 16px 0; border-radius: var(--card-radius); overflow: hidden; box-shadow: var(--shadow); }
+.ex-card-header { padding: 14px 16px 10px; cursor: pointer; }
+.ex-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.ex-name { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; }
+.ex-actions { display: flex; gap: 8px; align-items: center; }
+.ex-graph-btn { background: var(--accent-light); border: none; color: var(--accent); font-size: 11px; font-weight: 600; cursor: pointer; padding: 5px 10px; border-radius: 20px; letter-spacing: 0.2px; }
+.ex-prev-hint { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.ex-prev-hint b { color: var(--accent); font-weight: 600; }
+.ex-sets-container { padding: 0 16px 12px; }
+.set-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; height: 38px; }
+.set-num { width: 16px; font-size: 12px; color: var(--text-secondary); font-weight: 600; text-align: center; flex-shrink: 0; }
+.kg-stepper { display: flex; align-items: center; background: var(--bg-secondary); border-radius: 9px; overflow: hidden; height: 38px; flex: 1.2; min-width: 0; }
+.stepper-btn { background: none; border: none; color: var(--accent); font-size: 18px; font-weight: 400; cursor: pointer; padding: 0 10px; height: 100%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.1s; user-select: none; }
+.stepper-btn:active { background: var(--bg-tertiary); }
+.kg-val { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; width: 0; }
+.kg-val::placeholder { color: var(--text-tertiary); font-size: 12px; font-weight: 400; text-align: center; }
+.reps-stepper { display: flex; align-items: center; background: var(--bg-secondary); border-radius: 9px; overflow: hidden; height: 38px; flex: 1; min-width: 0; }
+.reps-val { flex: 1; font-size: 15px; font-weight: 500; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; -moz-appearance: textfield; }
+.reps-val::-webkit-outer-spin-button, .reps-val::-webkit-inner-spin-button { -webkit-appearance: none; }
+.reps-val::placeholder { color: var(--text-tertiary); font-size: 12px; }
+.set-done-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border-strong); background: none; color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+.set-done-btn.done { background: var(--green); border-color: var(--green); color: #fff; }
+.set-col-header { display: flex; align-items: center; gap: 8px; padding: 0 0 4px; }
+.set-col-label { flex: 1; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-align: center; letter-spacing: 0.2px; }
+.pr-chip { background: #ff9f0a20; color: var(--orange); font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px; display: inline-block; margin-top: 4px; }
+/* Note section */
+.ex-note-section { border-top: 0.5px solid var(--border); padding: 10px 16px 14px; }
+.ex-note-prev { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-style: italic; }
+.ex-note-input { width: 100%; background: var(--bg-secondary); border: none; border-radius: 9px; padding: 9px 12px; font-size: 13px; color: var(--text-primary); resize: none; outline: none; font-family: inherit; min-height: 60px; }
+.ex-note-input::placeholder { color: var(--text-tertiary); }
+
+/* ── Workout Done Summary ── */
+#summary-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 400; display: none; align-items: flex-end; justify-content: center;
+  max-width: 430px; left: 50%; margin-left: -215px;
+}
+@media (max-width: 430px) { #summary-overlay { left: 0; margin-left: 0; } }
+#summary-overlay.open { display: flex; }
+.summary-sheet {
+  background: var(--bg-primary); border-radius: 20px 20px 0 0;
+  padding: 20px 20px 40px; width: 100%; max-height: 70vh; overflow-y: auto;
+}
+.summary-sheet h3 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.summary-sheet .sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; }
+.summary-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.ss-item { background: var(--bg-secondary); border-radius: 10px; padding: 10px 12px; text-align: center; }
+.ss-val { font-size: 20px; font-weight: 700; }
+.ss-lbl { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.btn-secondary { display: block; width: 100%; background: var(--bg-secondary); color: var(--text-primary); border: none; border-radius: 11px; padding: 13px; font-size: 15px; font-weight: 600; text-align: center; cursor: pointer; margin-top: 10px; }
+
+/* ── Progress Modal ── */
+#progress-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 600; display: none; align-items: flex-end; justify-content: center;
+  max-width: 430px; left: 50%; margin-left: -215px;
+}
+@media (max-width: 430px) { #progress-modal { left: 0; margin-left: 0; } }
+#progress-modal.open { display: flex; }
+.progress-sheet {
+  background: var(--bg-primary); border-radius: 20px 20px 0 0;
+  padding: 20px 20px 40px; width: 100%; max-height: 80vh; overflow-y: auto;
+}
+.modal-handle { width: 36px; height: 4px; background: var(--bg-tertiary); border-radius: 2px; margin: 0 auto 16px; }
+.progress-sheet h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.progress-sheet .sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+.chart-container { position: relative; height: 200px; margin-bottom: 16px; }
+.close-modal-btn { position: absolute; top: 20px; right: 20px; background: var(--bg-secondary); border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; }
+.prog-history-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+.prog-history-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.prog-history-item:last-child { border-bottom: none; }
+.prog-date { color: var(--text-secondary); }
+.prog-vals { font-weight: 500; }
+
+/* ── Measurements Screen ── */
+.meas-form { background: var(--bg-primary); border-radius: var(--card-radius); overflow: hidden; box-shadow: var(--shadow); }
+.form-row { display: flex; align-items: center; padding: 12px 16px; border-bottom: 0.5px solid var(--border); gap: 10px; }
+.form-row:last-child { border-bottom: none; }
+.form-label { font-size: 15px; flex: 1; }
+.form-input { background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 10px; font-size: 15px; font-weight: 500; color: var(--text-primary); text-align: right; width: 90px; outline: none; font-family: inherit; }
+.form-unit { font-size: 13px; color: var(--text-secondary); width: 30px; }
+.gender-toggle { display: flex; background: var(--bg-secondary); border-radius: 8px; padding: 2px; }
+.gender-btn { flex: 1; padding: 6px 10px; font-size: 13px; font-weight: 500; border: none; background: none; border-radius: 6px; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
+.gender-btn.active { background: var(--bg-primary); color: var(--text-primary); box-shadow: var(--shadow); }
+.result-card { background: var(--accent); border-radius: var(--card-radius); padding: 20px; color: #fff; text-align: center; margin-top: 12px; }
+.result-pct { font-size: 48px; font-weight: 700; letter-spacing: -2px; }
+.result-label { font-size: 14px; opacity: 0.88; margin-top: 4px; }
+.result-cat { font-size: 13px; font-weight: 600; margin-top: 8px; background: rgba(255,255,255,0.2); display: inline-block; padding: 4px 12px; border-radius: 20px; }
+.meas-chart-card { padding: 16px; }
+.meas-history { overflow: hidden; }
+.meas-history-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 0.5px solid var(--border); gap: 12px; }
+.meas-history-item:last-child { border-bottom: none; }
+.meas-date-badge { width: 40px; height: 40px; background: var(--accent-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.meas-date-badge span { font-size: 11px; font-weight: 700; color: var(--accent); text-align: center; line-height: 1.2; }
+.meas-pct-big { font-size: 18px; font-weight: 700; margin-left: auto; }
+.delete-btn { background: none; border: none; color: var(--red); font-size: 18px; cursor: pointer; padding: 4px; }
+
+/* ── Settings Screen ── */
+.settings-group { overflow: hidden; }
+.settings-row { display: flex; align-items: center; padding: 14px 16px; border-bottom: 0.5px solid var(--border); gap: 12px; }
+.settings-row:last-child { border-bottom: none; }
+.settings-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.settings-label { flex: 1; font-size: 16px; }
+.settings-value { font-size: 15px; color: var(--text-secondary); }
+.settings-chevron { color: var(--text-tertiary); font-size: 18px; }
+/* Toggle */
+.ios-toggle { position: relative; width: 51px; height: 31px; flex-shrink: 0; }
+.ios-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.ios-toggle-track { position: absolute; inset: 0; background: var(--bg-tertiary); border-radius: 31px; transition: background 0.2s; cursor: pointer; }
+.ios-toggle input:checked + .ios-toggle-track { background: var(--green); }
+.ios-toggle-thumb { position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.2s; pointer-events: none; }
+.ios-toggle input:checked ~ .ios-toggle-thumb { transform: translateX(20px); }
+
+/* Workout Day Editor */
+#day-editor {
+  position: fixed; inset: 0; background: var(--bg-secondary);
+  z-index: 300; transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; flex-direction: column;
+  max-width: 430px; left: 50%; margin-left: -215px;
+  overflow-y: auto;
+}
+@media (max-width: 430px) { #day-editor { left: 0; margin-left: 0; } }
+#day-editor.open { transform: translateX(0); }
+.de-header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 16px 20px 14px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+.de-header h2 { font-size: 20px; font-weight: 700; flex: 1; }
+.de-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 9px; padding: 7px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.day-item { background: var(--bg-primary); margin: 8px 16px 0; border-radius: var(--card-radius); overflow: hidden; }
+.day-item-header { display: flex; align-items: center; padding: 14px 16px; gap: 10px; cursor: pointer; border-bottom: 0.5px solid var(--border); }
+.day-item-name-input { flex: 1; background: none; border: none; font-size: 16px; font-weight: 600; color: var(--text-primary); outline: none; font-family: inherit; }
+.day-toggle-btn { background: none; border: none; color: var(--accent); font-size: 20px; cursor: pointer; padding: 4px; transition: transform 0.2s; }
+.day-toggle-btn.open { transform: rotate(180deg); }
+.day-exercises { display: none; }
+.day-exercises.open { display: block; }
+.day-ex-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 0.5px solid var(--border); gap: 8px; }
+.day-ex-row:last-child { border-bottom: none; }
+.day-ex-name-input { flex: 1; background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 10px; font-size: 14px; color: var(--text-primary); outline: none; font-family: inherit; }
+.day-ex-sets-input { width: 50px; background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 8px; font-size: 14px; color: var(--text-primary); text-align: center; outline: none; font-family: inherit; }
+.remove-ex-btn { background: none; border: none; color: var(--red); font-size: 20px; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.add-ex-btn { display: flex; align-items: center; gap: 8px; padding: 12px 16px; color: var(--accent); font-size: 14px; font-weight: 500; cursor: pointer; background: none; border: none; font-family: inherit; }
+.add-day-btn { margin: 12px 16px; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--bg-primary); border: 1.5px dashed var(--border-strong); border-radius: var(--card-radius); padding: 14px; color: var(--accent); font-size: 15px; font-weight: 500; cursor: pointer; }
+.remove-day-btn { background: none; border: none; color: var(--red); font-size: 20px; cursor: pointer; padding: 4px; }
+/* Duration display */
+.ws-timer { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-top: 4px; }
+
+/* Duration selector */
+.dur-selector { display: flex; gap: 8px; }
+.dur-btn { padding: 6px 12px; border: 1px solid var(--border-strong); border-radius: 20px; background: none; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
+.dur-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Segment control for theme */
+.segment-control { display: flex; background: var(--bg-secondary); border-radius: 9px; padding: 2px; }
+.seg-btn { flex: 1; padding: 7px 10px; font-size: 13px; font-weight: 500; border: none; background: none; border-radius: 7px; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
+.seg-btn.active { background: var(--bg-primary); color: var(--text-primary); box-shadow: var(--shadow); }
+
+/* Toast */
+#toast {
+  position: fixed; bottom: calc(var(--tab-height) + 16px); left: 50%; transform: translateX(-50%) translateY(20px);
+  background: rgba(0,0,0,0.8); color: #fff; padding: 10px 18px;
+  border-radius: 20px; font-size: 14px; font-weight: 500;
+  opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 999; white-space: nowrap;
+  max-width: 360px; text-align: center;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Export/Import buttons */
+.data-btn { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: none; padding: 14px 16px; font-size: 16px; font-family: inherit; cursor: pointer; color: var(--text-primary); }
+.data-btn.danger { color: var(--red); }
+
+/* Workout order indicator */
+.order-badge { background: var(--bg-secondary); border-radius: 8px; padding: 3px 8px; font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+.order-badge.current { background: var(--accent-light); color: var(--accent); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Rest Banner -->
+  <div id="rest-banner">
+    <div>
+      <div class="rest-time-display" id="rest-display">01:30</div>
+      <div class="rest-label-text" id="rest-exercise-label">Dinlenme süresi</div>
+    </div>
+    <button class="rest-skip" onclick="skipRest()">Atla ✕</button>
+  </div>
+
+  <!-- TAB: Antrenman -->
+  <div class="screen" id="tab-workout" style="display:flex;flex-direction:column;">
+    <div class="nav-header">
+      <h1>Antrenman</h1>
+      <p id="home-date"></p>
+    </div>
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Sıradaki Antrenman</div>
+      <div class="card next-card" id="next-workout-card">
+        <div class="day-badge" id="next-day-badge">—</div>
+        <h2 id="next-day-name">—</h2>
+        <p class="subtitle" id="next-day-sub">—</p>
+        <button class="btn-primary" onclick="openWorkoutScreen()">Başla</button>
+      </div>
+    </div>
+    <div class="section" style="margin-top:12px;">
+      <div class="stats-grid">
+        <div class="card stat-card">
+          <div class="stat-label">Bu Ay</div>
+          <div class="stat-value" id="stat-month-count">0</div>
+          <div class="stat-sub">antrenman</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Toplam</div>
+          <div class="stat-value" id="stat-total-count">0</div>
+          <div class="stat-sub">antrenman</div>
+        </div>
+      </div>
+    </div>
+    <div class="section" style="margin-top:12px;">
+      <div class="card heatmap-card">
+        <div class="heatmap-title" id="heatmap-month-title">Haziran 2026</div>
+        <div style="display:flex; gap:0; margin-bottom:6px;">
+          <div style="width:20px; flex-shrink:0;"></div>
+          <div class="heatmap-grid" id="heatmap-dow-row" style="flex:1; grid-template-rows:auto;"></div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <div id="heatmap-weeks-labels" style="display:flex;flex-direction:column;gap:4px;width:20px;flex-shrink:0;"></div>
+          <div id="heatmap-grid" style="flex:1; display:grid; grid-template-columns:repeat(7,1fr); gap:4px;"></div>
+        </div>
+        <div class="heatmap-legend" style="margin-top:10px;">
+          <span style="display:flex;align-items:center;gap:4px;"><span class="legend-dot" style="background:var(--bg-tertiary);"></span>Yok</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span class="legend-dot" style="background:var(--accent);"></span>Antrenman yapıldı</span>
+        </div>
+      </div>
+    </div>
+    <div class="section" style="margin-top:12px; padding-bottom:20px;">
+      <div class="section-label">Son Antrenmanlar</div>
+      <div class="card recent-list" id="recent-list">
+        <div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydedilmedi.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Ölçümler -->
+  <div class="screen" id="tab-meas" style="display:none;flex-direction:column;">
+    <div class="nav-header">
+      <h1>Ölçümler & Yağ Oranı</h1>
+      <p>US Navy formülü</p>
+    </div>
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Yeni Ölçüm</div>
+      <div class="card meas-form">
+        <div class="form-row">
+          <span class="form-label">Cinsiyet</span>
+          <div class="gender-toggle">
+            <button class="gender-btn active" onclick="setGender('male')" id="gbtn-male">Erkek</button>
+            <button class="gender-btn" onclick="setGender('female')" id="gbtn-female">Kadın</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Yaş</span>
+          <input class="form-input" type="number" id="m-age" placeholder="25" min="10" max="99">
+          <span class="form-unit">yıl</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Boy</span>
+          <input class="form-input" type="number" id="m-height" placeholder="175" min="100" max="250">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Boyun</span>
+          <input class="form-input" type="number" id="m-neck" placeholder="38" min="20" max="70">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Bel</span>
+          <input class="form-input" type="number" id="m-waist" placeholder="85" min="40" max="200">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row" id="hip-row">
+          <span class="form-label">Kalça</span>
+          <input class="form-input" type="number" id="m-hip" placeholder="95" min="40" max="200">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Vücut Ağırlığı</span>
+          <input class="form-input" type="number" id="m-weight" placeholder="80" min="30" max="300">
+          <span class="form-unit">kg</span>
+        </div>
+      </div>
+      <button class="btn-primary" style="margin-top:10px;" onclick="calculateFat()">Hesapla & Kaydet</button>
+    </div>
+    <div class="section" style="margin-top:12px;">
+      <div id="fat-result-card" style="display:none;"></div>
+    </div>
+    <div class="section" style="margin-top:12px;">
+      <div class="section-label">Trend</div>
+      <div class="card meas-chart-card">
+        <div class="chart-container" style="height:160px;">
+          <canvas id="fat-chart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="section" style="margin-top:12px; padding-bottom:20px;">
+      <div class="section-label">Geçmiş</div>
+      <div class="card meas-history" id="meas-history-list">
+        <div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz ölçüm kaydedilmedi.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Ayarlar -->
+  <div class="screen" id="tab-settings" style="display:none;flex-direction:column;">
+    <div class="nav-header">
+      <h1>Ayarlar</h1>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Görünüm</div>
+      <div class="card settings-group">
+        <div class="settings-row">
+          <div class="settings-icon" style="background:#ff9f0a20;">🌙</div>
+          <span class="settings-label">Tema</span>
+          <div class="segment-control">
+            <button class="seg-btn" id="theme-light-btn" onclick="setTheme('light')">Açık</button>
+            <button class="seg-btn" id="theme-dark-btn" onclick="setTheme('dark')">Koyu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Dinlenme Zamanlayıcısı</div>
+      <div class="card settings-group">
+        <div class="settings-row">
+          <div class="settings-icon" style="background:#34c75920;">⏱️</div>
+          <span class="settings-label">Aktif</span>
+          <label class="ios-toggle">
+            <input type="checkbox" id="rest-toggle" onchange="toggleRestTimer(this.checked)">
+            <div class="ios-toggle-track"></div>
+            <div class="ios-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="settings-row" id="rest-dur-row">
+          <div class="settings-icon" style="background:#007aff20;">🕐</div>
+          <span class="settings-label">Süre</span>
+          <div class="dur-selector">
+            <button class="dur-btn" onclick="setRestDuration(60)" data-dur="60">1 dk</button>
+            <button class="dur-btn" onclick="setRestDuration(90)" data-dur="90">1:30</button>
+            <button class="dur-btn" onclick="setRestDuration(120)" data-dur="120">2 dk</button>
+            <button class="dur-btn" onclick="setRestDuration(180)" data-dur="180">3 dk</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Antrenman Günleri</div>
+      <div class="card settings-group">
+        <div class="settings-row" style="cursor:pointer;" onclick="openDayEditor()">
+          <div class="settings-icon" style="background:#5856d620;">📋</div>
+          <span class="settings-label">Günleri Düzenle</span>
+          <span class="settings-value" id="day-count-label">4 gün</span>
+          <span class="settings-chevron">›</span>
+        </div>
+        <div class="settings-row" style="cursor:pointer;" onclick="openDayEditor()">
+          <div class="settings-icon" style="background:#007aff20;">🔄</div>
+          <span class="settings-label">Antrenman Sırası</span>
+          <span class="settings-value" id="order-label">Torso A → ...</span>
+          <span class="settings-chevron">›</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Veri</div>
+      <div class="card settings-group">
+        <button class="data-btn" onclick="exportData()">
+          <div class="settings-icon" style="background:#34c75920;">📤</div>
+          <span>Veriyi Dışa Aktar (JSON)</span>
+        </button>
+        <div style="height:0.5px;background:var(--border);"></div>
+        <label class="data-btn" style="cursor:pointer;">
+          <div class="settings-icon" style="background:#007aff20;">📥</div>
+          <span>Veriyi İçe Aktar (JSON)</span>
+          <input type="file" accept=".json" onchange="importData(event)" style="display:none;">
+        </label>
+        <div style="height:0.5px;background:var(--border);"></div>
+        <button class="data-btn danger" onclick="resetData()">
+          <div class="settings-icon" style="background:#ff3b3020;">🗑️</div>
+          <span>Tüm Verileri Sıfırla</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:24px 20px;color:var(--text-tertiary);font-size:12px;">
+      Antrenman Takip v1.0 · Tüm veriler cihazınızda saklanır
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item active" id="tab-btn-workout" onclick="switchTab('workout')">
+      <span class="tab-icon">💪</span>
+      <span>Antrenman</span>
+    </div>
+    <div class="tab-item" id="tab-btn-meas" onclick="switchTab('meas')">
+      <span class="tab-icon">📊</span>
+      <span>Ölçümler</span>
+    </div>
+    <div class="tab-item" id="tab-btn-settings" onclick="switchTab('settings')">
+      <span class="tab-icon">⚙️</span>
+      <span>Ayarlar</span>
+    </div>
+  </div>
+</div>
+
+<!-- Workout Screen (slides in) -->
+<div id="workout-screen">
+  <div class="ws-header">
+    <button class="back-btn" onclick="closeWorkoutScreen()">‹ Geri</button>
+    <div class="ws-title">
+      <h2 id="ws-day-name">Antrenman</h2>
+      <p id="ws-day-sub" class="subtitle"></p>
+      <div class="ws-timer" id="ws-elapsed">00:00</div>
+    </div>
+    <button class="ws-done-btn" onclick="finishWorkout()">Bitir ✓</button>
+  </div>
+  <div class="ws-body" id="ws-body">
+    <!-- Exercise cards rendered here -->
+  </div>
+</div>
+
+<!-- Summary Overlay -->
+<div id="summary-overlay" onclick="closeSummary()">
+  <div class="summary-sheet" onclick="event.stopPropagation()">
+    <h3>🎉 Antrenman Tamamlandı!</h3>
+    <p class="sub" id="sum-sub">Harika iş!</p>
+    <div class="summary-stats">
+      <div class="ss-item"><div class="ss-val" id="sum-dur">0 dk</div><div class="ss-lbl">Süre</div></div>
+      <div class="ss-item"><div class="ss-val" id="sum-sets">0</div><div class="ss-lbl">Set</div></div>
+      <div class="ss-item"><div class="ss-val" id="sum-vol">0</div><div class="ss-lbl">Volume (kg)</div></div>
+    </div>
+    <button class="btn-primary" onclick="saveSummary()">Kaydet</button>
+    <button class="btn-secondary" onclick="closeSummary()">Vazgeç</button>
+  </div>
+</div>
+
+<!-- Progress Modal -->
+<div id="progress-modal" onclick="closeProgressModal()">
+  <div class="progress-sheet" onclick="event.stopPropagation()">
+    <button class="close-modal-btn" onclick="closeProgressModal()">✕</button>
+    <div class="modal-handle"></div>
+    <h3 id="modal-ex-name">Egzersiz</h3>
+    <p class="sub" id="modal-ex-sub">Geçmiş performans</p>
+    <div class="chart-container">
+      <canvas id="progress-chart"></canvas>
+    </div>
+    <div class="prog-history-title">Geçmiş Kayıtlar</div>
+    <div id="modal-history-list"></div>
+  </div>
+</div>
+
+<!-- Day Editor -->
+<div id="day-editor">
+  <div class="de-header">
+    <button class="back-btn" onclick="closeDayEditor()">‹ Geri</button>
+    <h2>Antrenman Günleri</h2>
+    <button class="de-save-btn" onclick="saveDays()">Kaydet</button>
+  </div>
+  <div id="day-editor-body" style="padding-bottom:24px;"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  DATA LAYER
+// ═══════════════════════════════════════════════
+const DEFAULT_DAYS = [
+  { id: 'torso-a', name: 'Torso A', exercises: [
+    { id: 'pec-deck', name: 'Pec Deck Fly', sets: 2 },
+    { id: 'incline-press', name: 'Incline Chest Press', sets: 2 },
+    { id: 'cable-lat', name: 'Cable Lateral Raise', sets: 3 },
+    { id: 'lat-pulldown', name: 'Lat Pulldown', sets: 2 },
+    { id: 'cs-row', name: 'Chest Supported Machine Row', sets: 1 },
+    { id: 'tbar-row', name: 'Chest Supported T-Bar Row Machine', sets: 3 },
+  ]},
+  { id: 'limbs-a', name: 'Limbs A', exercises: [
+    { id: 'preacher-curl', name: 'Preacher Curl Machine', sets: 2 },
+    { id: 'tricep-push', name: 'Cable Triceps Pushdown', sets: 2 },
+    { id: 'bayesian-curl', name: 'Bayesian Curl Cable', sets: 2 },
+    { id: 'tri-overhead', name: 'Triceps Overhead Extension', sets: 2 },
+    { id: 'leg-curl', name: 'Lying Leg Curl', sets: 3 },
+    { id: 'leg-ext', name: 'Leg Extension', sets: 3 },
+    { id: 'leg-press', name: 'Leg Press', sets: 3 },
+  ]},
+  { id: 'torso-b', name: 'Torso B', exercises: [
+    { id: 'pec-deck-b', name: 'Pec Deck Fly', sets: 2 },
+    { id: 'horiz-press', name: 'Horizontal Chest Press', sets: 2 },
+    { id: 'cable-lat-b', name: 'Cable Lateral Raise', sets: 3 },
+    { id: 'lat-pulldown-b', name: 'Lat Pulldown', sets: 2 },
+    { id: 'cs-row-b', name: 'Chest Supported Machine Row', sets: 1 },
+    { id: 'tbar-row-b', name: 'Chest Supported T-Bar Row Machine', sets: 3 },
+  ]},
+  { id: 'limbs-b', name: 'Limbs B', exercises: [
+    { id: 'preacher-curl-b', name: 'Preacher Curl Machine', sets: 2 },
+    { id: 'tricep-push-b', name: 'Cable Triceps Pushdown', sets: 2 },
+    { id: 'bayesian-curl-b', name: 'Bayesian Curl Cable', sets: 2 },
+    { id: 'tri-overhead-b', name: 'Triceps Overhead Extension', sets: 2 },
+    { id: 'leg-curl-b', name: 'Lying Leg Curl', sets: 3 },
+    { id: 'leg-ext-b', name: 'Leg Extension', sets: 3 },
+    { id: 'hack-squat', name: 'Hack Squat', sets: 3 },
+  ]},
+];
+
+function lsGet(key) { try { return localStorage.getItem(key); } catch(e) { return null; } }
+function lsSet(key, val) { try { localStorage.setItem(key, val); } catch(e) {} }
+
+function loadData() {
+  return {
+    workoutDays: JSON.parse(lsGet('workoutDays') || 'null') || DEFAULT_DAYS,
+    workoutLogs: JSON.parse(lsGet('workoutLogs') || '[]'),
+    measurements: JSON.parse(lsGet('measurements') || '[]'),
+    settings: JSON.parse(lsGet('settings') || '{"theme":"light","restTimerEnabled":true,"restDuration":90}'),
+    workoutOrder: JSON.parse(lsGet('workoutOrder') || 'null'),
+  };
+}
+function saveData(key, value) {
+  lsSet(key, JSON.stringify(value));
+}
+
+let DB = loadData();
+if (!DB.workoutOrder) {
+  DB.workoutOrder = DB.workoutDays.map(d => d.id);
+  saveData('workoutOrder', DB.workoutOrder);
+}
+
+// ═══════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric' });
+}
+function fmtDateShort(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('tr-TR', { day:'numeric', month:'short' });
+}
+function fmtDuration(secs) {
+  const m = Math.floor(secs/60), s = secs%60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function getDayById(id) { return DB.workoutDays.find(d => d.id === id); }
+function getNextDayId() {
+  const logs = DB.workoutLogs;
+  if (!logs.length) return DB.workoutOrder[0];
+  const last = logs[logs.length - 1];
+  const idx = DB.workoutOrder.indexOf(last.dayId);
+  return DB.workoutOrder[(idx + 1) % DB.workoutOrder.length];
+}
+// Verilen egzersiz adına ait tüm kayıtları döndürür (tüm günler dahil)
+function getLogsByExName(exName) {
+  const norm = exName.trim().toLowerCase();
+  const results = [];
+  DB.workoutLogs.forEach(log => {
+    const day = getDayById(log.dayId);
+    // exName alanı olan yeni kayıtlar: doğrudan isim eşleştirme
+    const setsByName = log.sets.filter(s => s.exName && s.exName.trim().toLowerCase() === norm);
+    if (setsByName.length) {
+      results.push({ log, sets: setsByName, dayName: day ? day.name : log.dayId });
+      return;
+    }
+    // Eski kayıtlar: gün tanımından ID bul, ID ile eşleştir
+    if (!day) return;
+    const ex = day.exercises.find(e => e.name.trim().toLowerCase() === norm);
+    if (!ex) return;
+    const setsById = log.sets.filter(s => s.exId === ex.id);
+    if (setsById.length) results.push({ log, sets: setsById, dayName: day.name });
+  });
+  return results;
+}
+
+// Verilen egzersiz adı için en son önceki antrenman setlerini döndürür
+function getPrevSetsForExName(exName) {
+  const all = getLogsByExName(exName);
+  if (!all.length) return null;
+  return all[all.length - 1];
+}
+
+function getPrevLog(dayId) {
+  const logs = DB.workoutLogs.filter(l => l.dayId === dayId);
+  return logs.length ? logs[logs.length - 1] : null;
+}
+function calcEpley(kg, reps) {
+  if (!kg || !reps || reps < 1) return 0;
+  return Math.round(kg * (1 + reps / 30) * 10) / 10;
+}
+function isPR(exName, volume) {
+  const all = getLogsByExName(exName);
+  if (!all.length) return false;
+  const maxVol = Math.max(...all.flatMap(r => r.sets.map(s => (s.kg||0)*(s.reps||0))));
+  return volume > maxVol;
+}
+function toast(msg, dur = 2200) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), dur);
+}
+
+// ═══════════════════════════════════════════════
+//  TAB NAVIGATION
+// ═══════════════════════════════════════════════
+let currentTab = 'workout';
+function switchTab(tab) {
+  ['workout','meas','settings'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = 'none';
+    document.getElementById('tab-btn-' + t).classList.remove('active');
+  });
+  document.getElementById('tab-' + tab).style.display = 'flex';
+  document.getElementById('tab-btn-' + tab).classList.add('active');
+  currentTab = tab;
+  if (tab === 'workout') renderHome();
+  if (tab === 'meas') renderMeasurements();
+  if (tab === 'settings') renderSettings();
+}
+
+// ═══════════════════════════════════════════════
+//  HOME SCREEN
+// ═══════════════════════════════════════════════
+function renderHome() {
+  const now = new Date();
+  document.getElementById('home-date').textContent = now.toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  const nextId = getNextDayId();
+  const nextDay = getDayById(nextId);
+  if (nextDay) {
+    document.getElementById('next-day-badge').textContent = nextDay.name;
+    document.getElementById('next-day-name').textContent = nextDay.name;
+    const exCount = nextDay.exercises.length;
+    const setCount = nextDay.exercises.reduce((a, e) => a + e.sets, 0);
+    document.getElementById('next-day-sub').textContent = `${exCount} hareket · ${setCount} set`;
+  }
+
+  // Month stats
+  const monthStr = today().slice(0,7);
+  const monthLogs = DB.workoutLogs.filter(l => l.date.startsWith(monthStr));
+  document.getElementById('stat-month-count').textContent = monthLogs.length;
+  document.getElementById('stat-total-count').textContent = DB.workoutLogs.length;
+
+  renderHeatmap();
+  renderRecentList();
+}
+
+function renderHeatmap() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  document.getElementById('heatmap-month-title').textContent =
+    now.toLocaleDateString('tr-TR', { month:'long', year:'numeric' });
+
+  const dows = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];
+  const dowRow = document.getElementById('heatmap-dow-row');
+  dowRow.innerHTML = dows.map(d => `<div class="heatmap-dow">${d}</div>`).join('');
+
+  const grid = document.getElementById('heatmap-grid');
+  grid.innerHTML = '';
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  // Monday-based: Mon=0
+  let startDow = (firstDay.getDay() + 6) % 7;
+
+  const monthLogs = new Set(DB.workoutLogs.filter(l => l.date.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)).map(l => l.date));
+  const todayStr = today();
+
+  for (let i = 0; i < startDow; i++) {
+    const el = document.createElement('div');
+    el.className = 'hday';
+    el.style.background = 'transparent';
+    grid.appendChild(el);
+  }
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const el = document.createElement('div');
+    el.className = 'hday';
+    if (monthLogs.has(dateStr)) el.classList.add('done');
+    if (dateStr === todayStr) el.classList.add('today');
+    grid.appendChild(el);
+  }
+}
+
+function renderRecentList() {
+  const list = document.getElementById('recent-list');
+  const logs = [...DB.workoutLogs].reverse().slice(0, 5);
+  if (!logs.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydedilmedi.</div>';
+    return;
+  }
+  list.innerHTML = logs.map(log => {
+    const day = getDayById(log.dayId);
+    const name = day ? day.name : log.dayId;
+    const initial = name.slice(0,2).toUpperCase();
+    const dur = log.duration ? `${Math.round(log.duration/60)} dk` : '';
+    return `<div class="recent-item">
+      <div class="recent-dot"><span>${initial}</span></div>
+      <div class="recent-info">
+        <div class="recent-name">${name}</div>
+        <div class="recent-date">${fmtDate(log.date)}</div>
+      </div>
+      ${dur ? `<div class="recent-dur">${dur}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  WORKOUT SCREEN
+// ═══════════════════════════════════════════════
+let currentDayId = null;
+let workoutStartTime = null;
+let elapsedInterval = null;
+let pendingSets = {}; // exId -> [{kg, reps}]
+let pendingNotes = {}; // exId -> string
+
+function openWorkoutScreen() {
+  currentDayId = getNextDayId();
+  const day = getDayById(currentDayId);
+  if (!day) return;
+  document.getElementById('ws-day-name').textContent = day.name;
+  const setCount = day.exercises.reduce((a, e) => a + e.sets, 0);
+  document.getElementById('ws-day-sub').textContent = `${day.exercises.length} hareket · ${setCount} set`;
+
+  pendingSets = {};
+  pendingNotes = {};
+  workoutStartTime = Date.now();
+  clearInterval(elapsedInterval);
+  elapsedInterval = setInterval(() => {
+    const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
+    document.getElementById('ws-elapsed').textContent = fmtDuration(secs);
+  }, 1000);
+
+  renderExerciseCards(day);
+  document.getElementById('workout-screen').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeWorkoutScreen() {
+  document.getElementById('workout-screen').classList.remove('open');
+  document.body.style.overflow = '';
+  clearInterval(elapsedInterval);
+  stopRest();
+}
+
+function renderExerciseCards(day) {
+  const body = document.getElementById('ws-body');
+  body.innerHTML = day.exercises.map((ex) => {
+    // İsim bazlı önceki antrenman verisi
+    const prevEntry = getPrevSetsForExName(ex.name);
+    const prevSets = prevEntry ? prevEntry.sets : [];
+    const prevLog  = prevEntry ? prevEntry.log  : null;
+
+    // Previous hint
+    let prevHint = '';
+    if (prevSets.length) {
+      const kgs  = prevSets.map(s => s.kg).filter(Boolean);
+      const reps = prevSets.map(s => s.reps).filter(Boolean);
+      const avgKg  = kgs.length  ? (kgs.reduce((a,b)=>a+b,0)/kgs.length).toFixed(1) : '?';
+      const avgRep = reps.length ? Math.round(reps.reduce((a,b)=>a+b,0)/reps.length) : '?';
+      const dayLabel = prevEntry.dayName ? ` (${prevEntry.dayName})` : '';
+      prevHint = `<div class="ex-prev-hint">Son antrenman${dayLabel}: <b>${prevSets.length}×${avgRep} @ ${avgKg} kg</b></div>`;
+    }
+    // Previous note (isim bazlı arama)
+    let prevNote = '';
+    if (prevLog && prevLog.notes) {
+      // Önce aynı exId ile, bulamazsa tüm notlara bak
+      const noteVal = prevLog.notes[ex.id] ||
+        Object.values(prevLog.notes).find((_, i) => {
+          const prevDay = getDayById(prevLog.dayId);
+          if (!prevDay) return false;
+          const prevEx = prevDay.exercises[i];
+          return prevEx && prevEx.name.trim().toLowerCase() === ex.name.trim().toLowerCase();
+        });
+      if (noteVal) prevNote = `<div class="ex-note-prev">📝 Önceki not: "${noteVal}"</div>`;
+    }
+    // Per-set previous values
+    const prevSetsAll = prevSets;
+    // Set rows
+    let setRows = '';
+    for (let s = 0; s < ex.sets; s++) {
+      const ps = prevSetsAll[s];
+      const prevKg  = ps && ps.kg   ? ps.kg   : '';
+      const prevRep = ps && ps.reps ? ps.reps : '';
+      setRows += `<div class="set-row" id="set-row-${ex.id}-${s}">
+        <span class="set-num">${s+1}</span>
+        <div class="kg-stepper">
+          <button class="stepper-btn" onclick="stepKg('${ex.id}',${s},-2.5)" type="button">−</button>
+          <input class="kg-val" type="text" inputmode="decimal" placeholder="${prevKg || 'kg'}" data-prev="${prevKg}" id="kg-${ex.id}-${s}">
+          <button class="stepper-btn" onclick="stepKg('${ex.id}',${s},2.5)" type="button">+</button>
+        </div>
+        <div class="reps-stepper">
+          <button class="stepper-btn" onclick="stepReps('${ex.id}',${s},-1)" type="button">−</button>
+          <input class="reps-val" type="text" inputmode="numeric" placeholder="${prevRep || 'tk'}" data-prev="${prevRep}" id="reps-${ex.id}-${s}">
+          <button class="stepper-btn" onclick="stepReps('${ex.id}',${s},1)" type="button">+</button>
+        </div>
+        <button class="set-done-btn" onclick="completeSet('${ex.id}',${s},'${day.id}')" id="set-done-${ex.id}-${s}">✓</button>
+      </div>`;
+    }
+    return `<div class="ex-card" id="ex-card-${ex.id}">
+      <div class="ex-card-header">
+        <div class="ex-card-top">
+          <span class="ex-name">${ex.name}</span>
+          <div class="ex-actions">
+            <button class="ex-graph-btn" onclick="openProgressModal('${ex.id}','${day.id}','${ex.name}')">Grafik</button>
+          </div>
+        </div>
+        ${prevHint}
+      </div>
+      <div class="ex-sets-container">
+        <div class="set-col-header">
+          <span class="set-num"></span>
+          <span class="set-col-label">Kilogram</span>
+          <span class="set-col-label">Tekrar</span>
+          <span style="width:34px;flex-shrink:0;"></span>
+        </div>
+        ${setRows}
+      </div>
+      <div class="ex-note-section">
+        ${prevNote}
+        <textarea class="ex-note-input" placeholder="Not ekle..." id="note-${ex.id}" oninput="pendingNotes['${ex.id}']=this.value" rows="2"></textarea>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function stepKg(exId, setIdx, delta) {
+  const input = document.getElementById(`kg-${exId}-${setIdx}`);
+  if (!input) return;
+  if (input.value === '' && delta > 0) {
+    const prev = parseFloat(input.dataset.prev);
+    if (prev) { input.value = prev; return; }
+  }
+  const base = parseFloat(input.value) || 0;
+  const next = Math.max(0, Math.round((base + delta) * 10) / 10);
+  input.value = next > 0 ? next : '';
+}
+
+function stepReps(exId, setIdx, delta) {
+  const input = document.getElementById(`reps-${exId}-${setIdx}`);
+  if (!input) return;
+  if (input.value === '' && delta > 0) {
+    const prev = parseInt(input.dataset.prev);
+    if (prev) { input.value = prev; return; }
+  }
+  const base = parseInt(input.value) || 0;
+  const next = Math.max(0, base + delta);
+  input.value = next > 0 ? next : '';
+}
+
+function completeSet(exId, setIdx, dayId) {
+  const kg = parseFloat(document.getElementById(`kg-${exId}-${setIdx}`)?.value);
+  const reps = parseInt(document.getElementById(`reps-${exId}-${setIdx}`)?.value);
+  const btn = document.getElementById(`set-done-${exId}-${setIdx}`);
+  if (!btn) return;
+  if (btn.classList.contains('done')) {
+    btn.classList.remove('done');
+    return;
+  }
+  btn.classList.add('done');
+  if (!pendingSets[exId]) pendingSets[exId] = [];
+  pendingSets[exId][setIdx] = { exId, setIdx, kg: kg||0, reps: reps||0 };
+  // PR check (isim bazlı)
+  if (kg && reps) {
+    const day = getDayById(dayId);
+    const ex = day ? day.exercises.find(e => e.id === exId) : null;
+    if (ex && isPR(ex.name, kg * reps)) toast('🏆 Yeni kişisel rekor!');
+  }
+  if (DB.settings.restTimerEnabled) startRest(exId, dayId);
+}
+
+// ═══════════════════════════════════════════════
+//  REST TIMER
+// ═══════════════════════════════════════════════
+let restInterval = null;
+let restRemaining = 0;
+
+function startRest(exId, dayId) {
+  stopRest();
+  const day = getDayById(dayId);
+  const ex = day ? day.exercises.find(e => e.id === exId) : null;
+  document.getElementById('rest-exercise-label').textContent = ex ? ex.name + ' sonrası' : 'Dinlenme';
+  restRemaining = DB.settings.restDuration;
+  updateRestDisplay();
+  document.getElementById('rest-banner').classList.add('visible');
+  restInterval = setInterval(() => {
+    restRemaining--;
+    updateRestDisplay();
+    if (restRemaining <= 0) stopRest();
+  }, 1000);
+}
+function updateRestDisplay() {
+  document.getElementById('rest-display').textContent = fmtDuration(Math.max(0, restRemaining));
+}
+function stopRest() {
+  clearInterval(restInterval);
+  document.getElementById('rest-banner').classList.remove('visible');
+}
+function skipRest() { stopRest(); }
+
+// ═══════════════════════════════════════════════
+//  FINISH WORKOUT
+// ═══════════════════════════════════════════════
+let pendingWorkoutData = null;
+
+function finishWorkout() {
+  const duration = Math.floor((Date.now() - workoutStartTime) / 1000);
+  const day = getDayById(currentDayId);
+  // Collect all sets
+  const allSets = [];
+  day.exercises.forEach(ex => {
+    const exSets = pendingSets[ex.id] || [];
+    for (let s = 0; s < ex.sets; s++) {
+      const row = exSets[s];
+      const kg = parseFloat(document.getElementById(`kg-${ex.id}-${s}`)?.value) || 0;
+      const reps = parseInt(document.getElementById(`reps-${ex.id}-${s}`)?.value) || 0;
+      allSets.push({ exId: ex.id, exName: ex.name, setIdx: s, kg: row ? row.kg : kg, reps: row ? row.reps : reps });
+    }
+  });
+  // Collect notes
+  const notes = {};
+  day.exercises.forEach(ex => {
+    const val = document.getElementById(`note-${ex.id}`)?.value?.trim();
+    if (val) notes[ex.id] = val;
+  });
+  const totalSets = allSets.filter(s => s.kg || s.reps).length;
+  const totalVol = Math.round(allSets.reduce((a, s) => a + (s.kg||0)*(s.reps||0), 0));
+  const durMins = Math.round(duration / 60);
+  pendingWorkoutData = { date: today(), dayId: currentDayId, sets: allSets, notes, duration };
+  document.getElementById('sum-sub').textContent = `${day.name} · ${fmtDate(today())}`;
+  document.getElementById('sum-dur').textContent = durMins + ' dk';
+  document.getElementById('sum-sets').textContent = totalSets;
+  document.getElementById('sum-vol').textContent = totalVol;
+  document.getElementById('summary-overlay').classList.add('open');
+}
+
+function saveSummary() {
+  if (!pendingWorkoutData) return;
+  DB.workoutLogs.push(pendingWorkoutData);
+  saveData('workoutLogs', DB.workoutLogs);
+  pendingWorkoutData = null;
+  closeSummary();
+  closeWorkoutScreen();
+  toast('✅ Antrenman kaydedildi!');
+  renderHome();
+}
+function closeSummary() {
+  document.getElementById('summary-overlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════
+//  PROGRESS MODAL
+// ═══════════════════════════════════════════════
+let progressChart = null;
+
+function openProgressModal(exId, dayId, exName) {
+  document.getElementById('modal-ex-name').textContent = exName;
+
+  // İsim bazlı tüm kayıtları al
+  const entries = getLogsByExName(exName);
+  document.getElementById('modal-ex-sub').textContent =
+    entries.length ? `${entries.length} antrenman kaydı (tüm günler)` : 'Henüz kayıt yok';
+
+  const labels = [], oneRMs = [];
+  entries.forEach(({ log, sets }) => {
+    const valid = sets.filter(s => s.kg && s.reps);
+    if (!valid.length) return;
+    const maxOneRM = Math.max(...valid.map(s => calcEpley(s.kg, s.reps)));
+    labels.push(fmtDateShort(log.date));
+    oneRMs.push(Math.round(maxOneRM * 10) / 10);
+  });
+
+  const canvas = document.getElementById('progress-chart');
+  if (progressChart) { progressChart.destroy(); progressChart = null; }
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+  const textColor = '#8e8e93';
+  if (labels.length) {
+    progressChart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Tahmini 1RM (kg)',
+          data: oneRMs,
+          borderColor: '#007AFF',
+          backgroundColor: 'rgba(0,122,255,0.1)',
+          fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#007AFF',
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+          y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+        }
+      }
+    });
+  } else {
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  const histEl = document.getElementById('modal-history-list');
+  if (!entries.length) {
+    histEl.innerHTML = '<div style="padding:12px 0;color:var(--text-secondary);font-size:14px;text-align:center;">Henüz kayıt yok</div>';
+  } else {
+    histEl.innerHTML = [...entries].reverse().slice(0, 8).map(({ log, sets, dayName }) => {
+      const valid = sets.filter(s => s.kg || s.reps);
+      const summary = valid.map(s => `${s.kg}kg×${s.reps}`).join(', ');
+      const maxORM = valid.length ? Math.round(Math.max(...valid.map(s => calcEpley(s.kg, s.reps))) * 10) / 10 : 0;
+      return `<div class="prog-history-item">
+        <div>
+          <span class="prog-date">${fmtDateShort(log.date)}</span>
+          <span style="font-size:10px;color:var(--text-tertiary);margin-left:6px;">${dayName}</span>
+        </div>
+        <span class="prog-vals">${summary || '—'} ${maxORM ? `<span style="color:var(--accent);font-size:11px;">(~${maxORM})</span>` : ''}</span>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('progress-modal').classList.add('open');
+}
+function closeProgressModal() {
+  document.getElementById('progress-modal').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════
+//  MEASUREMENTS
+// ═══════════════════════════════════════════════
+let selectedGender = 'male';
+let fatChart = null;
+
+function setGender(g) {
+  selectedGender = g;
+  document.getElementById('gbtn-male').classList.toggle('active', g === 'male');
+  document.getElementById('gbtn-female').classList.toggle('active', g === 'female');
+  document.getElementById('hip-row').style.display = g === 'female' ? 'flex' : 'none';
+}
+
+function calculateFat() {
+  const height = parseFloat(document.getElementById('m-height').value);
+  const neck = parseFloat(document.getElementById('m-neck').value);
+  const waist = parseFloat(document.getElementById('m-waist').value);
+  const hip = parseFloat(document.getElementById('m-hip').value);
+  const age = parseInt(document.getElementById('m-age').value);
+  const weight = parseFloat(document.getElementById('m-weight').value);
+  if (!height || !neck || !waist) { toast('Lütfen gerekli alanları doldurun.'); return; }
+  let fat;
+  if (selectedGender === 'male') {
+    fat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+  } else {
+    if (!hip) { toast('Kalça ölçümü gerekli.'); return; }
+    fat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+  }
+  fat = Math.round(fat * 10) / 10;
+  if (isNaN(fat) || fat < 1 || fat > 70) { toast('Geçersiz değerler, lütfen kontrol edin.'); return; }
+  // Category
+  let cat = '';
+  if (selectedGender === 'male') {
+    if (fat < 6) cat = 'Temel Yağ';
+    else if (fat < 14) cat = 'Sporcu';
+    else if (fat < 18) cat = 'Fit';
+    else if (fat < 25) cat = 'Ortalama';
+    else cat = 'Obez';
+  } else {
+    if (fat < 14) cat = 'Temel Yağ';
+    else if (fat < 21) cat = 'Sporcu';
+    else if (fat < 25) cat = 'Fit';
+    else if (fat < 32) cat = 'Ortalama';
+    else cat = 'Obez';
+  }
+  // Save
+  const entry = { date: today(), gender: selectedGender, fat, weight: weight||null, age: age||null };
+  DB.measurements = DB.measurements.filter(m => m.date !== today()); // one per day
+  DB.measurements.push(entry);
+  DB.measurements.sort((a,b) => a.date.localeCompare(b.date));
+  saveData('measurements', DB.measurements);
+  // Show result
+  const rc = document.getElementById('fat-result-card');
+  rc.style.display = 'block';
+  rc.innerHTML = `<div class="result-card">
+    <div class="result-pct">%${fat}</div>
+    <div class="result-label">Vücut Yağ Oranı</div>
+    <div class="result-cat">${cat}</div>
+    ${weight ? `<div style="margin-top:8px;font-size:13px;opacity:0.88;">Yağ: ~${Math.round(fat/100*weight)} kg · Yağsız Kütle: ~${Math.round((1-fat/100)*weight)} kg</div>` : ''}
+  </div>`;
+  toast('✅ Ölçüm kaydedildi!');
+  renderMeasurements();
+}
+
+function renderMeasurements() {
+  renderFatChart();
+  renderMeasHistory();
+}
+
+function renderFatChart() {
+  const canvas = document.getElementById('fat-chart');
+  if (fatChart) { fatChart.destroy(); fatChart = null; }
+  const data = DB.measurements;
+  if (data.length < 2) return;
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+  const textColor = '#8e8e93';
+  fatChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: data.map(m => fmtDateShort(m.date)),
+      datasets: [{
+        label: 'Yağ Oranı %',
+        data: data.map(m => m.fat),
+        borderColor: '#007AFF',
+        backgroundColor: 'rgba(0,122,255,0.08)',
+        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#007AFF',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: v => '%' + v }, min: 0 }
+      }
+    }
+  });
+}
+
+function renderMeasHistory() {
+  const list = document.getElementById('meas-history-list');
+  const data = [...DB.measurements].reverse();
+  if (!data.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz ölçüm kaydedilmedi.</div>';
+    return;
+  }
+  list.innerHTML = data.map((m, i) => {
+    const d = new Date(m.date + 'T00:00:00');
+    const day = d.getDate();
+    const mo = d.toLocaleDateString('tr-TR', { month:'short' });
+    return `<div class="meas-history-item">
+      <div class="meas-date-badge"><span>${day}<br>${mo}</span></div>
+      <div>
+        <div style="font-size:14px;font-weight:500;">%${m.fat} yağ</div>
+        <div style="font-size:12px;color:var(--text-secondary);">${m.weight ? m.weight + ' kg · ' : ''}${m.gender === 'male' ? 'Erkek' : 'Kadın'}</div>
+      </div>
+      <div class="meas-pct-big" style="color:var(--accent);">%${m.fat}</div>
+      <button class="delete-btn" onclick="deleteMeasurement('${m.date}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function deleteMeasurement(date) {
+  if (!confirm('Bu ölçümü silmek istiyor musunuz?')) return;
+  DB.measurements = DB.measurements.filter(m => m.date !== date);
+  saveData('measurements', DB.measurements);
+  renderMeasurements();
+  toast('Ölçüm silindi.');
+}
+
+// ═══════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════
+function renderSettings() {
+  const s = DB.settings;
+  // Theme
+  document.getElementById('theme-light-btn').classList.toggle('active', s.theme !== 'dark');
+  document.getElementById('theme-dark-btn').classList.toggle('active', s.theme === 'dark');
+  // Rest timer toggle
+  document.getElementById('rest-toggle').checked = !!s.restTimerEnabled;
+  // Duration buttons
+  document.querySelectorAll('.dur-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.dur) === s.restDuration);
+  });
+  // Day count
+  document.getElementById('day-count-label').textContent = DB.workoutDays.length + ' gün';
+  // Order label
+  const orderNames = DB.workoutOrder.map(id => { const d = getDayById(id); return d ? d.name : id; });
+  document.getElementById('order-label').textContent = orderNames.slice(0,2).join(' → ') + (orderNames.length > 2 ? ' → ...' : '');
+}
+
+function setTheme(t) {
+  DB.settings.theme = t;
+  saveData('settings', DB.settings);
+  applyTheme();
+  renderSettings();
+  if (fatChart) renderFatChart();
+}
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', DB.settings.theme === 'dark' ? 'dark' : '');
+}
+function toggleRestTimer(val) {
+  DB.settings.restTimerEnabled = val;
+  saveData('settings', DB.settings);
+}
+function setRestDuration(dur) {
+  DB.settings.restDuration = dur;
+  saveData('settings', DB.settings);
+  renderSettings();
+}
+
+// ═══════════════════════════════════════════════
+//  DAY EDITOR
+// ═══════════════════════════════════════════════
+let editorDays = [];
+
+function openDayEditor() {
+  editorDays = JSON.parse(JSON.stringify(DB.workoutDays));
+  renderDayEditor();
+  document.getElementById('day-editor').classList.add('open');
+}
+function closeDayEditor() {
+  document.getElementById('day-editor').classList.remove('open');
+}
+function renderDayEditor() {
+  const body = document.getElementById('day-editor-body');
+  body.innerHTML = editorDays.map((day, di) => `
+    <div class="day-item">
+      <div class="day-item-header">
+        <input class="day-item-name-input" value="${day.name}" onchange="editorDays[${di}].name=this.value" placeholder="Gün adı">
+        <button class="remove-day-btn" onclick="removeDay(${di})">−</button>
+        <button class="day-toggle-btn" onclick="toggleDayExercises(${di})" id="day-toggle-${di}">▾</button>
+      </div>
+      <div class="day-exercises open" id="day-exs-${di}">
+        ${day.exercises.map((ex, ei) => `
+          <div class="day-ex-row">
+            <input class="day-ex-name-input" value="${ex.name}" onchange="editorDays[${di}].exercises[${ei}].name=this.value" placeholder="Hareket adı">
+            <input class="day-ex-sets-input" type="number" value="${ex.sets}" min="1" max="10" onchange="editorDays[${di}].exercises[${ei}].sets=parseInt(this.value)||1" title="Set sayısı">
+            <button class="remove-ex-btn" onclick="removeEx(${di},${ei})">−</button>
+          </div>
+        `).join('')}
+        <button class="add-ex-btn" onclick="addEx(${di})">＋ Hareket Ekle</button>
+      </div>
+    </div>
+  `).join('') + `<button class="add-day-btn" onclick="addDay()">＋ Yeni Antrenman Günü</button>`;
+}
+function toggleDayExercises(di) {
+  const el = document.getElementById(`day-exs-${di}`);
+  const btn = document.getElementById(`day-toggle-${di}`);
+  el.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+function removeDay(di) {
+  if (!confirm('Bu günü silmek istiyor musunuz?')) return;
+  editorDays.splice(di, 1);
+  renderDayEditor();
+}
+function removeEx(di, ei) {
+  editorDays[di].exercises.splice(ei, 1);
+  renderDayEditor();
+}
+function addEx(di) {
+  const id = 'ex-' + Date.now();
+  editorDays[di].exercises.push({ id, name: '', sets: 3 });
+  renderDayEditor();
+}
+function addDay() {
+  const id = 'day-' + Date.now();
+  editorDays.push({ id, name: 'Yeni Gün', exercises: [] });
+  renderDayEditor();
+}
+function saveDays() {
+  // Sync IDs for new exercises
+  editorDays.forEach(day => {
+    day.exercises.forEach(ex => {
+      if (!ex.id) ex.id = 'ex-' + Date.now() + Math.random();
+    });
+  });
+  DB.workoutDays = editorDays;
+  saveData('workoutDays', DB.workoutDays);
+  // Update order: add new days, remove deleted
+  const ids = DB.workoutDays.map(d => d.id);
+  DB.workoutOrder = DB.workoutOrder.filter(id => ids.includes(id));
+  ids.forEach(id => { if (!DB.workoutOrder.includes(id)) DB.workoutOrder.push(id); });
+  saveData('workoutOrder', DB.workoutOrder);
+  closeDayEditor();
+  toast('✅ Günler kaydedildi!');
+  renderHome();
+  renderSettings();
+}
+
+// ═══════════════════════════════════════════════
+//  DATA EXPORT / IMPORT / RESET
+// ═══════════════════════════════════════════════
+function exportData() {
+  const data = {
+    workoutDays: DB.workoutDays,
+    workoutLogs: DB.workoutLogs,
+    measurements: DB.measurements,
+    settings: DB.settings,
+    workoutOrder: DB.workoutOrder,
+    exportDate: new Date().toISOString(),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `antrenman-yedek-${today()}.json`; a.click();
+  URL.revokeObjectURL(url);
+  toast('📤 Veri dışa aktarıldı.');
+}
+function importData(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.workoutDays || !data.workoutLogs) throw new Error('Geçersiz dosya');
+      if (!confirm('Mevcut tüm veriler bu yedekle değiştirilecek. Emin misiniz?')) return;
+      DB.workoutDays = data.workoutDays;
+      DB.workoutLogs = data.workoutLogs;
+      DB.measurements = data.measurements || [];
+      DB.settings = data.settings || DB.settings;
+      DB.workoutOrder = data.workoutOrder || data.workoutDays.map(d => d.id);
+      ['workoutDays','workoutLogs','measurements','settings','workoutOrder'].forEach(k => saveData(k, DB[k]));
+      applyTheme(); renderHome(); renderSettings();
+      toast('✅ Veri içe aktarıldı!');
+    } catch { toast('❌ Geçersiz dosya formatı.'); }
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
+}
+function resetData() {
+  if (!confirm('Tüm veriler silinecek! Bu işlem geri alınamaz. Emin misiniz?')) return;
+  if (!confirm('Son onay: Gerçekten tüm verileri silmek istiyor musunuz?')) return;
+  localStorage.clear();
+  DB = loadData();
+  DB.workoutOrder = DB.workoutDays.map(d => d.id);
+  saveData('workoutOrder', DB.workoutOrder);
+  renderHome(); renderSettings();
+  toast('🗑️ Tüm veriler sıfırlandı.');
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+applyTheme();
+setGender('male');
+renderHome();
+renderSettings();
+</script>
+</body>
+</html>
