@@ -345,6 +345,7 @@ body {
 .meas-section-title { font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; padding: 10px 16px 4px; background: var(--bg-secondary); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); text-transform: uppercase; }
 .form-label { font-size: 15px; flex: 1; }
 .form-input { background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 10px; font-size: 15px; font-weight: 500; color: var(--text-primary); text-align: right; width: 90px; outline: none; font-family: inherit; }
+.form-input::placeholder { color: transparent; }
 .form-unit { font-size: 13px; color: var(--text-secondary); width: 30px; }
 .gender-toggle { display: flex; background: var(--bg-secondary); border-radius: 8px; padding: 2px; }
 .gender-btn { flex: 1; padding: 6px 10px; font-size: 13px; font-weight: 500; border: none; background: none; border-radius: 6px; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
@@ -542,8 +543,8 @@ body {
     </div>
 
     <div class="section" style="margin-top:12px;">
-      <div class="section-label">Yeni Ölçüm</div>
-      <div class="card meas-form">
+      <div class="section-label">Profil <span id="profile-saved-badge" style="display:none;font-size:11px;font-weight:500;color:var(--green);margin-left:6px;">● Kayıtlı</span></div>
+      <div class="card meas-form" id="profile-card">
         <div class="form-row">
           <span class="form-label">Cinsiyet</span>
           <div class="gender-toggle">
@@ -553,14 +554,23 @@ body {
         </div>
         <div class="form-row">
           <span class="form-label">Yaş</span>
-          <input class="form-input" type="number" id="m-age" placeholder="25" min="10" max="99">
+          <input class="form-input" type="number" id="m-birthyear" placeholder="" min="10" max="99" oninput="saveProfile()">
           <span class="form-unit">yıl</span>
         </div>
         <div class="form-row">
           <span class="form-label">Boy</span>
-          <input class="form-input" type="number" id="m-height" placeholder="175" min="100" max="250">
+          <input class="form-input" type="number" id="m-height" placeholder="175" min="100" max="250" oninput="saveProfile()">
           <span class="form-unit">cm</span>
         </div>
+        <div style="padding: 10px 16px 12px; display:flex; justify-content:flex-end;">
+          <button class="set-count-btn accent" onclick="saveProfile()">Kaydet</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:12px;">
+      <div class="section-label">Yeni Ölçüm</div>
+      <div class="card meas-form">
         <div class="form-row">
           <span class="form-label">Vücut Ağırlığı</span>
           <input class="form-input" type="number" id="m-weight" placeholder="80" min="30" max="300">
@@ -1692,16 +1702,40 @@ function setGender(g) {
   document.getElementById('gbtn-male').classList.toggle('active', g === 'male');
   document.getElementById('gbtn-female').classList.toggle('active', g === 'female');
   document.getElementById('hip-row').style.display = g === 'female' ? 'flex' : 'none';
+  saveProfile();
+}
+
+function saveProfile() {
+  const age = parseInt(document.getElementById('m-birthyear').value);
+  const height = parseFloat(document.getElementById('m-height').value);
+  DB.settings.profile = { gender: selectedGender, age: age || null, height: height || null };
+  saveData('settings', DB.settings);
+  document.getElementById('profile-saved-badge').style.display = 'inline';
+}
+
+function loadProfile() {
+  const p = DB.settings.profile;
+  if (!p) return;
+  setGender(p.gender || 'male');
+  if (p.age) document.getElementById('m-birthyear').value = p.age;
+  if (p.height) document.getElementById('m-height').value = p.height;
+  if (p.gender || p.age || p.height) document.getElementById('profile-saved-badge').style.display = 'inline';
+}
+
+function getProfileAge() {
+  const p = DB.settings.profile;
+  return p && p.age ? p.age : null;
 }
 
 function calculateFat() {
-  const height = parseFloat(document.getElementById('m-height').value);
+  const profile = DB.settings.profile || {};
+  const height = profile.height || parseFloat(document.getElementById('m-height').value);
   const neck = parseFloat(document.getElementById('m-neck').value);
   const waist = parseFloat(document.getElementById('m-waist').value);
   const hip = parseFloat(document.getElementById('m-hip').value);
-  const age = parseInt(document.getElementById('m-age').value);
+  const age = getProfileAge();
   const weight = parseFloat(document.getElementById('m-weight').value);
-  if (!height || !neck || !waist) { toast('Lütfen gerekli alanları doldurun.'); return; }
+  if (!height || !neck || !waist) { toast('Boy, boyun ve bel ölçümü gerekli.'); return; }
   let fat;
   if (selectedGender === 'male') {
     fat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
@@ -1729,7 +1763,7 @@ function calculateFat() {
   // Save
   const entry = {
     date: today(), gender: selectedGender, fat,
-    weight: weight||null, age: age||null,
+    weight: weight||null, age: age,
     neck: neck||null, waist: waist||null, hip: hip||null,
     chest: parseFloat(document.getElementById('m-chest').value)||null,
     shoulder: parseFloat(document.getElementById('m-shoulder').value)||null,
@@ -1760,6 +1794,7 @@ function calculateFat() {
 }
 
 function renderMeasurements() {
+  loadProfile();
   renderMeasSummaryCard();
   renderFatChart();
   renderMeasHistory();
