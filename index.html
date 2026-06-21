@@ -275,7 +275,7 @@ body {
 .kg-val { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; width: 0; }
 .kg-val::placeholder { color: var(--text-tertiary); font-size: 12px; font-weight: 400; text-align: center; }
 .reps-stepper { display: flex; align-items: center; background: var(--bg-secondary); border-radius: 9px; overflow: hidden; height: 38px; flex: 1; min-width: 0; }
-.reps-val { flex: 1; font-size: 15px; font-weight: 500; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; -moz-appearance: textfield; }
+.reps-val { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; -moz-appearance: textfield; }
 .reps-val::-webkit-outer-spin-button, .reps-val::-webkit-inner-spin-button { -webkit-appearance: none; }
 .reps-val::placeholder { color: var(--text-tertiary); font-size: 12px; }
 .set-done-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border-strong); background: none; color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
@@ -1316,13 +1316,16 @@ function renderExerciseCards(day) {
 
     // Previous hint
     let prevHint = '';
-    if (prevSets.length) {
-      const kgs  = prevSets.map(s => s.kg).filter(Boolean);
-      const reps = prevSets.map(s => s.reps).filter(Boolean);
-      const avgKg  = kgs.length  ? (kgs.reduce((a,b)=>a+b,0)/kgs.length).toFixed(1) : '?';
-      const avgRep = reps.length ? Math.round(reps.reduce((a,b)=>a+b,0)/reps.length) : '?';
-      const dayLabel = prevEntry.dayName ? ` (${prevEntry.dayName})` : '';
-      prevHint = `<div class="ex-prev-hint">Son antrenman${dayLabel}: <b>${prevSets.length}×${avgRep} @ ${avgKg} kg</b></div>`;
+    if (prevSets.length && prevLog) {
+      const validSets = prevSets.filter(s => s.kg || s.reps);
+      if (validSets.length) {
+        const dateLabel = fmtDateShort(prevLog.date);
+        const dayLabel = prevEntry.dayName ? ` · ${prevEntry.dayName}` : '';
+        const rows = validSets.map((s, i) =>
+          `<div>Set ${i+1}: <b>${s.kg||'?'} kg × ${s.reps||'?'} tekrar</b></div>`
+        ).join('');
+        prevHint = `<div class="ex-prev-hint">${dateLabel}${dayLabel}${rows}</div>`;
+      }
     }
     // Previous note (isim bazlı arama)
     let prevNote = '';
@@ -1386,7 +1389,7 @@ function renderExerciseCards(day) {
       </div>
       <div class="ex-note-section">
         ${prevNote}
-        <textarea class="ex-note-input" placeholder="Not ekle..." id="note-${ex.id}" oninput="pendingNotes['${ex.id}']=this.value" rows="2"></textarea>
+        <textarea class="ex-note-input" placeholder="Not ekle..." id="note-${ex.id}" oninput="pendingNotes['${ex.id}']=this.value" onblur="if(this.value.trim())toast('📝 Not eklendi.')" rows="2"></textarea>
       </div>
     </div>`;
   }).join('');
