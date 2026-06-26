@@ -245,6 +245,36 @@ body {
 .rest-label-text { font-size: 11px; opacity: 0.65; margin-top: 1px; }
 .rest-skip { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 14px; padding: 5px 11px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
 .rest-skip:active { background: rgba(255,255,255,0.28); }
+/* Active workout banner */
+#active-workout-banner {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(-120%);
+  width: calc(100% - 32px);
+  max-width: 398px;
+  background: rgba(0, 122, 255, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  color: #fff;
+  z-index: 500;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 10px 10px 16px;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0,122,255,0.35), 0 1px 6px rgba(0,0,0,0.15);
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+  opacity: 0;
+}
+#active-workout-banner.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+.awb-icon { font-size: 22px; line-height: 1; flex-shrink: 0; }
+.awb-left { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.awb-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.awb-elapsed { font-size: 12px; opacity: 0.8; font-variant-numeric: tabular-nums; letter-spacing: 0.3px; }
+.awb-cta { font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.22); border-radius: 13px; padding: 7px 14px; white-space: nowrap; flex-shrink: 0; }
+.awb-close { background: rgba(255,255,255,0.18); border: none; color: #fff; border-radius: 50%; width: 30px; height: 30px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
 /* ── Workout Day Screen ── */
 #workout-screen {
@@ -287,6 +317,13 @@ body {
 .kg-val { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; width: 0; }
 .kg-val::placeholder { color: var(--text-tertiary); font-size: 12px; font-weight: 400; text-align: center; }
 .reps-stepper { display: flex; align-items: center; background: var(--bg-secondary); border-radius: 9px; overflow: hidden; height: 38px; flex: 1; min-width: 0; }
+.bi-reps { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.bi-reps-row { display: flex; align-items: center; gap: 3px; background: var(--bg-secondary); border-radius: 7px; overflow: hidden; height: 17px; }
+.bi-label { font-size: 9px; font-weight: 700; color: var(--text-tertiary); padding: 0 5px; flex-shrink: 0; letter-spacing: 0.3px; }
+.bi-val { flex: 1; font-size: 12px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; }
+.bi-val::placeholder { color: var(--text-tertiary); font-size: 10px; font-weight: 400; }
+.bi-toggle-btn { font-size: 10px; padding: 3px 7px; border-radius: 6px; border: 1px solid var(--border); background: none; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+.bi-toggle-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .reps-val { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; -moz-appearance: textfield; }
 .reps-val::-webkit-outer-spin-button, .reps-val::-webkit-inner-spin-button { -webkit-appearance: none; }
 .reps-val::placeholder { color: var(--text-tertiary); font-size: 12px; }
@@ -487,8 +524,9 @@ body {
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
 /* Duration selector */
-.dur-selector { display: flex; gap: 8px; }
-.dur-btn { padding: 6px 12px; border: 1px solid var(--border-strong); border-radius: 20px; background: none; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
+.dur-selector { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.dur-selector::-webkit-scrollbar { display: none; }
+.dur-btn { padding: 6px 12px; border: 1px solid var(--border-strong); border-radius: 20px; background: none; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
 .dur-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 /* Segment control for theme */
@@ -517,6 +555,17 @@ body {
 </head>
 <body>
 <div id="app">
+
+  <!-- Active Workout Banner -->
+  <div id="active-workout-banner">
+    <span class="awb-icon">💪</span>
+    <div class="awb-left" onclick="reopenWorkoutScreen()" style="cursor:pointer;">
+      <span class="awb-name" id="awb-name">Antrenman</span>
+      <span class="awb-elapsed" id="awb-elapsed">00:00</span>
+    </div>
+    <span class="awb-cta" onclick="reopenWorkoutScreen()" style="cursor:pointer;">Devam Et</span>
+    <button class="awb-close" onclick="confirmCloseWorkout()">✕</button>
+  </div>
 
   <!-- Dynamic Island Rest Timer -->
   <div id="rest-banner">
@@ -843,9 +892,9 @@ body {
           <div class="settings-icon" style="background:#007aff20;">🕐</div>
           <span class="settings-label">Süre</span>
           <div class="dur-selector">
-            <button class="dur-btn" onclick="setRestDuration(60)" data-dur="60">1 dk</button>
-            <button class="dur-btn" onclick="setRestDuration(90)" data-dur="90">1:30</button>
+            <button class="dur-btn" onclick="setRestDuration(90)" data-dur="90">1.30 dk</button>
             <button class="dur-btn" onclick="setRestDuration(120)" data-dur="120">2 dk</button>
+            <button class="dur-btn" onclick="setRestDuration(150)" data-dur="150">2.30 dk</button>
             <button class="dur-btn" onclick="setRestDuration(180)" data-dur="180">3 dk</button>
           </div>
         </div>
@@ -943,7 +992,7 @@ body {
 <!-- Workout Screen (slides in) -->
 <div id="workout-screen">
   <div class="ws-header">
-    <button class="back-btn" onclick="closeWorkoutScreen()">
+    <button class="back-btn" onclick="hideWorkoutScreen()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       Geri
     </button>
@@ -1446,7 +1495,11 @@ let elapsedInterval = null;
 let pendingSets = {}; // exId -> [{kg, reps}]
 let pendingNotes = {}; // exId -> string
 
+let awbInterval = null;
+
 function openWorkoutScreen(dayId) {
+  // Eğer aynı gün zaten aktifse sadece ekranı aç, verileri sıfırlama
+  const isSameDay = currentDayId === dayId && workoutStartTime && pendingSets;
   currentDayId = dayId || getNextDayId();
   const day = getDayById(currentDayId);
   if (!day) return;
@@ -1454,19 +1507,51 @@ function openWorkoutScreen(dayId) {
   const setCount = day.exercises.reduce((a, e) => a + e.sets, 0);
   document.getElementById('ws-day-sub').textContent = `${day.exercises.length} hareket · ${setCount} set`;
 
-  pendingSets = {};
-  pendingNotes = {};
-  workoutStartTime = Date.now();
+  if (!isSameDay) {
+    pendingSets = {};
+    pendingNotes = {};
+    workoutStartTime = Date.now();
+  }
+
   clearInterval(elapsedInterval);
   elapsedInterval = setInterval(() => {
     const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
     document.getElementById('ws-elapsed').textContent = fmtDuration(secs);
   }, 1000);
 
-  renderExerciseCards(day);
+  if (!isSameDay) renderExerciseCards(day);
   document.getElementById('workout-screen').classList.add('open');
   document.body.style.overflow = 'hidden';
+  hideActiveWorkoutBanner();
   history.pushState({ screen: 'workout' }, '');
+}
+
+function reopenWorkoutScreen() {
+  const day = getDayById(currentDayId);
+  if (!day) return;
+  document.getElementById('ws-day-name').textContent = day.name;
+  clearInterval(elapsedInterval);
+  elapsedInterval = setInterval(() => {
+    const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
+    document.getElementById('ws-elapsed').textContent = fmtDuration(secs);
+  }, 1000);
+  document.getElementById('workout-screen').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  hideActiveWorkoutBanner();
+  history.pushState({ screen: 'workout' }, '');
+}
+
+function hideWorkoutScreen() {
+  // Antrenmanı kapatmaz, sadece ekranı gizler ve banner gösterir
+  document.getElementById('workout-screen').classList.remove('open');
+  document.body.style.overflow = '';
+  clearInterval(elapsedInterval);
+  showActiveWorkoutBanner();
+}
+
+function confirmCloseWorkout() {
+  if (!confirm('Antrenman iptal edilecek ve girilen tüm veriler silinecek. Emin misin?')) return;
+  closeWorkoutScreen();
 }
 
 function closeWorkoutScreen() {
@@ -1474,6 +1559,29 @@ function closeWorkoutScreen() {
   document.body.style.overflow = '';
   clearInterval(elapsedInterval);
   stopRest();
+  hideActiveWorkoutBanner();
+  workoutStartTime = null;
+  pendingSets = {};
+}
+
+function showActiveWorkoutBanner() {
+  const day = getDayById(currentDayId);
+  if (!day || !workoutStartTime) return;
+  document.getElementById('awb-name').textContent = day.name;
+  const banner = document.getElementById('active-workout-banner');
+  banner.classList.add('visible');
+  clearInterval(awbInterval);
+  awbInterval = setInterval(() => {
+    const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
+    document.getElementById('awb-elapsed').textContent = fmtDuration(secs);
+  }, 1000);
+  const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
+  document.getElementById('awb-elapsed').textContent = fmtDuration(secs);
+}
+
+function hideActiveWorkoutBanner() {
+  document.getElementById('active-workout-banner').classList.remove('visible');
+  clearInterval(awbInterval);
 }
 
 function renderExerciseCards(day) {
@@ -1492,7 +1600,9 @@ function renderExerciseCards(day) {
         const dateLabel = fmtDateShort(prevLog.date);
         const dayLabel = prevEntry.dayName ? ` · ${prevEntry.dayName}` : '';
         const rows = validSets.map((s, i) =>
-          `<div>Set ${i+1}: <b>${s.kg||'?'} kg × ${s.reps||'?'} tekrar</b></div>`
+          s.repsR != null || s.repsL != null
+            ? `<div>Set ${i+1}: <b>${s.kg||'?'} kg</b> — Sağ: <b>${s.repsR||'?'}</b> / Sol: <b>${s.repsL||'?'}</b> tekrar</div>`
+            : `<div>Set ${i+1}: <b>${s.kg||'?'} kg × ${s.reps||'?'} tekrar</b></div>`
         ).join('');
         prevHint = `<div class="ex-prev-hint">${dateLabel}${dayLabel}${rows}</div>`;
       }
@@ -1513,8 +1623,26 @@ function renderExerciseCards(day) {
     let setRows = '';
     for (let s = 0; s < ex.sets; s++) {
       const ps = prevSetsAll[s];
-      const prevKg  = ps && ps.kg   ? ps.kg   : '';
-      const prevRep = ps && ps.reps ? ps.reps : '';
+      const prevKg   = ps && ps.kg    ? ps.kg    : '';
+      const prevRep  = ps && ps.reps  ? ps.reps  : '';
+      const prevRepR = ps && ps.repsR ? ps.repsR : '';
+      const prevRepL = ps && ps.repsL ? ps.repsL : '';
+      const repsHtml = ex.bilateral
+        ? `<div class="bi-reps">
+            <div class="bi-reps-row">
+              <span class="bi-label">SAĞ</span>
+              <input class="bi-val" type="text" inputmode="numeric" placeholder="${prevRepR || 'tk'}" data-prev="${prevRepR}" id="repsR-${ex.id}-${s}" onkeydown="handleSetNav(event,'repsR','${ex.id}',${s})">
+            </div>
+            <div class="bi-reps-row">
+              <span class="bi-label">SOL</span>
+              <input class="bi-val" type="text" inputmode="numeric" placeholder="${prevRepL || 'tk'}" data-prev="${prevRepL}" id="repsL-${ex.id}-${s}" onkeydown="handleSetNav(event,'repsL','${ex.id}',${s})">
+            </div>
+          </div>`
+        : `<div class="reps-stepper">
+            <button class="stepper-btn" onclick="stepReps('${ex.id}',${s},-1)" type="button">−</button>
+            <input class="reps-val" type="text" inputmode="numeric" placeholder="${prevRep || 'tk'}" data-prev="${prevRep}" id="reps-${ex.id}-${s}" oninput="checkOverload('${ex.id}',${s})" onkeydown="handleSetNav(event,'reps','${ex.id}',${s})">
+            <button class="stepper-btn" onclick="stepReps('${ex.id}',${s},1)" type="button">+</button>
+          </div>`;
       setRows += `<div class="set-row" id="set-row-${ex.id}-${s}">
         <span class="set-num">${s+1}</span>
         <div class="kg-stepper">
@@ -1522,11 +1650,7 @@ function renderExerciseCards(day) {
           <input class="kg-val" type="text" inputmode="decimal" placeholder="${prevKg || 'kg'}" data-prev="${prevKg}" id="kg-${ex.id}-${s}" oninput="checkOverload('${ex.id}',${s})" onkeydown="handleSetNav(event,'kg','${ex.id}',${s})">
           <button class="stepper-btn" onclick="stepKg('${ex.id}',${s},2.5)" type="button">+</button>
         </div>
-        <div class="reps-stepper">
-          <button class="stepper-btn" onclick="stepReps('${ex.id}',${s},-1)" type="button">−</button>
-          <input class="reps-val" type="text" inputmode="numeric" placeholder="${prevRep || 'tk'}" data-prev="${prevRep}" id="reps-${ex.id}-${s}" oninput="checkOverload('${ex.id}',${s})" onkeydown="handleSetNav(event,'reps','${ex.id}',${s})">
-          <button class="stepper-btn" onclick="stepReps('${ex.id}',${s},1)" type="button">+</button>
-        </div>
+        ${repsHtml}
         <button class="set-done-btn" onclick="completeSet('${ex.id}',${s},'${day.id}')" id="set-done-${ex.id}-${s}">✓</button>
       </div>`;
     }
@@ -1579,14 +1703,15 @@ function checkOverload(exId, setIdx) {
 function handleSetNav(e, type, exId, setIdx) {
   if (e.key !== 'Enter' && e.key !== 'Tab') return;
   e.preventDefault();
+  let next = null;
   if (type === 'kg') {
-    const next = document.getElementById(`reps-${exId}-${setIdx}`);
-    if (next) next.focus();
+    next = document.getElementById(`repsR-${exId}-${setIdx}`) || document.getElementById(`reps-${exId}-${setIdx}`);
+  } else if (type === 'repsR') {
+    next = document.getElementById(`repsL-${exId}-${setIdx}`);
   } else {
-    // reps → next set's kg
-    const next = document.getElementById(`kg-${exId}-${setIdx + 1}`);
-    if (next) next.focus();
+    next = document.getElementById(`kg-${exId}-${setIdx + 1}`);
   }
+  if (next) next.focus();
 }
 
 function stepKg(exId, setIdx, delta) {
@@ -1675,18 +1800,19 @@ function removeSet(exId, dayId) {
 }
 
 function completeSet(exId, setIdx, dayId) {
-  const kg = parseFloat(document.getElementById(`kg-${exId}-${setIdx}`)?.value);
-  const reps = parseInt(document.getElementById(`reps-${exId}-${setIdx}`)?.value);
+  const kg    = parseFloat(document.getElementById(`kg-${exId}-${setIdx}`)?.value);
+  const reps  = parseInt(document.getElementById(`reps-${exId}-${setIdx}`)?.value);
+  const repsR = parseInt(document.getElementById(`repsR-${exId}-${setIdx}`)?.value);
+  const repsL = parseInt(document.getElementById(`repsL-${exId}-${setIdx}`)?.value);
   const btn = document.getElementById(`set-done-${exId}-${setIdx}`);
   if (!btn) return;
-  if (btn.classList.contains('done')) {
-    btn.classList.remove('done');
-    return;
-  }
+  if (btn.classList.contains('done')) { btn.classList.remove('done'); return; }
   btn.classList.add('done');
   if (!pendingSets[exId]) pendingSets[exId] = [];
-  pendingSets[exId][setIdx] = { exId, setIdx, kg: kg||0, reps: reps||0 };
-  // PR check (isim bazlı)
+  const isBi = !isNaN(repsR) || !isNaN(repsL);
+  pendingSets[exId][setIdx] = isBi
+    ? { exId, setIdx, kg: kg||0, repsR: repsR||0, repsL: repsL||0, reps: Math.max(repsR||0, repsL||0) }
+    : { exId, setIdx, kg: kg||0, reps: reps||0 };
   if (kg && reps) {
     const day = getDayById(dayId);
     const ex = day ? day.exercises.find(e => e.id === exId) : null;
@@ -1768,9 +1894,15 @@ function finishWorkout() {
     const exSets = pendingSets[ex.id] || [];
     for (let s = 0; s < getSetCount(ex.id, currentDayId); s++) {
       const row = exSets[s];
-      const kg = parseFloat(document.getElementById(`kg-${ex.id}-${s}`)?.value) || 0;
-      const reps = parseInt(document.getElementById(`reps-${ex.id}-${s}`)?.value) || 0;
-      allSets.push({ exId: ex.id, exName: ex.name, setIdx: s, kg: row ? row.kg : kg, reps: row ? row.reps : reps });
+      const kg    = parseFloat(document.getElementById(`kg-${ex.id}-${s}`)?.value) || 0;
+      const reps  = parseInt(document.getElementById(`reps-${ex.id}-${s}`)?.value) || 0;
+      const repsR = parseInt(document.getElementById(`repsR-${ex.id}-${s}`)?.value) || 0;
+      const repsL = parseInt(document.getElementById(`repsL-${ex.id}-${s}`)?.value) || 0;
+      if (ex.bilateral) {
+        allSets.push({ exId: ex.id, exName: ex.name, setIdx: s, kg: row ? row.kg : kg, repsR: row ? row.repsR : repsR, repsL: row ? row.repsL : repsL, reps: row ? row.reps : Math.max(repsR, repsL) });
+      } else {
+        allSets.push({ exId: ex.id, exName: ex.name, setIdx: s, kg: row ? row.kg : kg, reps: row ? row.reps : reps });
+      }
     }
   });
   // Collect notes
@@ -2380,6 +2512,7 @@ function renderDayEditor() {
             </div>
             <input class="day-ex-name-input" list="ex-names-list" value="${escapeHtml(ex.name)}" onchange="editorDays[${di}].exercises[${ei}].name=this.value" placeholder="Hareket adı">
             <input class="day-ex-sets-input" type="number" value="${ex.sets}" min="1" max="10" onchange="editorDays[${di}].exercises[${ei}].sets=parseInt(this.value)||1" title="Set sayısı">
+            <button class="bi-toggle-btn${ex.bilateral ? ' active' : ''}" onclick="editorDays[${di}].exercises[${ei}].bilateral=!editorDays[${di}].exercises[${ei}].bilateral;renderDayEditor()" title="Sağ/Sol ayrı tekrar">S/L</button>
             <button class="remove-ex-btn" onclick="removeEx(${di},${ei})">−</button>
           </div>
         `).join('')}
@@ -2755,7 +2888,7 @@ window.addEventListener('popstate', () => {
   } else if (document.getElementById('day-editor').classList.contains('open')) {
     closeDayEditor();
   } else if (document.getElementById('workout-screen').classList.contains('open')) {
-    closeWorkoutScreen();
+    hideWorkoutScreen();
   }
 });
 </script>
