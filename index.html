@@ -2512,7 +2512,7 @@ function renderDayEditor() {
             </div>
             <input class="day-ex-name-input" list="ex-names-list" value="${escapeHtml(ex.name)}" onchange="editorDays[${di}].exercises[${ei}].name=this.value" placeholder="Hareket adı">
             <input class="day-ex-sets-input" type="number" value="${ex.sets}" min="1" max="10" onchange="editorDays[${di}].exercises[${ei}].sets=parseInt(this.value)||1" title="Set sayısı">
-            <button class="bi-toggle-btn${ex.bilateral ? ' active' : ''}" onclick="editorDays[${di}].exercises[${ei}].bilateral=!editorDays[${di}].exercises[${ei}].bilateral;renderDayEditor()" title="Sağ/Sol ayrı tekrar">S/L</button>
+            <button class="bi-toggle-btn${ex.bilateral ? ' active' : ''}" onclick="toggleBilateral(${di},${ei})" title="Sağ/Sol ayrı tekrar">S/L</button>
             <button class="remove-ex-btn" onclick="removeEx(${di},${ei})">−</button>
           </div>
         `).join('')}
@@ -2521,6 +2521,19 @@ function renderDayEditor() {
     </div>
   `).join('') + `<button class="add-day-btn" onclick="addDay()">＋ Yeni Antrenman Günü</button>`;
 }
+function toggleBilateral(di, ei) {
+  const ex = editorDays[di].exercises[ei];
+  const newVal = !ex.bilateral;
+  const name = ex.name.trim().toLowerCase();
+  // Aynı isimli tüm egzersizlere uygula
+  editorDays.forEach(day => {
+    day.exercises.forEach(e => {
+      if (e.name.trim().toLowerCase() === name) e.bilateral = newVal;
+    });
+  });
+  renderDayEditor();
+}
+
 function toggleDayExercises(di) {
   const el = document.getElementById(`day-exs-${di}`);
   const btn = document.getElementById(`day-toggle-${di}`);
