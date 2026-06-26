@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Antrenman">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#ffffff" id="theme-color-meta">
 <link rel="manifest" href="manifest.json">
 <meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
@@ -2462,7 +2462,9 @@ function setTheme(t) {
   if (fatChart) renderFatChart();
 }
 function applyTheme() {
-  document.documentElement.setAttribute('data-theme', DB.settings.theme === 'dark' ? 'dark' : '');
+  const isDark = DB.settings.theme === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+  document.getElementById('theme-color-meta').setAttribute('content', isDark ? '#1c1c1e' : '#ffffff');
 }
 function toggleRestTimer(val) {
   DB.settings.restTimerEnabled = val;
