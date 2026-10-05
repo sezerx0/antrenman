@@ -551,6 +551,37 @@ body {
 /* Workout order indicator */
 .order-badge { background: var(--bg-secondary); border-radius: 8px; padding: 3px 8px; font-size: 11px; font-weight: 600; color: var(--text-secondary); }
 .order-badge.current { background: var(--accent-light); color: var(--accent); }
+/* ── v2 arayüz eklemeleri ── */
+.home-totals { font-size: 12px; color: var(--text-secondary); margin-top: 12px; padding-top: 10px; border-top: 0.5px solid var(--border); }
+.home-totals b { color: var(--text-primary); font-weight: 700; }
+#rest-banner { width: 330px; max-width: calc(100% - 24px); padding: 8px 8px 8px 16px; gap: 8px; top: calc(74px + env(safe-area-inset-top, 0px)); }
+.rest-banner-inner { min-width: 0; flex: 1; }
+.rest-banner-inner > div:last-child { min-width: 0; }
+.rest-label-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rest-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.rest-adj { background: rgba(255,255,255,0.12); color: #fff; border: none; border-radius: 14px; padding: 6px 9px; font-size: 12px; font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; }
+.rest-adj:active { background: rgba(255,255,255,0.28); }
+.ws-progress { height: 3px; background: var(--bg-tertiary); }
+.ws-progress-fill { height: 100%; width: 0; background: var(--green); transition: width 0.3s ease; }
+.ex-chip { background: var(--bg-secondary); border: none; color: var(--text-secondary); font-size: 11px; font-weight: 600; cursor: pointer; padding: 5px 9px; border-radius: 20px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ex-chip.custom { color: var(--accent); background: var(--accent-light); }
+.ex-chip.has-note { color: var(--orange); background: #ff9f0a20; }
+.ex-actions { flex-shrink: 0; gap: 6px; }
+.ex-prev-hint { line-height: 1.4; }
+.ex-prev-note { font-size: 12px; color: var(--text-secondary); margin-top: 3px; font-style: italic; }
+.ex-note-section { padding: 0 16px 14px; border-top: none; }
+.ex-note-input { min-height: 44px; }
+.ws-edit-banner { background: #ff9f0a20; color: var(--orange); font-size: 12px; font-weight: 600; text-align: center; padding: 6px 12px; }
+.danger-text { color: var(--red); }
+.quick-weight-card { display: flex; align-items: center; gap: 10px; padding: 12px 12px 12px 16px; }
+.quick-weight-card .form-unit { width: auto; }
+.meas-collapse { width: 100%; text-align: left; border-left: none; border-right: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-family: inherit; color: var(--text-secondary); }
+.meas-chevron { font-size: 14px; transition: transform 0.2s; }
+.meas-collapse[aria-expanded="true"] .meas-chevron { transform: rotate(90deg); }
+.meas-hint { font-size: 12px; color: var(--text-secondary); margin-top: 8px; padding: 0 4px; }
+.chart-empty { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; font-size: 13px; color: var(--text-secondary); text-align: center; }
+.tab-item { margin: 6px 1px; }
+.tab-item span:last-child { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -576,7 +607,11 @@ body {
         <div class="rest-label-text" id="rest-exercise-label">Dinlenme</div>
       </div>
     </div>
-    <button class="rest-skip" onclick="skipRest()">Atla ✕</button>
+    <div class="rest-actions">
+      <button class="rest-adj" onclick="adjustRest(-30)" aria-label="30 saniye azalt">−30</button>
+      <button class="rest-adj" onclick="adjustRest(30)" aria-label="30 saniye artır">+30</button>
+      <button class="rest-skip" onclick="skipRest()">Atla</button>
+    </div>
   </div>
 
   <!-- TAB: Antrenman -->
@@ -590,17 +625,21 @@ body {
       <div id="day-select-list"></div>
     </div>
     <div class="section" style="margin-top:12px;">
-      <div class="stats-grid">
-        <div class="card stat-card">
-          <div class="stat-label">Bu Ay</div>
-          <div class="stat-value" id="stat-month-count">0</div>
-          <div class="stat-sub">antrenman</div>
+      <div class="section-label">Bu Hafta</div>
+      <div class="card" style="padding:16px;" id="weekly-goal-card">
+        <div class="weekly-goal-top">
+          <span class="weekly-goal-label" id="weekly-goal-label">0 / 0 antrenman</span>
+          <div class="weekly-goal-stepper">
+            <button class="stepper-btn" onclick="changeWeeklyGoal(-1)" aria-label="Hedefi azalt">−</button>
+            <span id="weekly-goal-num">4</span>
+            <button class="stepper-btn" onclick="changeWeeklyGoal(1)" aria-label="Hedefi artır">+</button>
+          </div>
         </div>
-        <div class="card stat-card">
-          <div class="stat-label">Toplam</div>
-          <div class="stat-value" id="stat-total-count">0</div>
-          <div class="stat-sub">antrenman</div>
+        <div class="weekly-goal-bar-bg">
+          <div class="weekly-goal-bar-fill" id="weekly-goal-bar"></div>
         </div>
+        <div class="weekly-goal-days" id="weekly-goal-days"></div>
+        <div class="home-totals">Bu ay <b id="stat-month-count">0</b> · Toplam <b id="stat-total-count">0</b> antrenman</div>
       </div>
     </div>
     <div class="section" style="margin-top:12px;">
@@ -615,25 +654,22 @@ body {
         <div class="workout-cal-legend" id="workout-cal-legend"></div>
       </div>
     </div>
-    <div class="section" style="margin-top:12px;">
-      <div class="section-label">Haftalık Hedef</div>
-      <div class="card" style="padding:16px;" id="weekly-goal-card">
-        <div class="weekly-goal-top">
-          <span class="weekly-goal-label" id="weekly-goal-label">0 / 0 antrenman</span>
-          <div class="weekly-goal-stepper">
-            <button class="stepper-btn" onclick="changeWeeklyGoal(-1)">−</button>
-            <span id="weekly-goal-num">4</span>
-            <button class="stepper-btn" onclick="changeWeeklyGoal(1)">+</button>
-          </div>
-        </div>
-        <div class="weekly-goal-bar-bg">
-          <div class="weekly-goal-bar-fill" id="weekly-goal-bar"></div>
-        </div>
-        <div class="weekly-goal-days" id="weekly-goal-days"></div>
+    <div class="section" style="margin-top:12px; padding-bottom:20px;">
+      <div class="section-label">Son Antrenmanlar</div>
+      <div class="card recent-list" id="recent-list">
+        <div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydedilmedi.</div>
       </div>
     </div>
-    <div class="section" style="margin-top:12px;">
-      <div class="section-label">Günlük Rutin</div>
+  </div>
+
+  <!-- TAB: Rutin -->
+  <div class="screen" id="tab-routine" style="display:none;flex-direction:column;">
+    <div class="nav-header">
+      <h1>Günlük Rutin</h1>
+      <p id="routine-date"></p>
+    </div>
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Bugün</div>
       <div class="card suppl-card">
         <div id="suppl-checklist"></div>
         <div class="suppl-row" style="cursor:default;flex-direction:column;align-items:stretch;gap:8px;">
@@ -645,8 +681,8 @@ body {
         </div>
       </div>
     </div>
-    <div class="section" style="margin-top:12px;">
-      <div class="section-label">Supplement Takvimi</div>
+    <div class="section" style="margin-top:12px; padding-bottom:20px;">
+      <div class="section-label">Takvim</div>
       <div class="card" style="padding:14px 16px;" id="suppl-cal-card">
         <div class="suppl-cal-header">
           <button class="suppl-cal-nav" onclick="shiftSupplCal(-1)">‹</button>
@@ -656,12 +692,6 @@ body {
         <div class="suppl-cal-dows" id="suppl-cal-dows"></div>
         <div class="suppl-cal-grid" id="suppl-cal-grid"></div>
         <div class="suppl-legend" id="suppl-legend"></div>
-      </div>
-    </div>
-    <div class="section" style="margin-top:12px; padding-bottom:20px;">
-      <div class="section-label">Son Antrenmanlar</div>
-      <div class="card recent-list" id="recent-list">
-        <div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydedilmedi.</div>
       </div>
     </div>
   </div>
@@ -675,6 +705,16 @@ body {
 
     <div class="section" style="margin-top:14px;">
       <div id="meas-summary-card" style="display:none;"></div>
+    </div>
+
+    <div class="section" style="margin-top:12px;">
+      <div class="section-label">Hızlı Tartı</div>
+      <div class="card quick-weight-card">
+        <span class="form-label">Bugünkü kilo</span>
+        <input class="form-input" type="text" inputmode="decimal" id="quick-weight" placeholder="80" onkeydown="if(event.key==='Enter')saveQuickWeight()">
+        <span class="form-unit">kg</span>
+        <button class="set-count-btn accent" onclick="saveQuickWeight()">Kaydet</button>
+      </div>
     </div>
 
     <div class="section" style="margin-top:12px;">
@@ -704,7 +744,7 @@ body {
     </div>
 
     <div class="section" style="margin-top:12px;">
-      <div class="section-label">Yeni Ölçüm</div>
+      <div class="section-label">Detaylı Ölçüm</div>
       <div class="card meas-form">
         <div class="form-row">
           <span class="form-label">Vücut Ağırlığı</span>
@@ -739,49 +779,53 @@ body {
           <span class="form-unit">cm</span>
         </div>
 
-        <div class="meas-section-title">Kol & Bacak</div>
-        <div class="form-row">
-          <span class="form-label">Sağ Kol</span>
-          <input class="form-input" type="text" inputmode="decimal" id="m-arm-r" placeholder="38" min="10" max="80">
-          <span class="form-unit">cm</span>
-        </div>
-        <div class="form-row">
-          <span class="form-label">Sol Kol</span>
-          <input class="form-input" type="text" inputmode="decimal" id="m-arm-l" placeholder="38" min="10" max="80">
-          <span class="form-unit">cm</span>
-        </div>
-        <div class="form-row">
-          <span class="form-label">Sağ Ön Kol</span>
-          <input class="form-input" type="text" inputmode="decimal" id="m-forearm-r" placeholder="28" min="10" max="60">
-          <span class="form-unit">cm</span>
-        </div>
-        <div class="form-row">
-          <span class="form-label">Sol Ön Kol</span>
-          <input class="form-input" type="text" inputmode="decimal" id="m-forearm-l" placeholder="28" min="10" max="60">
-          <span class="form-unit">cm</span>
-        </div>
-        <div class="form-row">
-          <span class="form-label">Sağ Uyluk</span>
-          <input class="form-input" type="text" inputmode="decimal" id="m-thigh-r" placeholder="58" min="20" max="120">
-          <span class="form-unit">cm</span>
-        </div>
-        <div class="form-row">
-          <span class="form-label">Sol Uyluk</span>
-          <input class="form-input" type="text" inputmode="decimal" id="m-thigh-l" placeholder="58" min="20" max="120">
-          <span class="form-unit">cm</span>
-        </div>
-        <div class="form-row">
-          <span class="form-label">Sağ Baldır</span>
-          <input class="form-input" type="text" inputmode="decimal" id="m-calf-r" placeholder="38" min="10" max="80">
-          <span class="form-unit">cm</span>
-        </div>
-        <div class="form-row">
-          <span class="form-label">Sol Baldır</span>
-          <input class="form-input" type="text" inputmode="decimal" id="m-calf-l" placeholder="38" min="10" max="80">
-          <span class="form-unit">cm</span>
+        <button class="meas-section-title meas-collapse" onclick="toggleLimbRows()" aria-expanded="false" id="limb-toggle">Kol & Bacak <span class="meas-chevron">›</span></button>
+        <div id="limb-rows" style="display:none;">
+          <div class="form-row">
+            <span class="form-label">Sağ Kol</span>
+            <input class="form-input" type="text" inputmode="decimal" id="m-arm-r" placeholder="38" min="10" max="80">
+            <span class="form-unit">cm</span>
+          </div>
+          <div class="form-row">
+            <span class="form-label">Sol Kol</span>
+            <input class="form-input" type="text" inputmode="decimal" id="m-arm-l" placeholder="38" min="10" max="80">
+            <span class="form-unit">cm</span>
+          </div>
+          <div class="form-row">
+            <span class="form-label">Sağ Ön Kol</span>
+            <input class="form-input" type="text" inputmode="decimal" id="m-forearm-r" placeholder="28" min="10" max="60">
+            <span class="form-unit">cm</span>
+          </div>
+          <div class="form-row">
+            <span class="form-label">Sol Ön Kol</span>
+            <input class="form-input" type="text" inputmode="decimal" id="m-forearm-l" placeholder="28" min="10" max="60">
+            <span class="form-unit">cm</span>
+          </div>
+          <div class="form-row">
+            <span class="form-label">Sağ Uyluk</span>
+            <input class="form-input" type="text" inputmode="decimal" id="m-thigh-r" placeholder="58" min="20" max="120">
+            <span class="form-unit">cm</span>
+          </div>
+          <div class="form-row">
+            <span class="form-label">Sol Uyluk</span>
+            <input class="form-input" type="text" inputmode="decimal" id="m-thigh-l" placeholder="58" min="20" max="120">
+            <span class="form-unit">cm</span>
+          </div>
+          <div class="form-row">
+            <span class="form-label">Sağ Baldır</span>
+            <input class="form-input" type="text" inputmode="decimal" id="m-calf-r" placeholder="38" min="10" max="80">
+            <span class="form-unit">cm</span>
+          </div>
+          <div class="form-row">
+            <span class="form-label">Sol Baldır</span>
+            <input class="form-input" type="text" inputmode="decimal" id="m-calf-l" placeholder="38" min="10" max="80">
+            <span class="form-unit">cm</span>
+          </div>
+
         </div>
       </div>
-      <button class="btn-primary" style="margin-top:10px;" onclick="calculateFat()">Hesapla & Kaydet</button>
+      <button class="btn-primary" style="margin-top:10px;" onclick="calculateFat()">Kaydet</button>
+      <div class="meas-hint">Sadece ölçtüklerini gir, boş bıraktıkların kaydedilmez. Yağ oranı için boyun ve bel (kadınlarda kalça da) gerekli; boy profilden alınır.</div>
     </div>
     <div class="section" style="margin-top:12px;">
       <div id="fat-result-card" style="display:none;"></div>
@@ -799,6 +843,7 @@ body {
         </div>
         <div class="chart-container" style="height:160px;margin-top:10px;">
           <canvas id="fat-chart"></canvas>
+          <div class="chart-empty" id="fat-chart-empty">Grafik için en az 2 ölçüm gerekli.</div>
         </div>
       </div>
     </div>
@@ -974,6 +1019,10 @@ body {
       <span class="tab-icon" aria-hidden="true">💪</span>
       <span>Antrenman</span>
     </button>
+    <button class="tab-item" id="tab-btn-routine" onclick="switchTab('routine')" role="tab" aria-selected="false" aria-label="Rutin">
+      <span class="tab-icon" aria-hidden="true">💊</span>
+      <span>Rutin</span>
+    </button>
     <button class="tab-item" id="tab-btn-meas" onclick="switchTab('meas')" role="tab" aria-selected="false" aria-label="Ölçümler">
       <span class="tab-icon" aria-hidden="true">📊</span>
       <span>Ölçümler</span>
@@ -1000,12 +1049,13 @@ body {
       <h2 id="ws-day-name">Antrenman</h2>
       <p id="ws-day-sub" class="subtitle"></p>
     </div>
-    <button class="ws-done-btn" onclick="finishWorkout()">Bitir</button>
+    <button class="ws-done-btn" id="ws-done-btn" onclick="finishWorkout()">Bitir</button>
   </div>
   <div class="ws-timer-bar">
     <span class="ws-timer-dot"></span>
     <span id="ws-elapsed">00:00</span>
   </div>
+  <div class="ws-progress"><div class="ws-progress-fill" id="ws-progress-fill"></div></div>
   <div class="ws-body" id="ws-body">
     <!-- Exercise cards rendered here -->
   </div>
@@ -1037,7 +1087,9 @@ body {
     <div class="modal-handle"></div>
     <h3 id="hm-day-name">Antrenman</h3>
     <p class="sub" id="hm-meta"></p>
-    <div id="hm-body" style="margin-top:12px;overflow-y:auto;max-height:60vh;padding-right:4px;"></div>
+    <div id="hm-body" style="margin-top:12px;overflow-y:auto;max-height:52vh;padding-right:4px;"></div>
+    <button class="btn-primary" onclick="editHistoryLog()">✏️ Düzenle</button>
+    <button class="btn-secondary danger-text" onclick="deleteHistoryLog()">Sil</button>
   </div>
 </div>
 
@@ -1405,6 +1457,13 @@ function closeLayer(name) {
 function closeAllLayers() {
   if (layers.length) history.go(-layers.length);
 }
+function swapTopLayer(from, to) {
+  if (layers[layers.length - 1] !== from) return false;
+  layers[layers.length - 1] = to;
+  try { history.replaceState({ layerDepth: layers.length }, ''); } catch(e) {}
+  LAYER_CLOSERS[from]();
+  return true;
+}
 // Sayfa yenilendiğinde tarayıcı eski katman kaydını hatırlayabilir; sıfırla
 try { history.replaceState({ layerDepth: 0 }, ''); } catch(e) {}
 window.addEventListener('popstate', e => {
@@ -1420,7 +1479,7 @@ window.addEventListener('popstate', e => {
 // ═══════════════════════════════════════════════
 let currentTab = 'workout';
 function switchTab(tab) {
-  ['workout','meas','stats','settings'].forEach(t => {
+  ['workout','routine','meas','stats','settings'].forEach(t => {
     document.getElementById('tab-' + t).style.display = 'none';
     const btn = document.getElementById('tab-btn-' + t);
     btn.classList.remove('active');
@@ -1432,6 +1491,7 @@ function switchTab(tab) {
   activeBtn.setAttribute('aria-selected', 'true');
   currentTab = tab;
   if (tab === 'workout') renderHome();
+  if (tab === 'routine') renderRoutine();
   if (tab === 'meas') renderMeasurements();
   if (tab === 'stats') renderStats();
   if (tab === 'settings') renderSettings();
@@ -1453,6 +1513,10 @@ function renderHome() {
   renderHeatmap();
   renderRecentList();
   renderWeeklyGoal();
+}
+
+function renderRoutine() {
+  document.getElementById('routine-date').textContent = logicalNow().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long' });
   renderSuppl();
   renderSupplCalendar();
 }
@@ -1576,9 +1640,11 @@ function renderRecentList() {
 }
 
 // ── Workout History Detail ──
+let historyIdx = -1;
 function openHistoryModal(idx) {
   const log = DB.workoutLogs[idx];
   if (!log) return;
+  historyIdx = idx;
   document.getElementById('hm-day-name').textContent = dayDisplayName(log);
   const dur = log.duration ? `${Math.round(log.duration/60)} dk · ` : '';
   document.getElementById('hm-meta').textContent = `${fmtDate(log.date)} · ${dur}${logVolume(log)} kg hacim`;
@@ -1624,6 +1690,12 @@ function changeWeeklyGoal(delta) {
   DB.settings.weeklyGoal = Math.max(1, Math.min(7, getWeeklyGoal() + delta));
   saveData('settings', DB.settings);
   renderWeeklyGoal();
+}
+function deleteHistoryLog() {
+  if (deleteWorkoutLog(historyIdx)) closeHistoryModal();
+}
+function editHistoryLog() {
+  startEditLog(historyIdx);
 }
 function renderWeeklyGoal() {
   const goal = getWeeklyGoal();
@@ -1682,7 +1754,9 @@ function startActiveTicker() {
   clearInterval(activeTicker);
   const tick = () => {
     if (!active) return;
-    const t = fmtDuration((Date.now() - active.startTime) / 1000);
+    const t = active.mode === 'edit'
+      ? '✏️ ' + fmtDateShort(active.editDate)
+      : fmtDuration((Date.now() - active.startTime) / 1000);
     document.getElementById('ws-elapsed').textContent = t;
     document.getElementById('awb-elapsed').textContent = t;
   };
@@ -1692,8 +1766,11 @@ function startActiveTicker() {
 
 function openWorkoutScreen(dayId) {
   dayId = dayId || getNextDayId();
-  if (active && active.dayId !== dayId) {
-    if (!confirm(`"${active.day.name}" antrenmanı devam ediyor.\n\nOnu iptal edip yeni antrenman başlatılsın mı? Girdiğin veriler silinecek.`)) return;
+  if (active && (active.dayId !== dayId || active.mode === 'edit')) {
+    const msg = active.mode === 'edit'
+      ? `"${active.day.name}" antrenmanını düzenliyorsun.\n\nDüzenleme kaydedilmeden kapatılıp yeni antrenman başlatılsın mı?`
+      : `"${active.day.name}" antrenmanı devam ediyor.\n\nOnu iptal edip yeni antrenman başlatılsın mı? Girdiğin veriler silinecek.`;
+    if (!confirm(msg)) return;
     discardActive();
   }
   if (!active) {
@@ -1717,14 +1794,14 @@ function openWorkoutScreen(dayId) {
 
 function showWorkoutScreen() {
   if (!active) return;
-  const day = active.day;
-  document.getElementById('ws-day-name').textContent = day.name;
-  const setCount = active.sets.reduce((a, n) => a + n, 0);
-  document.getElementById('ws-day-sub').textContent = `${day.exercises.length} hareket · ${setCount} set`;
+  const isEdit = active.mode === 'edit';
+  document.getElementById('ws-day-name').textContent = (isEdit ? '✏️ ' : '') + active.day.name;
+  document.getElementById('ws-done-btn').textContent = isEdit ? 'Kaydet' : 'Bitir';
   document.getElementById('workout-screen').classList.add('open');
   document.body.style.overflow = 'hidden';
   hideActiveWorkoutBanner();
   startActiveTicker();
+  updateProgress();
   active.screenOpen = true;
   saveActive();
   pushLayer('workout');
@@ -1744,7 +1821,10 @@ function hideWorkoutScreenUI() {
 }
 
 function confirmCloseWorkout() {
-  if (!confirm('Antrenman iptal edilecek ve girilen tüm veriler silinecek. Emin misin?')) return;
+  const msg = active && active.mode === 'edit'
+    ? 'Düzenleme kaydedilmeden kapatılacak. Emin misin?'
+    : 'Antrenman iptal edilecek ve girilen tüm veriler silinecek. Emin misin?';
+  if (!confirm(msg)) return;
   discardActive();
 }
 
@@ -1762,7 +1842,7 @@ function discardActive() {
 
 function showActiveWorkoutBanner() {
   if (!active) return;
-  document.getElementById('awb-name').textContent = active.day.name;
+  document.getElementById('awb-name').textContent = (active.mode === 'edit' ? '✏️ ' : '') + active.day.name;
   document.getElementById('active-workout-banner').classList.add('visible');
   startActiveTicker();
 }
@@ -1772,7 +1852,9 @@ function hideActiveWorkoutBanner() {
 
 // Önceki antrenmandan bu hareketin setleri (set sırasına göre)
 function prevForExercise(ex) {
-  const entry = getPrevSetsForExName(ex.name);
+  const exclude = active && active.mode === 'edit' ? DB.workoutLogs[active.editIdx] : null;
+  const all = getLogsByExName(ex.name).filter(e => e.log !== exclude);
+  const entry = all.length ? all[all.length - 1] : null;
   const bySet = [];
   if (entry) entry.sets.forEach((s, i) => {
     const idx = Number.isInteger(s.setIdx) ? s.setIdx : i;
@@ -1825,27 +1907,40 @@ function buildSetRow(ei, s, ex, ps) {
   </div>`;
 }
 
+const REST_OPTIONS = [60, 90, 120, 150, 180, 240];
+function fmtRest(sec) { return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; }
+function restFor(exName) {
+  const map = DB.settings.restByEx || {};
+  return map[normName(exName)] || DB.settings.restDuration || 90;
+}
+function fmtSetShort(s) {
+  return s.repsR != null || s.repsL != null ? `${s.kg || 0}×${s.repsR || 0}/${s.repsL || 0}` : `${s.kg || 0}×${s.reps || 0}`;
+}
+
 function renderExerciseCards() {
   const body = document.getElementById('ws-body');
   if (!active) { body.innerHTML = ''; return; }
   const day = active.day;
+  const isEdit = active.mode === 'edit';
   prevCache = day.exercises.map(prevForExercise);
+  const restOn = !isEdit && DB.settings.restTimerEnabled;
+  const restMap = DB.settings.restByEx || {};
 
-  body.innerHTML = day.exercises.map((ex, ei) => {
+  body.innerHTML = (isEdit ? `<div class="ws-edit-banner">${escapeHtml(fmtDate(active.editDate))} tarihli antrenmanı düzenliyorsun</div>` : '') +
+  day.exercises.map((ex, ei) => {
     const { entry, bySet } = prevCache[ei];
 
     let prevHint = '';
     if (entry) {
       const dayLabel = entry.dayName ? ` · ${escapeHtml(entry.dayName)}` : '';
-      const rows = entry.sets.map((s, i) =>
-        s.repsR != null || s.repsL != null
-          ? `<div>Set ${i+1}: <b>${escapeHtml(s.kg || '?')} kg</b> — Sağ: <b>${escapeHtml(s.repsR || '?')}</b> / Sol: <b>${escapeHtml(s.repsL || '?')}</b> tekrar</div>`
-          : `<div>Set ${i+1}: <b>${escapeHtml(s.kg || '?')} kg × ${escapeHtml(s.reps || '?')} tekrar</b></div>`
-      ).join('');
-      prevHint = `<div class="ex-prev-hint">${fmtDateShort(entry.log.date)}${dayLabel}${rows}</div>`;
+      prevHint = `<div class="ex-prev-hint">Son: ${fmtDateShort(entry.log.date)}${dayLabel} — <b>${escapeHtml(entry.sets.map(fmtSetShort).join(', '))}</b></div>`;
     }
     const noteVal = entry ? noteForExName(entry.log, ex.name) : '';
-    const prevNote = noteVal ? `<div class="ex-note-prev">📝 Önceki not: "${escapeHtml(noteVal)}"</div>` : '';
+    const prevNote = noteVal ? `<div class="ex-prev-note">📝 ${escapeHtml(noteVal)}</div>` : '';
+    const rest = restFor(ex.name);
+    const restChip = restOn
+      ? `<button class="ex-chip${restMap[normName(ex.name)] ? ' custom' : ''}" id="rest-chip-${ei}" onclick="cycleRest(${ei})" aria-label="Dinlenme süresi">⏱ ${fmtRest(rest)}</button>`
+      : '';
 
     let setRows = '';
     for (let s = 0; s < active.sets[ei]; s++) setRows += buildSetRow(ei, s, ex, bySet[s]);
@@ -1855,10 +1950,13 @@ function renderExerciseCards() {
         <div class="ex-card-top">
           <span class="ex-name">${escapeHtml(ex.name)}</span>
           <div class="ex-actions">
+            ${restChip}
+            <button class="ex-chip" id="note-chip-${ei}" onclick="toggleNote(${ei})" aria-label="Not">📝</button>
             <button class="ex-graph-btn" data-ex-name="${escapeHtml(ex.name)}" onclick="openProgressModal(this.dataset.exName)">Grafik</button>
           </div>
         </div>
         ${prevHint}
+        ${prevNote}
       </div>
       <div class="ex-sets-container">
         <div class="set-col-header">
@@ -1874,12 +1972,53 @@ function renderExerciseCards() {
           <button class="set-count-btn accent" onclick="addSet(${ei})">+ Set</button>
         </div>
       </div>
-      <div class="ex-note-section">
-        ${prevNote}
-        <textarea class="ex-note-input" placeholder="Not ekle..." id="note-${ei}" oninput="captureActive()" rows="2"></textarea>
+      <div class="ex-note-section" id="note-sec-${ei}" style="display:none;">
+        <textarea class="ex-note-input" placeholder="Bu hareket için not…" id="note-${ei}" oninput="onNoteInput(${ei})" rows="2"></textarea>
       </div>
     </div>`;
   }).join('');
+  updateProgress();
+}
+
+function toggleNote(ei) {
+  const sec = document.getElementById(`note-sec-${ei}`);
+  const input = document.getElementById(`note-${ei}`);
+  if (!sec) return;
+  const open = sec.style.display === 'none';
+  if (!open && input.value.trim()) { input.focus(); return; } // dolu notu gizleme
+  sec.style.display = open ? 'block' : 'none';
+  if (open) input.focus();
+}
+function onNoteInput(ei) {
+  const chip = document.getElementById(`note-chip-${ei}`);
+  if (chip) chip.classList.toggle('has-note', !!document.getElementById(`note-${ei}`).value.trim());
+  captureActive();
+}
+function cycleRest(ei) {
+  if (!active) return;
+  const ex = active.day.exercises[ei];
+  const cur = restFor(ex.name);
+  const next = REST_OPTIONS[(REST_OPTIONS.indexOf(cur) + 1) % REST_OPTIONS.length] || REST_OPTIONS[0];
+  DB.settings.restByEx = DB.settings.restByEx || {};
+  if (next === (DB.settings.restDuration || 90)) delete DB.settings.restByEx[normName(ex.name)];
+  else DB.settings.restByEx[normName(ex.name)] = next;
+  saveData('settings', DB.settings);
+  // Aynı isimli tüm kartları güncelle
+  active.day.exercises.forEach((e, i) => {
+    if (normName(e.name) !== normName(ex.name)) return;
+    const chip = document.getElementById(`rest-chip-${i}`);
+    if (!chip) return;
+    chip.textContent = '⏱ ' + fmtRest(next);
+    chip.classList.toggle('custom', !!DB.settings.restByEx[normName(ex.name)]);
+  });
+  toast(`⏱ ${ex.name}: ${fmtRest(next)} dinlenme`, 1500);
+}
+function updateProgress() {
+  if (!active) return;
+  const total = active.sets.reduce((a, n) => a + n, 0);
+  const done = document.querySelectorAll('#ws-body .set-done-btn.done').length;
+  document.getElementById('ws-day-sub').textContent = `${done} / ${total} set`;
+  document.getElementById('ws-progress-fill').style.width = (total ? Math.round(done / total * 100) : 0) + '%';
 }
 
 // Kaydedilmiş değerleri ekrana geri yükler
@@ -1895,7 +2034,13 @@ function applyActiveValues() {
   });
   active.day.exercises.forEach((ex, ei) => {
     for (let s = 0; s < active.sets[ei]; s++) checkOverload(ei, s);
+    const note = document.getElementById(`note-${ei}`);
+    if (note && note.value.trim()) {
+      document.getElementById(`note-sec-${ei}`).style.display = 'block';
+      document.getElementById(`note-chip-${ei}`).classList.add('has-note');
+    }
   });
+  updateProgress();
 }
 
 function readSet(ei, s) {
@@ -1973,11 +2118,7 @@ function stepReps(ei, s, delta) {
   onSetInput(ei, s);
 }
 
-function updateWsSub() {
-  if (!active) return;
-  const setCount = active.sets.reduce((a, n) => a + n, 0);
-  document.getElementById('ws-day-sub').textContent = `${active.day.exercises.length} hareket · ${setCount} set`;
-}
+function updateWsSub() { updateProgress(); }
 
 function addSet(ei) {
   if (!active) return;
@@ -2014,15 +2155,28 @@ function completeSet(ei, s) {
   if (btn.classList.contains('done')) {
     btn.classList.remove('done');
     captureActive();
+    updateProgress();
     return;
   }
-  btn.classList.add('done');
-  captureActive();
+  // Boş alanları önceki antrenmanın değerleriyle doldur (gri görünen değerler)
+  const row = document.getElementById(`set-row-${ei}-${s}`);
+  row.querySelectorAll('input').forEach(inp => {
+    if (inp.value === '' && inp.dataset.prev) inp.value = inp.dataset.prev;
+  });
   const ex = active.day.exercises[ei];
   const cur = readSet(ei, s);
   const reps = ex.bilateral ? Math.max(cur.repsR, cur.repsL) : cur.reps;
+  if (!cur.kg && !reps) {
+    toast('Önce kilo ve tekrar gir.');
+    return;
+  }
+  btn.classList.add('done');
+  checkOverload(ei, s);
+  captureActive();
+  updateProgress();
+  if (active.mode === 'edit') return;
   if (cur.kg && reps && isPR(ex.name, cur.kg * reps)) toast('🏆 Yeni kişisel rekor!');
-  if (DB.settings.restTimerEnabled) startRest(ex.name);
+  if (DB.settings.restTimerEnabled) startRest(ex.name, restFor(ex.name));
 }
 
 // ═══════════════════════════════════════════════
@@ -2044,10 +2198,10 @@ function getAudioCtx() {
   } catch(e) { return null; }
 }
 
-function startRest(exName) {
+function startRest(exName, seconds) {
   stopRest();
   document.getElementById('rest-exercise-label').textContent = exName ? exName + ' sonrası' : 'Dinlenme';
-  restEndTime = Date.now() + (DB.settings.restDuration || 90) * 1000;
+  restEndTime = Date.now() + (seconds || DB.settings.restDuration || 90) * 1000;
   updateRestDisplay();
   document.getElementById('rest-banner').classList.add('visible');
   restInterval = setInterval(() => {
@@ -2059,6 +2213,11 @@ function startRest(exName) {
     }
     updateRestDisplay();
   }, 500);
+}
+function adjustRest(delta) {
+  if (!restInterval) return;
+  restEndTime = Math.max(Date.now() + 1000, restEndTime + delta * 1000);
+  updateRestDisplay();
 }
 function updateRestDisplay() {
   document.getElementById('rest-display').textContent = fmtDuration(Math.ceil((restEndTime - Date.now()) / 1000));
@@ -2116,6 +2275,7 @@ function collectWorkoutSets() {
 function finishWorkout() {
   if (!active) return;
   captureActive();
+  if (active.mode === 'edit') { saveEditedLog(); return; }
   const day = active.day;
   const duration = Math.floor((Date.now() - active.startTime) / 1000);
   const allSets = collectWorkoutSets();
@@ -2196,6 +2356,89 @@ function restoreActiveWorkout() {
   if (active.screenOpen) showWorkoutScreen();
   else showActiveWorkoutBanner();
   toast('↩️ Yarım kalan antrenman geri yüklendi.');
+}
+// ── Geçmiş antrenmanı düzenleme ──
+function startEditLog(idx) {
+  const log = DB.workoutLogs[idx];
+  if (!log) return;
+  if (active) {
+    toast(active.mode === 'edit' ? 'Önce açık düzenlemeyi kaydet ya da kapat.' : 'Önce devam eden antrenmanı bitir ya da iptal et.', 3000);
+    return;
+  }
+  const day = getDayById(log.dayId);
+  const filled = (log.sets || []).filter(hasValue);
+  const nameOf = s => s.exName || (day && (day.exercises.find(e => e.id === s.exId) || {}).name) || s.exId;
+
+  // Gün tanımındaki hareketler + logda olup tanımda olmayanlar
+  const exercises = [];
+  const seen = new Set();
+  if (day) day.exercises.forEach(e => { exercises.push({ ...e }); seen.add(normName(e.name)); });
+  filled.forEach(s => {
+    const n = nameOf(s);
+    if (seen.has(normName(n))) return;
+    exercises.push({ id: s.exId || uid(), name: n, sets: 1 });
+    seen.add(normName(n));
+  });
+
+  const sets = [], values = {}, done = [], notesById = {};
+  exercises.forEach((ex, ei) => {
+    const mine = filled.filter(s => normName(nameOf(s)) === normName(ex.name));
+    if (mine.some(s => s.repsR != null || s.repsL != null)) ex.bilateral = true;
+    let count = ex.sets || 1;
+    mine.forEach((s, i) => {
+      const si = Number.isInteger(s.setIdx) ? s.setIdx : i;
+      count = Math.max(count, si + 1);
+      if (s.kg) values[`kg-${ei}-${si}`] = String(s.kg);
+      if (ex.bilateral) {
+        if (s.repsR) values[`repsR-${ei}-${si}`] = String(s.repsR);
+        if (s.repsL) values[`repsL-${ei}-${si}`] = String(s.repsL);
+        if (!s.repsR && !s.repsL && s.reps) values[`repsR-${ei}-${si}`] = String(s.reps);
+      } else if (s.reps) values[`reps-${ei}-${si}`] = String(s.reps);
+      done.push(`set-done-${ei}-${si}`);
+    });
+    sets.push(Math.min(20, count));
+    const note = noteForExName(log, ex.name);
+    if (note) values[`note-${ei}`] = note;
+  });
+
+  active = {
+    mode: 'edit',
+    editIdx: idx,
+    editDate: log.date,
+    dayId: log.dayId,
+    day: { id: log.dayId, name: dayDisplayName(log), exercises },
+    startTime: Date.now(),
+    sets, values, done,
+    screenOpen: true,
+  };
+  renderExerciseCards();
+  applyActiveValues();
+  saveActive();
+  if (!swapTopLayer('historyModal', 'workout')) closeLayer('historyModal');
+  showWorkoutScreen();
+}
+
+function saveEditedLog() {
+  const log = DB.workoutLogs[active.editIdx];
+  if (!log || log.date !== active.editDate || log.dayId !== active.dayId) {
+    toast('❌ Düzenlenen kayıt bulunamadı (silinmiş olabilir).', 3500);
+    return;
+  }
+  const allSets = collectWorkoutSets();
+  if (!allSets.length && !confirm('Hiç set kalmadı. Antrenman setsiz kaydedilsin mi?')) return;
+  const notes = {}, exNotes = {};
+  active.day.exercises.forEach((ex, ei) => {
+    const val = document.getElementById(`note-${ei}`)?.value?.trim();
+    if (val) { notes[ex.id] = val; exNotes[normName(ex.name)] = val; }
+  });
+  const backup = { sets: log.sets, notes: log.notes, exNotes: log.exNotes };
+  log.sets = allSets; log.notes = notes; log.exNotes = exNotes;
+  if (!saveData('workoutLogs', DB.workoutLogs)) { Object.assign(log, backup); return; }
+  discardActive();
+  closeAllLayers();
+  toast('✅ Antrenman güncellendi.');
+  renderHome();
+  if (currentTab === 'stats') renderStats();
 }
 
 // ═══════════════════════════════════════════════
@@ -2320,65 +2563,104 @@ function measVal(id) {
   return v > 0 ? v : null;
 }
 
-function calculateFat() {
-  const profile = DB.settings.profile || {};
-  const height = profile.height || measVal('m-height');
-  const neck = measVal('m-neck');
-  const waist = measVal('m-waist');
-  const hip = measVal('m-hip');
-  const weight = measVal('m-weight');
-  if (!height || !neck || !waist) { toast('Boy, boyun ve bel ölçümü gerekli.'); return; }
+const MEAS_FIELDS = {
+  weight: 'm-weight', neck: 'm-neck', chest: 'm-chest', shoulder: 'm-shoulder', waist: 'm-waist', hip: 'm-hip',
+  armR: 'm-arm-r', armL: 'm-arm-l', forearmR: 'm-forearm-r', forearmL: 'm-forearm-l',
+  thighR: 'm-thigh-r', thighL: 'm-thigh-l', calfR: 'm-calf-r', calfL: 'm-calf-l',
+};
+
+function computeFat(gender, height, neck, waist, hip) {
+  if (!height || !neck || !waist) return null;
   let fat;
-  if (selectedGender === 'male') {
+  if (gender === 'male') {
     fat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
   } else {
-    if (!hip) { toast('Kalça ölçümü gerekli.'); return; }
+    if (!hip) return null;
     fat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
   }
   fat = Math.round(fat * 10) / 10;
-  if (!isFinite(fat) || fat < 1 || fat > 70) { toast('Geçersiz değerler, lütfen kontrol edin.'); return; }
-  let cat = '';
-  if (selectedGender === 'male') {
-    if (fat < 6) cat = 'Temel Yağ';
-    else if (fat < 14) cat = 'Sporcu';
-    else if (fat < 18) cat = 'Fit';
-    else if (fat < 25) cat = 'Ortalama';
-    else cat = 'Obez';
-  } else {
-    if (fat < 14) cat = 'Temel Yağ';
-    else if (fat < 21) cat = 'Sporcu';
-    else if (fat < 25) cat = 'Fit';
-    else if (fat < 32) cat = 'Ortalama';
-    else cat = 'Obez';
+  return isFinite(fat) && fat >= 1 && fat <= 70 ? fat : NaN;
+}
+
+function fatCategory(gender, fat) {
+  if (gender === 'male') {
+    if (fat < 6) return 'Temel Yağ';
+    if (fat < 14) return 'Sporcu';
+    if (fat < 18) return 'Fit';
+    if (fat < 25) return 'Ortalama';
+    return 'Obez';
   }
-  const entry = {
-    date: today(), gender: selectedGender, fat,
-    weight, age: getProfileAge(),
-    neck, waist, hip: selectedGender === 'female' ? hip : null,
-    chest: measVal('m-chest'),
-    shoulder: measVal('m-shoulder'),
-    armR: measVal('m-arm-r'),
-    armL: measVal('m-arm-l'),
-    forearmR: measVal('m-forearm-r'),
-    forearmL: measVal('m-forearm-l'),
-    thighR: measVal('m-thigh-r'),
-    thighL: measVal('m-thigh-l'),
-    calfR: measVal('m-calf-r'),
-    calfL: measVal('m-calf-l'),
-  };
-  DB.measurements = DB.measurements.filter(m => m.date !== entry.date); // günde bir ölçüm
-  DB.measurements.push(entry);
-  DB.measurements.sort((a,b) => String(a.date).localeCompare(String(b.date)));
+  if (fat < 14) return 'Temel Yağ';
+  if (fat < 21) return 'Sporcu';
+  if (fat < 25) return 'Fit';
+  if (fat < 32) return 'Ortalama';
+  return 'Obez';
+}
+
+// Bugünün kaydıyla birleştirir: yeni girilen değerler eskilerin üzerine yazar,
+// boş bırakılanlar korunur
+function upsertMeasurement(partial) {
+  const date = today();
+  const existing = DB.measurements.find(m => m.date === date) || { date };
+  const merged = { ...existing };
+  Object.entries(partial).forEach(([k, v]) => { if (v != null) merged[k] = v; });
+  DB.measurements = DB.measurements.filter(m => m.date !== date);
+  DB.measurements.push(merged);
+  DB.measurements.sort((a, b) => String(a.date).localeCompare(String(b.date)));
   saveData('measurements', DB.measurements);
+  return merged;
+}
+
+function saveQuickWeight() {
+  const input = document.getElementById('quick-weight');
+  const w = num(input.value);
+  if (!(w >= 20 && w <= 400)) { toast('Geçerli bir kilo gir.'); return; }
+  upsertMeasurement({ weight: round2(w) });
+  input.value = '';
+  input.blur();
+  toast('✅ Kilo kaydedildi.');
+  renderMeasurements();
+}
+
+function toggleLimbRows() {
+  const rows = document.getElementById('limb-rows');
+  const btn = document.getElementById('limb-toggle');
+  const open = rows.style.display === 'none';
+  rows.style.display = open ? 'block' : 'none';
+  btn.setAttribute('aria-expanded', String(open));
+}
+
+function calculateFat() {
+  const profile = DB.settings.profile || {};
+  const height = profile.height || measVal('m-height');
+  const vals = {};
+  Object.entries(MEAS_FIELDS).forEach(([k, id]) => { vals[k] = measVal(id); });
+  if (selectedGender !== 'female') vals.hip = null;
+  if (!Object.values(vals).some(v => v != null)) { toast('Kaydedilecek ölçüm yok.'); return; }
+
+  const fat = computeFat(selectedGender, height, vals.neck, vals.waist, vals.hip);
+  if (Number.isNaN(fat)) { toast('Yağ oranı hesaplanamadı, boyun/bel değerlerini kontrol et.', 3000); return; }
+
+  const entry = { ...vals, gender: selectedGender, age: getProfileAge() };
+  if (fat != null) entry.fat = fat;
+  const saved = upsertMeasurement(entry);
+  Object.values(MEAS_FIELDS).forEach(id => { document.getElementById(id).value = ''; });
+
   const rc = document.getElementById('fat-result-card');
-  rc.style.display = 'block';
-  rc.innerHTML = `<div class="result-card">
-    <div class="result-pct">%${fat}</div>
-    <div class="result-label">Vücut Yağ Oranı</div>
-    <div class="result-cat">${cat}</div>
-    ${weight ? `<div style="margin-top:8px;font-size:13px;opacity:0.88;">Yağ: ~${Math.round(fat/100*weight)} kg · Yağsız Kütle: ~${Math.round((1-fat/100)*weight)} kg</div>` : ''}
-  </div>`;
-  toast('✅ Ölçüm kaydedildi!');
+  if (fat != null) {
+    const weight = saved.weight;
+    rc.style.display = 'block';
+    rc.innerHTML = `<div class="result-card">
+      <div class="result-pct">%${fat}</div>
+      <div class="result-label">Vücut Yağ Oranı</div>
+      <div class="result-cat">${fatCategory(selectedGender, fat)}</div>
+      ${weight ? `<div style="margin-top:8px;font-size:13px;opacity:0.88;">Yağ: ~${Math.round(fat/100*weight)} kg · Yağsız Kütle: ~${Math.round((1-fat/100)*weight)} kg</div>` : ''}
+    </div>`;
+    toast('✅ Ölçüm kaydedildi!');
+  } else {
+    rc.style.display = 'none';
+    toast(vals.neck || vals.waist ? '✅ Kaydedildi. Yağ oranı için boyun ve bel birlikte gerekli.' : '✅ Ölçüm kaydedildi!', 3000);
+  }
   renderMeasurements();
 }
 
@@ -2395,35 +2677,39 @@ function renderMeasSummaryCard() {
   const data = DB.measurements;
   if (!data.length) { card.style.display = 'none'; return; }
 
-  const last = data[data.length - 1];
-  const prev = data.length > 1 ? data[data.length - 2] : null;
-  const fatDiff = prev && prev.fat ? (last.fat - prev.fat) : null;
-  const wDiff   = prev && prev.weight && last.weight ? (last.weight - prev.weight) : null;
+  // Her değer için en son ve bir önceki ölçüm (o değerin girildiği kayıtlar arasından)
+  const lastTwo = key => data.filter(m => m[key] != null).slice(-2);
+  const [fPrev, fLast] = (a => a.length === 2 ? a : [null, a[0] || null])(lastTwo('fat'));
+  const [wPrev, wLast] = (a => a.length === 2 ? a : [null, a[0] || null])(lastTwo('weight'));
+  if (!fLast && !wLast) { card.style.display = 'none'; return; }
 
-  const diffBadge = (diff, unit, reverse) => {
+  const diffBadge = (diff, unit) => {
     if (diff === null) return '';
-    const better = reverse ? diff < 0 : diff > 0;
-    const color = diff === 0 ? 'var(--text-secondary)' : better ? 'var(--green)' : '#ff3b30';
+    const color = diff === 0 ? 'var(--text-secondary)' : diff < 0 ? 'var(--green)' : '#ff3b30';
     const sign = diff > 0 ? '+' : '';
     return `<span style="font-size:12px;font-weight:600;color:${color};margin-left:6px;">${sign}${Math.round(diff*10)/10}${unit}</span>`;
   };
+  const fatDiff = fLast && fPrev ? fLast.fat - fPrev.fat : null;
+  const wDiff = wLast && wPrev ? wLast.weight - wPrev.weight : null;
+  const lastDate = data[data.length - 1].date;
+  const leanW = fLast && wLast ? wLast.weight : null;
 
   card.style.display = 'block';
   card.innerHTML = `<div class="card meas-summary-card">
-    <div class="meas-sum-date">${fmtDate(last.date)} · Son ölçüm</div>
+    <div class="meas-sum-date">${fmtDate(lastDate)} · Son ölçüm</div>
     <div class="meas-sum-row">
-      <div class="meas-sum-item">
-        <div class="meas-sum-val">%${escapeHtml(last.fat)}</div>
-        <div class="meas-sum-lbl">Yağ Oranı ${diffBadge(fatDiff, '%', false)}</div>
-      </div>
-      ${last.weight ? `<div class="meas-sum-divider"></div>
-      <div class="meas-sum-item">
-        <div class="meas-sum-val">${escapeHtml(last.weight)} kg</div>
-        <div class="meas-sum-lbl">Vücut Ağırlığı ${diffBadge(wDiff, ' kg', false)}</div>
+      ${fLast ? `<div class="meas-sum-item">
+        <div class="meas-sum-val">%${escapeHtml(fLast.fat)}</div>
+        <div class="meas-sum-lbl">Yağ Oranı ${diffBadge(fatDiff, '%')}</div>
+      </div>` : ''}
+      ${fLast && wLast ? '<div class="meas-sum-divider"></div>' : ''}
+      ${wLast ? `<div class="meas-sum-item">
+        <div class="meas-sum-val">${escapeHtml(wLast.weight)} kg</div>
+        <div class="meas-sum-lbl">Vücut Ağırlığı ${diffBadge(wDiff, ' kg')}</div>
       </div>` : ''}
     </div>
-    ${last.fat && last.weight ? `<div class="meas-sum-sub">
-      Yağ kütlesi: ~${Math.round(last.fat/100*last.weight)} kg &nbsp;·&nbsp; Yağsız kütle: ~${Math.round((1-last.fat/100)*last.weight)} kg
+    ${leanW ? `<div class="meas-sum-sub">
+      Yağ kütlesi: ~${Math.round(fLast.fat/100*leanW)} kg &nbsp;·&nbsp; Yağsız kütle: ~${Math.round((1-fLast.fat/100)*leanW)} kg
     </div>` : ''}
   </div>`;
 }
@@ -2451,6 +2737,8 @@ function renderFatChart() {
   const meta = trendMeta[currentTrendKey] || trendMeta.fat;
   const key = trendMeta[currentTrendKey] ? currentTrendKey : 'fat';
   const data = DB.measurements.filter(m => m[key] != null);
+  const empty = document.getElementById('fat-chart-empty');
+  if (empty) empty.style.display = data.length < 2 ? 'flex' : 'none';
   if (data.length < 2 || !window.Chart) return;
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
@@ -2472,7 +2760,7 @@ function renderFatChart() {
       plugins: { legend: { display: false } },
       scales: {
         x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
-        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: meta.suffix }, min: 0 }
+        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: meta.suffix }, ...(key === 'fat' ? { min: 0 } : {}) }
       }
     }
   });
@@ -2490,6 +2778,7 @@ function renderMeasHistory() {
     const day = isNaN(d) ? '?' : d.getDate();
     const mo = isNaN(d) ? '' : d.toLocaleDateString('tr-TR', { month:'short' });
     const extras = [
+      m.waist    ? `Bel ${m.waist} cm` : null,
       m.chest    ? `Göğüs ${m.chest} cm` : null,
       m.shoulder ? `Omuz ${m.shoulder} cm` : null,
       m.armR     ? `Kol ${m.armR} cm` : null,
@@ -2500,8 +2789,8 @@ function renderMeasHistory() {
       <div style="display:flex;align-items:center;gap:10px;">
         <div class="meas-date-badge"><span>${day}<br>${escapeHtml(mo)}</span></div>
         <div style="flex:1;">
-          <div style="font-size:14px;font-weight:600;">%${escapeHtml(m.fat)} yağ oranı</div>
-          <div style="font-size:12px;color:var(--text-secondary);">${m.weight ? escapeHtml(m.weight) + ' kg · ' : ''}${m.gender === 'female' ? 'Kadın' : 'Erkek'}</div>
+          <div style="font-size:14px;font-weight:600;">${m.fat != null ? `%${escapeHtml(m.fat)} yağ oranı` : m.weight ? `${escapeHtml(m.weight)} kg` : 'Ölçüm'}</div>
+          <div style="font-size:12px;color:var(--text-secondary);">${m.fat != null ? (m.weight ? escapeHtml(m.weight) + ' kg · ' : '') + (m.gender === 'female' ? 'Kadın' : 'Erkek') : (m.weight ? 'Tartı' : '')}</div>
         </div>
         <button class="delete-btn" onclick="deleteMeasurement(${idx})">✕</button>
       </div>
@@ -2635,14 +2924,19 @@ function renderLogDeleteList() {
 
 function deleteWorkoutLog(idx) {
   const log = DB.workoutLogs[idx];
-  if (!log) return;
-  if (!confirm(`"${dayDisplayName(log)}" – ${fmtDate(log.date)} tarihli antrenman silinsin mi?`)) return;
+  if (!log) return false;
+  if (active && active.mode === 'edit') {
+    toast('Önce açık düzenlemeyi kaydet ya da kapat.', 3000);
+    return false;
+  }
+  if (!confirm(`"${dayDisplayName(log)}" – ${fmtDate(log.date)} tarihli antrenman silinsin mi?`)) return false;
   DB.workoutLogs.splice(idx, 1);
   saveData('workoutLogs', DB.workoutLogs);
   renderLogDeleteList();
   renderHome();
   renderStats();
   toast('Antrenman silindi.');
+  return true;
 }
 
 function renderSettings() {
