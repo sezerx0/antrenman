@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Antrenman">
@@ -688,13 +688,13 @@ body {
           </div>
         </div>
         <div class="form-row">
-          <span class="form-label">Yaş</span>
-          <input class="form-input" type="number" id="m-birthyear" placeholder="" min="10" max="99" oninput="saveProfile()">
-          <span class="form-unit">yıl</span>
+          <span class="form-label">Doğum Yılı</span>
+          <input class="form-input" type="text" inputmode="numeric" id="m-birthyear" placeholder="1995" maxlength="4" oninput="saveProfile()">
+          <span class="form-unit"></span>
         </div>
         <div class="form-row">
           <span class="form-label">Boy</span>
-          <input class="form-input" type="number" id="m-height" placeholder="175" min="100" max="250" oninput="saveProfile()">
+          <input class="form-input" type="text" inputmode="decimal" id="m-height" placeholder="175" min="100" max="250" oninput="saveProfile()">
           <span class="form-unit">cm</span>
         </div>
         <div style="padding: 10px 16px 12px; display:flex; justify-content:flex-end;">
@@ -708,76 +708,76 @@ body {
       <div class="card meas-form">
         <div class="form-row">
           <span class="form-label">Vücut Ağırlığı</span>
-          <input class="form-input" type="number" id="m-weight" placeholder="80" min="30" max="300">
+          <input class="form-input" type="text" inputmode="decimal" id="m-weight" placeholder="80" min="30" max="300">
           <span class="form-unit">kg</span>
         </div>
 
         <div class="meas-section-title">Çevre Ölçüleri</div>
         <div class="form-row">
           <span class="form-label">Boyun</span>
-          <input class="form-input" type="number" id="m-neck" placeholder="38" min="20" max="70">
+          <input class="form-input" type="text" inputmode="decimal" id="m-neck" placeholder="38" min="20" max="70">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
           <span class="form-label">Göğüs</span>
-          <input class="form-input" type="number" id="m-chest" placeholder="100" min="40" max="200">
+          <input class="form-input" type="text" inputmode="decimal" id="m-chest" placeholder="100" min="40" max="200">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
           <span class="form-label">Omuz</span>
-          <input class="form-input" type="number" id="m-shoulder" placeholder="115" min="40" max="200">
+          <input class="form-input" type="text" inputmode="decimal" id="m-shoulder" placeholder="115" min="40" max="200">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
           <span class="form-label">Bel</span>
-          <input class="form-input" type="number" id="m-waist" placeholder="85" min="40" max="200">
+          <input class="form-input" type="text" inputmode="decimal" id="m-waist" placeholder="85" min="40" max="200">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row" id="hip-row">
           <span class="form-label">Kalça</span>
-          <input class="form-input" type="number" id="m-hip" placeholder="95" min="40" max="200">
+          <input class="form-input" type="text" inputmode="decimal" id="m-hip" placeholder="95" min="40" max="200">
           <span class="form-unit">cm</span>
         </div>
 
         <div class="meas-section-title">Kol & Bacak</div>
         <div class="form-row">
           <span class="form-label">Sağ Kol</span>
-          <input class="form-input" type="number" id="m-arm-r" placeholder="38" min="10" max="80">
+          <input class="form-input" type="text" inputmode="decimal" id="m-arm-r" placeholder="38" min="10" max="80">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
           <span class="form-label">Sol Kol</span>
-          <input class="form-input" type="number" id="m-arm-l" placeholder="38" min="10" max="80">
+          <input class="form-input" type="text" inputmode="decimal" id="m-arm-l" placeholder="38" min="10" max="80">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
           <span class="form-label">Sağ Ön Kol</span>
-          <input class="form-input" type="number" id="m-forearm-r" placeholder="28" min="10" max="60">
+          <input class="form-input" type="text" inputmode="decimal" id="m-forearm-r" placeholder="28" min="10" max="60">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
           <span class="form-label">Sol Ön Kol</span>
-          <input class="form-input" type="number" id="m-forearm-l" placeholder="28" min="10" max="60">
+          <input class="form-input" type="text" inputmode="decimal" id="m-forearm-l" placeholder="28" min="10" max="60">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
           <span class="form-label">Sağ Uyluk</span>
-          <input class="form-input" type="number" id="m-thigh-r" placeholder="58" min="20" max="120">
+          <input class="form-input" type="text" inputmode="decimal" id="m-thigh-r" placeholder="58" min="20" max="120">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
           <span class="form-label">Sol Uyluk</span>
-          <input class="form-input" type="number" id="m-thigh-l" placeholder="58" min="20" max="120">
+          <input class="form-input" type="text" inputmode="decimal" id="m-thigh-l" placeholder="58" min="20" max="120">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
           <span class="form-label">Sağ Baldır</span>
-          <input class="form-input" type="number" id="m-calf-r" placeholder="38" min="10" max="80">
+          <input class="form-input" type="text" inputmode="decimal" id="m-calf-r" placeholder="38" min="10" max="80">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
           <span class="form-label">Sol Baldır</span>
-          <input class="form-input" type="number" id="m-calf-l" placeholder="38" min="10" max="80">
+          <input class="form-input" type="text" inputmode="decimal" id="m-calf-l" placeholder="38" min="10" max="80">
           <span class="form-unit">cm</span>
         </div>
       </div>
@@ -814,7 +814,7 @@ body {
   <div class="screen" id="tab-stats" style="display:none;flex-direction:column;">
     <div class="nav-header">
       <h1>PR & 1RM</h1>
-      <p>Kişisel rekорlar ve hesaplayıcı</p>
+      <p>Kişisel rekorlar ve hesaplayıcı</p>
     </div>
 
     <div class="section" style="margin-top:14px;">
@@ -848,7 +848,7 @@ body {
     </div>
 
     <div class="section" style="margin-top:14px; padding-bottom:20px;">
-      <div class="section-label">Kişisel Rekорlar</div>
+      <div class="section-label">Kişisel Rekorlar</div>
       <input type="search" id="pr-search" placeholder="Hareket ara…" oninput="filterPR(this.value)" style="width:100%;box-sizing:border-box;background:var(--bg-primary);border:none;border-radius:12px;padding:10px 14px;font-size:14px;color:var(--text-primary);margin-bottom:8px;outline:none;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
       <div class="card pr-list" id="pr-list">
         <div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydı yok.</div>
@@ -932,7 +932,7 @@ body {
 
     <div class="section" style="margin-top:14px;">
       <div class="card settings-group" style="overflow:hidden;">
-        <button class="settings-row" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;color:inherit;" onclick="toggleLogHistory(this)">
+        <button class="settings-row" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;color:inherit;" onclick="toggleLogHistory()">
           <div class="settings-icon" style="background:#ff3b3020;">🗂️</div>
           <span class="settings-label">Antrenman Geçmişi</span>
           <span class="settings-chevron" id="log-history-chevron">›</span>
@@ -1122,63 +1122,202 @@ const DEFAULT_DAYS = [
     { id: 'hack-squat', name: 'Hack Squat', sets: 3 },
   ]},
 ];
+const DEFAULT_SETTINGS = { theme: 'light', restTimerEnabled: true, restDuration: 90 };
 
-function lsGet(key) { try { return localStorage.getItem(key); } catch(e) { return null; } }
-function lsSet(key, val) { try { localStorage.setItem(key, val); } catch(e) {} }
-function escapeHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+// Tüm anahtarlar bu önekle saklanır. GitHub Pages'te aynı origin'i paylaşan
+// diğer projelerle çakışmayı önler; sıfırlama da sadece bu anahtarları siler.
+const LS_PREFIX = 'antrenman:';
+const LEGACY_KEYS = ['dbVersion','workoutDays','workoutLogs','measurements','settings','workoutOrder','supplHistory','suppl','lastBackup'];
+
+function lsGet(key) { try { return localStorage.getItem(LS_PREFIX + key); } catch(e) { return null; } }
+function lsSet(key, val) { try { localStorage.setItem(LS_PREFIX + key, val); return true; } catch(e) { return false; } }
+function lsRemove(key) { try { localStorage.removeItem(LS_PREFIX + key); } catch(e) {} }
+function lsOwnKeys() {
+  const out = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(LS_PREFIX)) out.push(k);
+    }
+  } catch(e) {}
+  return out;
 }
 
-const DB_VERSION = 1;
-
-function loadData() {
-  return {
-    version: parseInt(lsGet('dbVersion') || '0'),
-    workoutDays: JSON.parse(lsGet('workoutDays') || 'null') || DEFAULT_DAYS,
-    workoutLogs: JSON.parse(lsGet('workoutLogs') || '[]'),
-    measurements: JSON.parse(lsGet('measurements') || '[]'),
-    settings: JSON.parse(lsGet('settings') || '{"theme":"light","restTimerEnabled":true,"restDuration":90}'),
-    workoutOrder: JSON.parse(lsGet('workoutOrder') || 'null'),
-  };
+// Eski (öneksiz) anahtarları yeni öneke taşır. Kopyalama tamamen başarılı
+// olmadan eski anahtarlar silinmez.
+function migrateLegacyKeys() {
+  try {
+    if (localStorage.getItem(LS_PREFIX + 'migrated')) return;
+    LEGACY_KEYS.forEach(k => {
+      const v = localStorage.getItem(k);
+      if (v !== null && localStorage.getItem(LS_PREFIX + k) === null) localStorage.setItem(LS_PREFIX + k, v);
+    });
+    localStorage.setItem(LS_PREFIX + 'migrated', '1');
+    LEGACY_KEYS.forEach(k => localStorage.removeItem(k));
+  } catch(e) {}
 }
-function migrateDB() {
-  if (DB.version < DB_VERSION) {
-    DB.version = DB_VERSION;
-    lsSet('dbVersion', DB_VERSION);
+
+// Bozuk JSON uygulamayı çökertmesin: ham veri yedeklenir, varsayılan kullanılır.
+function readJSON(key, fallback) {
+  const raw = lsGet(key);
+  if (raw == null) return fallback;
+  try {
+    const v = JSON.parse(raw);
+    return v == null ? fallback : v;
+  } catch(e) {
+    lsSet(key + ':bozuk-' + Date.now(), raw);
+    return fallback;
   }
 }
-function saveData(key, value) {
-  lsSet(key, JSON.stringify(value));
+function isPlainObject(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+// onclick="fn(...)" içine güvenle string argüman koymak için
+function jsArg(v) { return escapeHtml(JSON.stringify(String(v ?? ''))); }
+function safeColor(c) { return /^#[0-9a-fA-F]{3,8}$/.test(String(c || '')) ? c : '#8e8e93'; }
+function deepCopy(v) { return JSON.parse(JSON.stringify(v)); }
+
+// Virgüllü ondalıkları da kabul eder ("22,5" → 22.5)
+function num(v) {
+  const s = String(v ?? '').trim().replace(',', '.');
+  if (s === '') return NaN;
+  return parseFloat(s);
+}
+function int(v) {
+  const s = String(v ?? '').trim();
+  if (s === '') return NaN;
+  return parseInt(s, 10);
+}
+function round2(n) { return Math.round(n * 100) / 100; }
+
+const DB_VERSION = 2;
+
+function normalizeDays(days) {
+  return days.map(d => ({
+    ...d,
+    id: String(d.id),
+    name: String(d.name ?? '').trim() || 'Gün',
+    exercises: (Array.isArray(d.exercises) ? d.exercises : []).map(ex => ({
+      ...ex,
+      id: String(ex.id || uid()),
+      name: String(ex.name ?? '').trim(),
+      sets: Math.min(10, Math.max(1, parseInt(ex.sets) || 1)),
+    })),
+  }));
 }
 
-let DB = loadData();
-if (!DB.workoutOrder) {
-  DB.workoutOrder = DB.workoutDays.map(d => d.id);
-  saveData('workoutOrder', DB.workoutOrder);
+function loadData() {
+  const days = readJSON('workoutDays', null);
+  const logs = readJSON('workoutLogs', []);
+  const meas = readJSON('measurements', []);
+  const settings = readJSON('settings', {});
+  const order = readJSON('workoutOrder', null);
+  return {
+    version: parseInt(lsGet('dbVersion') || '0') || 0,
+    workoutDays: Array.isArray(days) ? normalizeDays(days) : deepCopy(DEFAULT_DAYS),
+    workoutLogs: Array.isArray(logs) ? logs.filter(l => isPlainObject(l) && l.date && Array.isArray(l.sets)) : [],
+    measurements: Array.isArray(meas) ? meas.filter(m => isPlainObject(m) && m.date) : [],
+    settings: Object.assign({}, DEFAULT_SETTINGS, isPlainObject(settings) ? settings : {}),
+    workoutOrder: Array.isArray(order) ? order.map(String) : [],
+  };
 }
+
+function saveData(key, value) {
+  const ok = lsSet(key, JSON.stringify(value));
+  if (!ok) toast('⚠️ Kaydedilemedi: cihaz depolaması dolu olabilir.', 4000);
+  return ok;
+}
+
+// Eski kayıtları tamamlar: her sete hareket adı, her loga gün adı yazılır.
+// Böylece gün silinse ya da yeniden adlandırılsa da geçmiş kaybolmaz.
+function normalizeLogs(logs, days) {
+  const dayMap = {};
+  (days || []).forEach(d => { dayMap[d.id] = d; });
+  logs.forEach(log => {
+    const day = dayMap[log.dayId];
+    if (!log.dayName && day) log.dayName = day.name;
+    log.sets.forEach(s => {
+      if (!s.exName && day) {
+        const ex = day.exercises.find(e => e.id === s.exId);
+        if (ex) s.exName = ex.name;
+      }
+    });
+  });
+  return logs;
+}
+
+function syncOrder() {
+  const ids = DB.workoutDays.map(d => d.id);
+  const order = DB.workoutOrder.filter((id, i, arr) => ids.includes(id) && arr.indexOf(id) === i);
+  ids.forEach(id => { if (!order.includes(id)) order.push(id); });
+  const changed = order.join('|') !== DB.workoutOrder.join('|');
+  DB.workoutOrder = order;
+  if (changed) saveData('workoutOrder', DB.workoutOrder);
+}
+
+function migrateDB() {
+  if (DB.version < 2) {
+    normalizeLogs(DB.workoutLogs, DB.workoutDays);
+    saveData('workoutLogs', DB.workoutLogs);
+    const p = DB.settings.profile;
+    if (p && p.age && !p.birthYear) {
+      p.birthYear = new Date().getFullYear() - p.age;
+      delete p.age;
+      saveData('settings', DB.settings);
+    }
+  }
+  if (DB.version < DB_VERSION) {
+    DB.version = DB_VERSION;
+    lsSet('dbVersion', String(DB_VERSION));
+  }
+}
+
+migrateLegacyKeys();
+let DB = loadData();
+syncOrder();
 migrateDB();
 
 // ═══════════════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════════════
-function today() {
-  const d = new Date();
-  if (d.getHours() < 4) d.setDate(d.getDate() - 1);
+function isoDate(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+// Gece 04:00'e kadar yapılan antrenmanlar bir önceki güne sayılır
+function logicalNow() {
+  const d = new Date();
+  if (d.getHours() < 4) d.setDate(d.getDate() - 1);
+  return d;
+}
+function today() { return isoDate(logicalNow()); }
 function fmtDate(iso) {
+  if (!iso) return '';
   const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return String(iso);
   return d.toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric' });
 }
 function fmtDateShort(iso) {
+  if (!iso) return '';
   const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return String(iso);
   return d.toLocaleDateString('tr-TR', { day:'numeric', month:'short' });
 }
 function fmtDuration(secs) {
-  const m = Math.floor(secs/60), s = secs%60;
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  secs = Math.max(0, Math.floor(secs));
+  const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60), s = secs % 60;
+  const mm = String(m).padStart(2,'0'), ss = String(s).padStart(2,'0');
+  return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
+function firstChar(str) { return Array.from(String(str || '?'))[0] || '?'; }
+// Büyük/küçük harf ve I/ı/İ/i farkı gözetmeksizin karşılaştırma için
+function normName(n) { return String(n || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('tr').replace(/ı/g, 'i'); }
 function getDayById(id) { return DB.workoutDays.find(d => d.id === id); }
+function dayDisplayName(log) {
+  const d = getDayById(log.dayId);
+  return d ? d.name : (log.dayName || 'Silinmiş gün');
+}
 function getNextDayId() {
   const logs = DB.workoutLogs;
   if (!logs.length) return DB.workoutOrder[0];
@@ -1186,55 +1325,95 @@ function getNextDayId() {
   const idx = DB.workoutOrder.indexOf(last.dayId);
   return DB.workoutOrder[(idx + 1) % DB.workoutOrder.length];
 }
-// Verilen egzersiz adına ait tüm kayıtları döndürür (tüm günler dahil)
+function hasValue(s) { return !!(s && (s.kg || s.reps || s.repsR || s.repsL)); }
+function setVolume(s) { return (s.kg || 0) * (s.reps || 0); }
+function logVolume(log) { return Math.round((log.sets || []).reduce((a, s) => a + setVolume(s), 0)); }
+
+function setMatchesName(s, log, norm) {
+  if (s.exName) return normName(s.exName) === norm;
+  // exName alanı olmayan çok eski kayıtlar: gün tanımından ID ile eşleştir
+  const day = getDayById(log.dayId);
+  const ex = day && day.exercises.find(e => e.id === s.exId);
+  return !!ex && normName(ex.name) === norm;
+}
+
+// Verilen hareket adına ait, en az bir dolu seti olan kayıtlar (tarihe göre sıralı)
 function getLogsByExName(exName) {
-  const norm = exName.trim().toLowerCase();
+  const norm = normName(exName);
   const results = [];
   DB.workoutLogs.forEach(log => {
-    const day = getDayById(log.dayId);
-    // exName alanı olan yeni kayıtlar: doğrudan isim eşleştirme
-    const setsByName = log.sets.filter(s => s.exName && s.exName.trim().toLowerCase() === norm);
-    if (setsByName.length) {
-      results.push({ log, sets: setsByName, dayName: day ? day.name : log.dayId });
-      return;
-    }
-    // Eski kayıtlar: gün tanımından ID bul, ID ile eşleştir
-    if (!day) return;
-    const ex = day.exercises.find(e => e.name.trim().toLowerCase() === norm);
-    if (!ex) return;
-    const setsById = log.sets.filter(s => s.exId === ex.id);
-    if (setsById.length) results.push({ log, sets: setsById, dayName: day.name });
+    const sets = (log.sets || []).filter(s => hasValue(s) && setMatchesName(s, log, norm));
+    if (sets.length) results.push({ log, sets, dayName: dayDisplayName(log) });
   });
-  return results;
+  return results.sort((a, b) => String(a.log.date).localeCompare(String(b.log.date)));
 }
 
-// Verilen egzersiz adı için en son önceki antrenman setlerini döndürür
 function getPrevSetsForExName(exName) {
   const all = getLogsByExName(exName);
-  if (!all.length) return null;
-  return all[all.length - 1];
+  return all.length ? all[all.length - 1] : null;
 }
 
-function getPrevLog(dayId) {
-  const logs = DB.workoutLogs.filter(l => l.dayId === dayId);
-  return logs.length ? logs[logs.length - 1] : null;
-}
+// Tek 1RM formülü (Epley). 1 tekrar = kaldırılan ağırlık.
 function calcEpley(kg, reps) {
-  if (!kg || !reps || reps < 1) return 0;
+  kg = Number(kg) || 0; reps = Number(reps) || 0;
+  if (kg <= 0 || reps < 1) return 0;
+  if (reps === 1) return Math.round(kg * 10) / 10;
   return Math.round(kg * (1 + reps / 30) * 10) / 10;
 }
 function isPR(exName, volume) {
   const all = getLogsByExName(exName);
   if (!all.length) return false;
-  const maxVol = Math.max(...all.flatMap(r => r.sets.map(s => (s.kg||0)*(s.reps||0))));
+  const maxVol = Math.max(...all.flatMap(r => r.sets.map(setVolume)));
   return volume > maxVol;
 }
+
+let toastTimer = null;
 function toast(msg, dur = 2200) {
   const el = document.getElementById('toast');
+  if (!el) return;
   el.textContent = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), dur);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), dur);
 }
+
+// ═══════════════════════════════════════════════
+//  OVERLAY / GERİ TUŞU YÖNETİMİ
+// ═══════════════════════════════════════════════
+// Açılan her katman tarayıcı geçmişine bir kayıt ekler. Katman ister
+// butonla ister geri tuşuyla kapansın, geçmiş kaydı da geri alınır.
+const layers = [];
+const LAYER_CLOSERS = {
+  workout:       () => hideWorkoutScreenUI(),
+  summary:       () => document.getElementById('summary-overlay').classList.remove('open'),
+  historyModal:  () => document.getElementById('history-modal').classList.remove('open'),
+  progressModal: () => document.getElementById('progress-modal').classList.remove('open'),
+  dayEditor:     () => document.getElementById('day-editor').classList.remove('open'),
+  orderEditor:   () => document.getElementById('order-editor').classList.remove('open'),
+};
+function pushLayer(name) {
+  if (layers[layers.length - 1] === name) return;
+  layers.push(name);
+  try { history.pushState({ layerDepth: layers.length }, ''); } catch(e) {}
+}
+function closeLayer(name) {
+  if (layers[layers.length - 1] === name) { history.back(); return; }
+  const i = layers.lastIndexOf(name);
+  if (i !== -1) layers.splice(i, 1);
+  LAYER_CLOSERS[name]();
+}
+function closeAllLayers() {
+  if (layers.length) history.go(-layers.length);
+}
+// Sayfa yenilendiğinde tarayıcı eski katman kaydını hatırlayabilir; sıfırla
+try { history.replaceState({ layerDepth: 0 }, ''); } catch(e) {}
+window.addEventListener('popstate', e => {
+  const depth = (e.state && e.state.layerDepth) || 0;
+  while (layers.length > depth) {
+    const name = layers.pop();
+    LAYER_CLOSERS[name]();
+  }
+});
 
 // ═══════════════════════════════════════════════
 //  TAB NAVIGATION
@@ -1262,14 +1441,12 @@ function switchTab(tab) {
 //  HOME SCREEN
 // ═══════════════════════════════════════════════
 function renderHome() {
-  const now = new Date();
-  document.getElementById('home-date').textContent = now.toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  document.getElementById('home-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
   renderDaySelectList();
 
-  // Month stats
   const monthStr = today().slice(0,7);
-  const monthLogs = DB.workoutLogs.filter(l => l.date.startsWith(monthStr));
+  const monthLogs = DB.workoutLogs.filter(l => String(l.date).startsWith(monthStr));
   document.getElementById('stat-month-count').textContent = monthLogs.length;
   document.getElementById('stat-total-count').textContent = DB.workoutLogs.length;
 
@@ -1285,12 +1462,9 @@ function renderDaySelectList() {
   const container = document.getElementById('day-select-list');
   if (!container) return;
 
-  // Son antrenman tarihini her gün için bul
   const lastLogByDay = {};
   DB.workoutLogs.forEach(log => {
-    if (!lastLogByDay[log.dayId] || log.date > lastLogByDay[log.dayId].date) {
-      lastLogByDay[log.dayId] = log;
-    }
+    if (!lastLogByDay[log.dayId] || log.date > lastLogByDay[log.dayId].date) lastLogByDay[log.dayId] = log;
   });
 
   container.innerHTML = DB.workoutDays.map(day => {
@@ -1300,9 +1474,9 @@ function renderDaySelectList() {
     const lastLog = lastLogByDay[day.id];
     const lastDateStr = lastLog ? fmtDate(lastLog.date) : null;
 
-    return `<div class="card day-select-card ${isNext ? 'day-select-next' : ''}" onclick="openWorkoutScreen('${day.id}')">
+    return `<div class="card day-select-card ${isNext ? 'day-select-next' : ''}" onclick="openWorkoutScreen(${jsArg(day.id)})">
       <div class="day-select-left">
-        <div class="day-select-badge">${day.name.slice(0,1)}</div>
+        <div class="day-select-badge">${escapeHtml(firstChar(day.name))}</div>
         <div>
           <div class="day-select-name">${escapeHtml(day.name)}${isNext ? ' <span class="next-tag">Sıradaki</span>' : ''}</div>
           <div class="day-select-meta">${exCount} hareket · ${setCount} set${lastDateStr ? ` · Son: ${lastDateStr}` : ''}</div>
@@ -1313,11 +1487,18 @@ function renderDaySelectList() {
   }).join('');
 }
 
+const DAY_PALETTE = ['#007aff','#34c759','#ff9f0a','#af52de','#ff3b30','#5ac8fa'];
+function dayColorMap() {
+  const map = {};
+  DB.workoutDays.forEach((d, i) => { map[d.id] = DAY_PALETTE[i % DAY_PALETTE.length]; });
+  return map;
+}
+
 let workoutCalOffset = 0;
 function shiftWorkoutCal(d) { workoutCalOffset += d; renderHeatmap(); }
 
 function renderHeatmap() {
-  const base = new Date();
+  const base = logicalNow();
   base.setDate(1);
   base.setMonth(base.getMonth() + workoutCalOffset);
   const year = base.getFullYear();
@@ -1333,14 +1514,10 @@ function renderHeatmap() {
   dowsEl.innerHTML = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'].map(d => `<div class="workout-cal-dow">${d}</div>`).join('');
 
   const monthStr = `${year}-${String(month+1).padStart(2,'0')}`;
-  const monthLogs = DB.workoutLogs.filter(l => l.date.startsWith(monthStr));
+  const monthLogs = DB.workoutLogs.filter(l => String(l.date).startsWith(monthStr));
   const logByDate = {};
   monthLogs.forEach(l => { logByDate[l.date] = l; });
-
-  // Collect unique day names for legend colors
-  const dayColors = {};
-  const palette = ['#007aff','#34c759','#ff9f0a','#af52de','#ff3b30','#5ac8fa'];
-  DB.workoutDays.forEach((d, i) => { dayColors[d.id] = palette[i % palette.length]; });
+  const dayColors = dayColorMap();
 
   const firstDow = (new Date(year, month, 1).getDay() + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -1353,9 +1530,7 @@ function renderHeatmap() {
     const log = logByDate[dateStr];
     const isToday = dateStr === todayStr ? ' today' : '';
     if (log) {
-      const color = dayColors[log.dayId] || '#007aff';
-      const day = getDayById(log.dayId);
-      const tag = day ? day.name.slice(0,6) : '';
+      const color = dayColors[log.dayId] || '#8e8e93';
       html += `<div class="wcal-day has-workout${isToday}" style="background:${color}${isToday ? ';outline-color:'+color : ''};">
         <span class="wcal-num">${d}</span>
       </div>`;
@@ -1365,13 +1540,12 @@ function renderHeatmap() {
   }
   gridEl.innerHTML = html;
 
-  // Legend: only days that appear this month
-  const seenDayIds = [...new Set(monthLogs.map(l => l.dayId))];
-  if (seenDayIds.length) {
-    legendEl.innerHTML = seenDayIds.map(id => {
-      const day = getDayById(id);
-      return `<div class="wcal-legend-item"><div class="wcal-legend-dot" style="background:${dayColors[id]||'#007aff'};"></div>${escapeHtml(day ? day.name : id)}</div>`;
-    }).join('');
+  const seen = [];
+  monthLogs.forEach(l => { if (!seen.find(x => x.dayId === l.dayId)) seen.push(l); });
+  if (seen.length) {
+    legendEl.innerHTML = seen.map(l =>
+      `<div class="wcal-legend-item"><div class="wcal-legend-dot" style="background:${dayColors[l.dayId] || '#8e8e93'};"></div>${escapeHtml(dayDisplayName(l))}</div>`
+    ).join('');
   } else {
     legendEl.innerHTML = `<span style="color:var(--text-secondary);font-size:12px;">Bu ay antrenman yok</span>`;
   }
@@ -1379,19 +1553,18 @@ function renderHeatmap() {
 
 function renderRecentList() {
   const list = document.getElementById('recent-list');
-  const logs = [...DB.workoutLogs].reverse().slice(0, 7);
-  if (!logs.length) {
+  const items = DB.workoutLogs.map((log, idx) => ({ log, idx })).reverse().slice(0, 7);
+  if (!items.length) {
     list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydedilmedi.</div>';
     return;
   }
-  list.innerHTML = logs.map(log => {
-    const day = getDayById(log.dayId);
-    const name = day ? day.name : log.dayId;
-    const initial = name.slice(0,2).toUpperCase();
+  list.innerHTML = items.map(({ log, idx }) => {
+    const name = dayDisplayName(log);
+    const initial = Array.from(name).slice(0, 2).join('').toLocaleUpperCase('tr');
     const dur = log.duration ? `${Math.round(log.duration/60)} dk` : '';
-    const vol = log.sets ? Math.round(log.sets.reduce((a,s) => a+(s.kg||0)*(s.reps||0),0)) : 0;
-    return `<div class="recent-item" onclick="openHistoryModal('${log.date}','${log.dayId}')">
-      <div class="recent-dot"><span>${initial}</span></div>
+    const vol = logVolume(log);
+    return `<div class="recent-item" onclick="openHistoryModal(${idx})">
+      <div class="recent-dot"><span>${escapeHtml(initial)}</span></div>
       <div class="recent-info">
         <div class="recent-name">${escapeHtml(name)}</div>
         <div class="recent-date">${fmtDate(log.date)}${vol ? ' · ' + vol + ' kg hacim' : ''}</div>
@@ -1403,55 +1576,52 @@ function renderRecentList() {
 }
 
 // ── Workout History Detail ──
-function openHistoryModal(date, dayId) {
-  const log = DB.workoutLogs.find(l => l.date === date && l.dayId === dayId);
+function openHistoryModal(idx) {
+  const log = DB.workoutLogs[idx];
   if (!log) return;
-  const day = getDayById(dayId);
-  const name = day ? day.name : dayId;
-  document.getElementById('hm-day-name').textContent = name;
+  document.getElementById('hm-day-name').textContent = dayDisplayName(log);
   const dur = log.duration ? `${Math.round(log.duration/60)} dk · ` : '';
-  const vol = log.sets ? Math.round(log.sets.reduce((a,s) => a+(s.kg||0)*(s.reps||0),0)) : 0;
-  document.getElementById('hm-meta').textContent = `${fmtDate(date)} · ${dur}${vol} kg hacim`;
+  document.getElementById('hm-meta').textContent = `${fmtDate(log.date)} · ${dur}${logVolume(log)} kg hacim`;
 
-  // Group sets by exercise
   const byEx = {};
-  (log.sets||[]).forEach(s => {
+  const order = [];
+  (log.sets || []).filter(hasValue).forEach(s => {
     const key = s.exName || s.exId;
-    if (!byEx[key]) byEx[key] = [];
+    if (!byEx[key]) { byEx[key] = []; order.push(key); }
     byEx[key].push(s);
   });
 
   const body = document.getElementById('hm-body');
-  body.innerHTML = Object.entries(byEx).map(([exName, sets]) => {
+  body.innerHTML = order.length ? order.map(exName => {
+    const sets = byEx[exName];
     const rows = sets.map((s, i) => {
-      const vol = s.kg && s.reps ? Math.round(s.kg * s.reps) : 0;
+      const vol = Math.round(setVolume(s));
+      const repsTxt = (s.repsR != null || s.repsL != null)
+        ? `S ${s.repsR || 0} / L ${s.repsL || 0} tk`
+        : `${s.reps || 0} tk`;
       return `<div class="hm-set-row">
         <span class="hm-set-num">${i+1}</span>
-        <span class="hm-set-val">${s.kg||0} kg × ${s.reps||0} tk</span>
+        <span class="hm-set-val">${s.kg || 0} kg × ${repsTxt}</span>
         ${vol ? `<span class="hm-set-vol">${vol} kg</span>` : ''}
       </div>`;
     }).join('');
+    const note = noteForExName(log, exName);
     return `<div class="hm-ex-block">
       <div class="hm-ex-name">${escapeHtml(exName)}</div>
       ${rows}
+      ${note ? `<div class="ex-note-prev">📝 ${escapeHtml(note)}</div>` : ''}
     </div>`;
-  }).join('');
+  }).join('') : '<div style="padding:12px 0;color:var(--text-secondary);font-size:14px;text-align:center;">Bu antrenmanda set kaydı yok.</div>';
 
   document.getElementById('history-modal').classList.add('open');
-  history.pushState({ screen: 'historyModal' }, '');
+  pushLayer('historyModal');
 }
-function closeHistoryModal() {
-  document.getElementById('history-modal').classList.remove('open');
-}
+function closeHistoryModal() { closeLayer('historyModal'); }
 
 // ── Weekly Goal ──
-function getWeeklyGoal() {
-  return DB.settings.weeklyGoal || 4;
-}
+function getWeeklyGoal() { return DB.settings.weeklyGoal || 4; }
 function changeWeeklyGoal(delta) {
-  const cur = getWeeklyGoal();
-  const next = Math.max(1, Math.min(7, cur + delta));
-  DB.settings.weeklyGoal = next;
+  DB.settings.weeklyGoal = Math.max(1, Math.min(7, getWeeklyGoal() + delta));
   saveData('settings', DB.settings);
   renderWeeklyGoal();
 }
@@ -1459,15 +1629,14 @@ function renderWeeklyGoal() {
   const goal = getWeeklyGoal();
   document.getElementById('weekly-goal-num').textContent = goal;
 
-  // Bu haftanın Pazartesi - Pazar
-  const now = new Date();
-  const dow = (now.getDay() + 6) % 7; // Mon=0
+  // Bu haftanın Pazartesi - Pazar (04:00 kuralıyla)
+  const now = logicalNow();
+  const dow = (now.getDay() + 6) % 7;
   const weekDays = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(now);
     d.setDate(now.getDate() - dow + i);
-    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    weekDays.push({ str, label: ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'][i], isPast: i <= dow });
+    weekDays.push({ str: isoDate(d), label: ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'][i] });
   }
 
   const loggedDates = new Set(DB.workoutLogs.map(l => l.date));
@@ -1475,13 +1644,10 @@ function renderWeeklyGoal() {
   const todayStr = today();
 
   document.getElementById('weekly-goal-label').textContent = `${doneThisWeek} / ${goal} antrenman`;
-  const pct = Math.min(100, Math.round(doneThisWeek / goal * 100));
-  document.getElementById('weekly-goal-bar').style.width = pct + '%';
+  document.getElementById('weekly-goal-bar').style.width = Math.min(100, Math.round(doneThisWeek / goal * 100)) + '%';
 
   document.getElementById('weekly-goal-days').innerHTML = weekDays.map(d => {
-    const done = loggedDates.has(d.str);
-    const isToday = d.str === todayStr;
-    const cls = done ? 'done' : isToday ? 'today' : 'empty';
+    const cls = loggedDates.has(d.str) ? 'done' : d.str === todayStr ? 'today' : 'empty';
     return `<div class="wg-day ${cls}">${d.label}</div>`;
   }).join('');
 }
@@ -1489,177 +1655,207 @@ function renderWeeklyGoal() {
 // ═══════════════════════════════════════════════
 //  WORKOUT SCREEN
 // ═══════════════════════════════════════════════
-let currentDayId = null;
-let workoutStartTime = null;
-let elapsedInterval = null;
-let pendingSets = {}; // exId -> [{kg, reps}]
-let pendingNotes = {}; // exId -> string
+// Aktif antrenman tek bir nesnede tutulur ve her değişiklikte localStorage'a
+// yazılır. Uygulama kapanıp açılsa da antrenman kaldığı yerden devam eder.
+//   active = { dayId, day (başlangıçtaki gün tanımının kopyası), startTime,
+//              sets: [hareket başına set sayısı], values: {inputId: değer},
+//              done: [tamamlanan satır id'leri], screenOpen }
+let active = null;
+let activeTicker = null;
+let prevCache = []; // hareket index'i → { entry, bySet }
 
-let awbInterval = null;
+function saveActive() {
+  if (active) lsSet('activeWorkout', JSON.stringify(active));
+}
+// Ekrandaki tüm girişleri aktif antrenman nesnesine aktarır ve kaydeder
+function captureActive() {
+  if (!active) return;
+  const body = document.getElementById('ws-body');
+  const values = {};
+  body.querySelectorAll('input, textarea').forEach(el => { if (el.id && el.value !== '') values[el.id] = el.value; });
+  active.values = values;
+  active.done = [...body.querySelectorAll('.set-done-btn.done')].map(b => b.id);
+  saveActive();
+}
+
+function startActiveTicker() {
+  clearInterval(activeTicker);
+  const tick = () => {
+    if (!active) return;
+    const t = fmtDuration((Date.now() - active.startTime) / 1000);
+    document.getElementById('ws-elapsed').textContent = t;
+    document.getElementById('awb-elapsed').textContent = t;
+  };
+  tick();
+  activeTicker = setInterval(tick, 1000);
+}
 
 function openWorkoutScreen(dayId) {
-  // Eğer aynı gün zaten aktifse sadece ekranı aç, verileri sıfırlama
-  const isSameDay = currentDayId === dayId && workoutStartTime && pendingSets;
-  currentDayId = dayId || getNextDayId();
-  const day = getDayById(currentDayId);
-  if (!day) return;
-  document.getElementById('ws-day-name').textContent = day.name;
-  const setCount = day.exercises.reduce((a, e) => a + e.sets, 0);
-  document.getElementById('ws-day-sub').textContent = `${day.exercises.length} hareket · ${setCount} set`;
-
-  if (!isSameDay) {
-    pendingSets = {};
-    pendingNotes = {};
-    workoutStartTime = Date.now();
+  dayId = dayId || getNextDayId();
+  if (active && active.dayId !== dayId) {
+    if (!confirm(`"${active.day.name}" antrenmanı devam ediyor.\n\nOnu iptal edip yeni antrenman başlatılsın mı? Girdiğin veriler silinecek.`)) return;
+    discardActive();
   }
-
-  clearInterval(elapsedInterval);
-  elapsedInterval = setInterval(() => {
-    const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
-    document.getElementById('ws-elapsed').textContent = fmtDuration(secs);
-  }, 1000);
-
-  if (!isSameDay) renderExerciseCards(day);
-  document.getElementById('workout-screen').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  hideActiveWorkoutBanner();
-  history.pushState({ screen: 'workout' }, '');
+  if (!active) {
+    const day = getDayById(dayId);
+    if (!day) return;
+    const snapshot = deepCopy(day);
+    active = {
+      dayId,
+      day: snapshot,
+      startTime: Date.now(),
+      sets: snapshot.exercises.map(e => e.sets),
+      values: {},
+      done: [],
+      screenOpen: true,
+    };
+    renderExerciseCards();
+    saveActive();
+  }
+  showWorkoutScreen();
 }
 
-function reopenWorkoutScreen() {
-  const day = getDayById(currentDayId);
-  if (!day) return;
+function showWorkoutScreen() {
+  if (!active) return;
+  const day = active.day;
   document.getElementById('ws-day-name').textContent = day.name;
-  clearInterval(elapsedInterval);
-  elapsedInterval = setInterval(() => {
-    const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
-    document.getElementById('ws-elapsed').textContent = fmtDuration(secs);
-  }, 1000);
+  const setCount = active.sets.reduce((a, n) => a + n, 0);
+  document.getElementById('ws-day-sub').textContent = `${day.exercises.length} hareket · ${setCount} set`;
   document.getElementById('workout-screen').classList.add('open');
   document.body.style.overflow = 'hidden';
   hideActiveWorkoutBanner();
-  history.pushState({ screen: 'workout' }, '');
+  startActiveTicker();
+  active.screenOpen = true;
+  saveActive();
+  pushLayer('workout');
 }
+function reopenWorkoutScreen() { showWorkoutScreen(); }
 
-function hideWorkoutScreen() {
-  // Antrenmanı kapatmaz, sadece ekranı gizler ve banner gösterir
+// Antrenmanı kapatmaz, sadece ekranı gizler ve banner gösterir
+function hideWorkoutScreen() { closeLayer('workout'); }
+function hideWorkoutScreenUI() {
   document.getElementById('workout-screen').classList.remove('open');
   document.body.style.overflow = '';
-  clearInterval(elapsedInterval);
-  showActiveWorkoutBanner();
+  if (active) {
+    active.screenOpen = false;
+    captureActive();
+    showActiveWorkoutBanner();
+  }
 }
 
 function confirmCloseWorkout() {
   if (!confirm('Antrenman iptal edilecek ve girilen tüm veriler silinecek. Emin misin?')) return;
-  closeWorkoutScreen();
+  discardActive();
 }
 
-function closeWorkoutScreen() {
-  document.getElementById('workout-screen').classList.remove('open');
-  document.body.style.overflow = '';
-  clearInterval(elapsedInterval);
+function discardActive() {
+  active = null;
+  prevCache = [];
+  lsRemove('activeWorkout');
+  clearInterval(activeTicker);
   stopRest();
   hideActiveWorkoutBanner();
-  workoutStartTime = null;
-  pendingSets = {};
+  document.getElementById('workout-screen').classList.remove('open');
+  document.body.style.overflow = '';
+  document.getElementById('ws-body').innerHTML = '';
 }
 
 function showActiveWorkoutBanner() {
-  const day = getDayById(currentDayId);
-  if (!day || !workoutStartTime) return;
-  document.getElementById('awb-name').textContent = day.name;
-  const banner = document.getElementById('active-workout-banner');
-  banner.classList.add('visible');
-  clearInterval(awbInterval);
-  awbInterval = setInterval(() => {
-    const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
-    document.getElementById('awb-elapsed').textContent = fmtDuration(secs);
-  }, 1000);
-  const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
-  document.getElementById('awb-elapsed').textContent = fmtDuration(secs);
+  if (!active) return;
+  document.getElementById('awb-name').textContent = active.day.name;
+  document.getElementById('active-workout-banner').classList.add('visible');
+  startActiveTicker();
 }
-
 function hideActiveWorkoutBanner() {
   document.getElementById('active-workout-banner').classList.remove('visible');
-  clearInterval(awbInterval);
 }
 
-function renderExerciseCards(day) {
-  const body = document.getElementById('ws-body');
-  body.innerHTML = day.exercises.map((ex) => {
-    // İsim bazlı önceki antrenman verisi
-    const prevEntry = getPrevSetsForExName(ex.name);
-    const prevSets = prevEntry ? prevEntry.sets : [];
-    const prevLog  = prevEntry ? prevEntry.log  : null;
+// Önceki antrenmandan bu hareketin setleri (set sırasına göre)
+function prevForExercise(ex) {
+  const entry = getPrevSetsForExName(ex.name);
+  const bySet = [];
+  if (entry) entry.sets.forEach((s, i) => {
+    const idx = Number.isInteger(s.setIdx) ? s.setIdx : i;
+    if (bySet[idx] === undefined) bySet[idx] = s;
+  });
+  return { entry, bySet };
+}
 
-    // Previous hint
-    let prevHint = '';
-    if (prevSets.length && prevLog) {
-      const validSets = prevSets.filter(s => s.kg || s.reps);
-      if (validSets.length) {
-        const dateLabel = fmtDateShort(prevLog.date);
-        const dayLabel = prevEntry.dayName ? ` · ${prevEntry.dayName}` : '';
-        const rows = validSets.map((s, i) =>
-          s.repsR != null || s.repsL != null
-            ? `<div>Set ${i+1}: <b>${s.kg||'?'} kg</b> — Sağ: <b>${s.repsR||'?'}</b> / Sol: <b>${s.repsL||'?'}</b> tekrar</div>`
-            : `<div>Set ${i+1}: <b>${s.kg||'?'} kg × ${s.reps||'?'} tekrar</b></div>`
-        ).join('');
-        prevHint = `<div class="ex-prev-hint">${dateLabel}${dayLabel}${rows}</div>`;
-      }
-    }
-    // Previous note (isim bazlı arama)
-    let prevNote = '';
-    if (prevLog && prevLog.notes) {
-      const prevDay = getDayById(prevLog.dayId);
-      const matchedExId = prevDay
-        ? (prevDay.exercises.find(e => e.name.trim().toLowerCase() === ex.name.trim().toLowerCase()) || {}).id
-        : null;
-      const noteVal = prevLog.notes[ex.id] || (matchedExId ? prevLog.notes[matchedExId] : null);
-      if (noteVal) prevNote = `<div class="ex-note-prev">📝 Önceki not: "${escapeHtml(noteVal)}"</div>`;
-    }
-    // Per-set previous values
-    const prevSetsAll = prevSets;
-    // Set rows
-    let setRows = '';
-    for (let s = 0; s < ex.sets; s++) {
-      const ps = prevSetsAll[s];
-      const prevKg   = ps && ps.kg    ? ps.kg    : '';
-      const prevRep  = ps && ps.reps  ? ps.reps  : '';
-      const prevRepR = ps && ps.repsR ? ps.repsR : '';
-      const prevRepL = ps && ps.repsL ? ps.repsL : '';
-      const repsHtml = ex.bilateral
-        ? `<div class="bi-reps">
-            <div class="bi-reps-row">
-              <span class="bi-label">SAĞ</span>
-              <input class="bi-val" type="text" inputmode="numeric" placeholder="${prevRepR || 'tk'}" data-prev="${prevRepR}" id="repsR-${ex.id}-${s}" onkeydown="handleSetNav(event,'repsR','${ex.id}',${s})">
-            </div>
-            <div class="bi-reps-row">
-              <span class="bi-label">SOL</span>
-              <input class="bi-val" type="text" inputmode="numeric" placeholder="${prevRepL || 'tk'}" data-prev="${prevRepL}" id="repsL-${ex.id}-${s}" onkeydown="handleSetNav(event,'repsL','${ex.id}',${s})">
-            </div>
-          </div>`
-        : `<div class="reps-stepper">
-            <button class="stepper-btn" onclick="stepReps('${ex.id}',${s},-1)" type="button">−</button>
-            <input class="reps-val" type="text" inputmode="numeric" placeholder="${prevRep || 'tk'}" data-prev="${prevRep}" id="reps-${ex.id}-${s}" oninput="checkOverload('${ex.id}',${s})" onkeydown="handleSetNav(event,'reps','${ex.id}',${s})">
-            <button class="stepper-btn" onclick="stepReps('${ex.id}',${s},1)" type="button">+</button>
-          </div>`;
-      setRows += `<div class="set-row" id="set-row-${ex.id}-${s}">
-        <span class="set-num">${s+1}</span>
-        <div class="kg-stepper">
-          <button class="stepper-btn" onclick="stepKg('${ex.id}',${s},-2.5)" type="button">−</button>
-          <input class="kg-val" type="text" inputmode="decimal" placeholder="${prevKg || 'kg'}" data-prev="${prevKg}" id="kg-${ex.id}-${s}" oninput="checkOverload('${ex.id}',${s})" onkeydown="handleSetNav(event,'kg','${ex.id}',${s})">
-          <button class="stepper-btn" onclick="stepKg('${ex.id}',${s},2.5)" type="button">+</button>
+// Bir logda, verilen hareket adına ait notu bulur
+function noteForExName(log, exName) {
+  if (!log || !log.notes) return '';
+  const norm = normName(exName);
+  if (log.exNotes && log.exNotes[norm]) return log.exNotes[norm];
+  const s = (log.sets || []).find(s => setMatchesName(s, log, norm));
+  if (s && log.notes[s.exId]) return log.notes[s.exId];
+  const day = getDayById(log.dayId);
+  const ex = day && day.exercises.find(e => normName(e.name) === norm);
+  return (ex && log.notes[ex.id]) || '';
+}
+
+function buildSetRow(ei, s, ex, ps) {
+  ps = ps || {};
+  const id = `${ei}-${s}`;
+  const prevKg = ps.kg || '';
+  const repsHtml = ex.bilateral
+    ? `<div class="bi-reps">
+        <div class="bi-reps-row">
+          <span class="bi-label">SAĞ</span>
+          <input class="bi-val" type="text" inputmode="numeric" placeholder="${escapeHtml(ps.repsR || 'tk')}" data-prev="${escapeHtml(ps.repsR || '')}" id="repsR-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsR',${ei},${s})">
         </div>
-        ${repsHtml}
-        <button class="set-done-btn" onclick="completeSet('${ex.id}',${s},'${day.id}')" id="set-done-${ex.id}-${s}">✓</button>
+        <div class="bi-reps-row">
+          <span class="bi-label">SOL</span>
+          <input class="bi-val" type="text" inputmode="numeric" placeholder="${escapeHtml(ps.repsL || 'tk')}" data-prev="${escapeHtml(ps.repsL || '')}" id="repsL-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsL',${ei},${s})">
+        </div>
+      </div>`
+    : `<div class="reps-stepper">
+        <button class="stepper-btn" onclick="stepReps(${ei},${s},-1)" type="button">−</button>
+        <input class="reps-val" type="text" inputmode="numeric" placeholder="${escapeHtml(ps.reps || 'tk')}" data-prev="${escapeHtml(ps.reps || '')}" id="reps-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'reps',${ei},${s})">
+        <button class="stepper-btn" onclick="stepReps(${ei},${s},1)" type="button">+</button>
       </div>`;
+  return `<div class="set-row" id="set-row-${id}">
+    <span class="set-num">${s+1}</span>
+    <div class="kg-stepper">
+      <button class="stepper-btn" onclick="stepKg(${ei},${s},-2.5)" type="button">−</button>
+      <input class="kg-val" type="text" inputmode="decimal" placeholder="${escapeHtml(prevKg || 'kg')}" data-prev="${escapeHtml(prevKg)}" id="kg-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'kg',${ei},${s})">
+      <button class="stepper-btn" onclick="stepKg(${ei},${s},2.5)" type="button">+</button>
+    </div>
+    ${repsHtml}
+    <button class="set-done-btn" onclick="completeSet(${ei},${s})" id="set-done-${id}">✓</button>
+  </div>`;
+}
+
+function renderExerciseCards() {
+  const body = document.getElementById('ws-body');
+  if (!active) { body.innerHTML = ''; return; }
+  const day = active.day;
+  prevCache = day.exercises.map(prevForExercise);
+
+  body.innerHTML = day.exercises.map((ex, ei) => {
+    const { entry, bySet } = prevCache[ei];
+
+    let prevHint = '';
+    if (entry) {
+      const dayLabel = entry.dayName ? ` · ${escapeHtml(entry.dayName)}` : '';
+      const rows = entry.sets.map((s, i) =>
+        s.repsR != null || s.repsL != null
+          ? `<div>Set ${i+1}: <b>${escapeHtml(s.kg || '?')} kg</b> — Sağ: <b>${escapeHtml(s.repsR || '?')}</b> / Sol: <b>${escapeHtml(s.repsL || '?')}</b> tekrar</div>`
+          : `<div>Set ${i+1}: <b>${escapeHtml(s.kg || '?')} kg × ${escapeHtml(s.reps || '?')} tekrar</b></div>`
+      ).join('');
+      prevHint = `<div class="ex-prev-hint">${fmtDateShort(entry.log.date)}${dayLabel}${rows}</div>`;
     }
-    return `<div class="ex-card" id="ex-card-${ex.id}">
+    const noteVal = entry ? noteForExName(entry.log, ex.name) : '';
+    const prevNote = noteVal ? `<div class="ex-note-prev">📝 Önceki not: "${escapeHtml(noteVal)}"</div>` : '';
+
+    let setRows = '';
+    for (let s = 0; s < active.sets[ei]; s++) setRows += buildSetRow(ei, s, ex, bySet[s]);
+
+    return `<div class="ex-card" id="ex-card-${ei}">
       <div class="ex-card-header">
         <div class="ex-card-top">
           <span class="ex-name">${escapeHtml(ex.name)}</span>
           <div class="ex-actions">
-            <button class="ex-graph-btn" data-ex-id="${ex.id}" data-day-id="${day.id}" data-ex-name="${escapeHtml(ex.name)}" onclick="openProgressModal(this.dataset.exId,this.dataset.dayId,this.dataset.exName)">Grafik</button>
+            <button class="ex-graph-btn" data-ex-name="${escapeHtml(ex.name)}" onclick="openProgressModal(this.dataset.exName)">Grafik</button>
           </div>
         </div>
         ${prevHint}
@@ -1671,154 +1867,162 @@ function renderExerciseCards(day) {
           <span class="set-col-label" style="flex:1;">Tekrar</span>
           <span style="width:34px;flex-shrink:0;"></span>
         </div>
-        <div id="sets-list-${ex.id}">${setRows}</div>
+        <div id="sets-list-${ei}">${setRows}</div>
         <div class="set-count-row">
-          <button class="set-count-btn" onclick="removeSet('${ex.id}','${day.id}')">− Set</button>
-          <span class="set-count-label" id="set-count-${ex.id}">${ex.sets} set</span>
-          <button class="set-count-btn accent" onclick="addSet('${ex.id}','${day.id}')">+ Set</button>
+          <button class="set-count-btn" onclick="removeSet(${ei})">− Set</button>
+          <span class="set-count-label" id="set-count-${ei}">${active.sets[ei]} set</span>
+          <button class="set-count-btn accent" onclick="addSet(${ei})">+ Set</button>
         </div>
       </div>
       <div class="ex-note-section">
         ${prevNote}
-        <textarea class="ex-note-input" placeholder="Not ekle..." id="note-${ex.id}" oninput="pendingNotes['${ex.id}']=this.value" onblur="if(this.value.trim())toast('📝 Not eklendi.')" rows="2"></textarea>
+        <textarea class="ex-note-input" placeholder="Not ekle..." id="note-${ei}" oninput="captureActive()" rows="2"></textarea>
       </div>
     </div>`;
   }).join('');
 }
 
-function checkOverload(exId, setIdx) {
-  const kgEl   = document.getElementById(`kg-${exId}-${setIdx}`);
-  const repsEl = document.getElementById(`reps-${exId}-${setIdx}`);
-  const rowEl  = document.getElementById(`set-row-${exId}-${setIdx}`);
-  if (!kgEl || !repsEl || !rowEl) return;
-  const kg   = parseFloat(kgEl.value);
-  const reps = parseInt(repsEl.value);
-  const prevKg   = parseFloat(kgEl.dataset.prev)   || 0;
-  const prevReps = parseInt(repsEl.dataset.prev)    || 0;
-  const isOverload = !isNaN(kg) && !isNaN(reps) && prevKg > 0 && prevReps > 0
-    && (kg > prevKg || (kg >= prevKg && reps > prevReps));
+// Kaydedilmiş değerleri ekrana geri yükler
+function applyActiveValues() {
+  if (!active) return;
+  Object.entries(active.values || {}).forEach(([id, v]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = v;
+  });
+  (active.done || []).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('done');
+  });
+  active.day.exercises.forEach((ex, ei) => {
+    for (let s = 0; s < active.sets[ei]; s++) checkOverload(ei, s);
+  });
+}
+
+function readSet(ei, s) {
+  const val = id => document.getElementById(`${id}-${ei}-${s}`)?.value;
+  const kg = num(val('kg'));
+  return {
+    kg: isNaN(kg) ? 0 : round2(Math.max(0, kg)),
+    reps: Math.max(0, int(val('reps')) || 0),
+    repsR: Math.max(0, int(val('repsR')) || 0),
+    repsL: Math.max(0, int(val('repsL')) || 0),
+  };
+}
+
+function onSetInput(ei, s) {
+  checkOverload(ei, s);
+  captureActive();
+}
+
+function checkOverload(ei, s) {
+  const kgEl  = document.getElementById(`kg-${ei}-${s}`);
+  const rowEl = document.getElementById(`set-row-${ei}-${s}`);
+  if (!kgEl || !rowEl || !active) return;
+  const ex = active.day.exercises[ei];
+  const cur = readSet(ei, s);
+  const reps = ex.bilateral ? Math.max(cur.repsR, cur.repsL) : cur.reps;
+  const prevKg = num(kgEl.dataset.prev) || 0;
+  let prevReps;
+  if (ex.bilateral) {
+    prevReps = Math.max(int(document.getElementById(`repsR-${ei}-${s}`)?.dataset.prev) || 0,
+                        int(document.getElementById(`repsL-${ei}-${s}`)?.dataset.prev) || 0);
+  } else {
+    prevReps = int(document.getElementById(`reps-${ei}-${s}`)?.dataset.prev) || 0;
+  }
+  const isOverload = cur.kg > 0 && reps > 0 && prevKg > 0 && prevReps > 0
+    && (cur.kg > prevKg || (cur.kg >= prevKg && reps > prevReps));
   rowEl.classList.toggle('overload', isOverload);
 }
 
-function handleSetNav(e, type, exId, setIdx) {
+function handleSetNav(e, type, ei, s) {
   if (e.key !== 'Enter' && e.key !== 'Tab') return;
   e.preventDefault();
   let next = null;
   if (type === 'kg') {
-    next = document.getElementById(`repsR-${exId}-${setIdx}`) || document.getElementById(`reps-${exId}-${setIdx}`);
+    next = document.getElementById(`repsR-${ei}-${s}`) || document.getElementById(`reps-${ei}-${s}`);
   } else if (type === 'repsR') {
-    next = document.getElementById(`repsL-${exId}-${setIdx}`);
+    next = document.getElementById(`repsL-${ei}-${s}`);
   } else {
-    next = document.getElementById(`kg-${exId}-${setIdx + 1}`);
+    next = document.getElementById(`kg-${ei}-${s + 1}`);
   }
   if (next) next.focus();
 }
 
-function stepKg(exId, setIdx, delta) {
-  const input = document.getElementById(`kg-${exId}-${setIdx}`);
+function stepKg(ei, s, delta) {
+  const input = document.getElementById(`kg-${ei}-${s}`);
   if (!input) return;
   if (input.value === '' && delta > 0) {
-    const prev = parseFloat(input.dataset.prev);
-    if (prev) { input.value = prev; return; }
+    const prev = num(input.dataset.prev);
+    if (prev) { input.value = prev; onSetInput(ei, s); return; }
   }
-  const base = parseFloat(input.value) || 0;
-  const next = Math.max(0, Math.round((base + delta) * 10) / 10);
+  const base = num(input.value) || 0;
+  const next = Math.max(0, Math.round((base + delta) * 100) / 100);
   input.value = next > 0 ? next : '';
+  onSetInput(ei, s);
 }
 
-function stepReps(exId, setIdx, delta) {
-  const input = document.getElementById(`reps-${exId}-${setIdx}`);
+function stepReps(ei, s, delta) {
+  const input = document.getElementById(`reps-${ei}-${s}`);
   if (!input) return;
   if (input.value === '' && delta > 0) {
-    const prev = parseInt(input.dataset.prev);
-    if (prev) { input.value = prev; return; }
+    const prev = int(input.dataset.prev);
+    if (prev) { input.value = prev; onSetInput(ei, s); return; }
   }
-  const base = parseInt(input.value) || 0;
-  const next = Math.max(0, base + delta);
+  const next = Math.max(0, (int(input.value) || 0) + delta);
   input.value = next > 0 ? next : '';
+  onSetInput(ei, s);
 }
 
-// runtime set counts per exercise (overrides day definition during workout)
-const runtimeSets = {};
-
-function getSetCount(exId, dayId) {
-  if (runtimeSets[exId] !== undefined) return runtimeSets[exId];
-  const day = getDayById(dayId);
-  const ex = day ? day.exercises.find(e => e.id === exId) : null;
-  return ex ? ex.sets : 0;
+function updateWsSub() {
+  if (!active) return;
+  const setCount = active.sets.reduce((a, n) => a + n, 0);
+  document.getElementById('ws-day-sub').textContent = `${active.day.exercises.length} hareket · ${setCount} set`;
 }
 
-function buildSetRow(exId, dayId, s, prevSetsAll) {
-  const ps = prevSetsAll[s];
-  const prevKg  = ps && ps.kg   ? ps.kg   : '';
-  const prevRep = ps && ps.reps ? ps.reps : '';
-  return `<div class="set-row" id="set-row-${exId}-${s}">
-    <span class="set-num">${s+1}</span>
-    <div class="kg-stepper">
-      <button class="stepper-btn" onclick="stepKg('${exId}',${s},-2.5)" type="button">−</button>
-      <input class="kg-val" type="text" inputmode="decimal" placeholder="${prevKg || 'kg'}" data-prev="${prevKg}" id="kg-${exId}-${s}" oninput="checkOverload('${exId}',${s})" onkeydown="handleSetNav(event,'kg','${exId}',${s})">
-      <button class="stepper-btn" onclick="stepKg('${exId}',${s},2.5)" type="button">+</button>
-    </div>
-    <div class="reps-stepper">
-      <button class="stepper-btn" onclick="stepReps('${exId}',${s},-1)" type="button">−</button>
-      <input class="reps-val" type="text" inputmode="numeric" placeholder="${prevRep || 'tk'}" data-prev="${prevRep}" id="reps-${exId}-${s}" oninput="checkOverload('${exId}',${s})" onkeydown="handleSetNav(event,'reps','${exId}',${s})">
-      <button class="stepper-btn" onclick="stepReps('${exId}',${s},1)" type="button">+</button>
-    </div>
-    <button class="set-done-btn" onclick="completeSet('${exId}',${s},'${dayId}')" id="set-done-${exId}-${s}">✓</button>
-  </div>`;
+function addSet(ei) {
+  if (!active) return;
+  const ex = active.day.exercises[ei];
+  const s = active.sets[ei];
+  active.sets[ei] = s + 1;
+  const container = document.getElementById(`sets-list-${ei}`);
+  const div = document.createElement('div');
+  div.innerHTML = buildSetRow(ei, s, ex, (prevCache[ei] || { bySet: [] }).bySet[s]);
+  container.appendChild(div.firstElementChild);
+  document.getElementById(`set-count-${ei}`).textContent = `${active.sets[ei]} set`;
+  updateWsSub();
+  captureActive();
 }
 
-function addSet(exId, dayId) {
-  const day = getDayById(dayId);
-  const ex = day ? day.exercises.find(e => e.id === exId) : null;
-  if (!ex) return;
-  const prevEntry = getPrevSetsForExName(ex.name);
-  const prevSetsAll = prevEntry ? prevEntry.sets : [];
-  const current = getSetCount(exId, dayId);
-  runtimeSets[exId] = current + 1;
-  const container = document.getElementById(`sets-list-${exId}`);
-  if (container) {
-    const div = document.createElement('div');
-    div.innerHTML = buildSetRow(exId, dayId, current, prevSetsAll);
-    container.appendChild(div.firstElementChild);
+function removeSet(ei) {
+  if (!active) return;
+  const s = active.sets[ei];
+  if (s <= 1) return;
+  const row = document.getElementById(`set-row-${ei}-${s - 1}`);
+  const cur = readSet(ei, s - 1);
+  if (hasValue(cur) && !confirm(`${s}. sette girilmiş değerler var. Set silinsin mi?`)) return;
+  if (row) row.remove();
+  active.sets[ei] = s - 1;
+  document.getElementById(`set-count-${ei}`).textContent = `${active.sets[ei]} set`;
+  updateWsSub();
+  captureActive();
+}
+
+function completeSet(ei, s) {
+  const btn = document.getElementById(`set-done-${ei}-${s}`);
+  if (!btn || !active) return;
+  getAudioCtx(); // iOS'ta sesi kullanıcı dokunuşuyla açmak için
+  if (btn.classList.contains('done')) {
+    btn.classList.remove('done');
+    captureActive();
+    return;
   }
-  const label = document.getElementById(`set-count-${exId}`);
-  if (label) label.textContent = `${runtimeSets[exId]} set`;
-}
-
-function removeSet(exId, dayId) {
-  const current = getSetCount(exId, dayId);
-  if (current <= 1) return;
-  runtimeSets[exId] = current - 1;
-  const container = document.getElementById(`sets-list-${exId}`);
-  if (container && container.lastElementChild) {
-    container.lastElementChild.remove();
-  }
-  if (pendingSets[exId]) pendingSets[exId].splice(current - 1, 1);
-  const label = document.getElementById(`set-count-${exId}`);
-  if (label) label.textContent = `${runtimeSets[exId]} set`;
-}
-
-function completeSet(exId, setIdx, dayId) {
-  const kg    = parseFloat(document.getElementById(`kg-${exId}-${setIdx}`)?.value);
-  const reps  = parseInt(document.getElementById(`reps-${exId}-${setIdx}`)?.value);
-  const repsR = parseInt(document.getElementById(`repsR-${exId}-${setIdx}`)?.value);
-  const repsL = parseInt(document.getElementById(`repsL-${exId}-${setIdx}`)?.value);
-  const btn = document.getElementById(`set-done-${exId}-${setIdx}`);
-  if (!btn) return;
-  if (btn.classList.contains('done')) { btn.classList.remove('done'); return; }
   btn.classList.add('done');
-  if (!pendingSets[exId]) pendingSets[exId] = [];
-  const isBi = !isNaN(repsR) || !isNaN(repsL);
-  pendingSets[exId][setIdx] = isBi
-    ? { exId, setIdx, kg: kg||0, repsR: repsR||0, repsL: repsL||0, reps: Math.max(repsR||0, repsL||0) }
-    : { exId, setIdx, kg: kg||0, reps: reps||0 };
-  if (kg && reps) {
-    const day = getDayById(dayId);
-    const ex = day ? day.exercises.find(e => e.id === exId) : null;
-    if (ex && isPR(ex.name, kg * reps)) toast('🏆 Yeni kişisel rekor!');
-  }
-  if (DB.settings.restTimerEnabled) startRest(exId, dayId);
+  captureActive();
+  const ex = active.day.exercises[ei];
+  const cur = readSet(ei, s);
+  const reps = ex.bilateral ? Math.max(cur.repsR, cur.repsL) : cur.reps;
+  if (cur.kg && reps && isPR(ex.name, cur.kg * reps)) toast('🏆 Yeni kişisel rekor!');
+  if (DB.settings.restTimerEnabled) startRest(ex.name);
 }
 
 // ═══════════════════════════════════════════════
@@ -1826,14 +2030,24 @@ function completeSet(exId, setIdx, dayId) {
 // ═══════════════════════════════════════════════
 let restInterval = null;
 let restEndTime = 0;
+let audioCtx = null;
 
-function startRest(exId, dayId) {
+function getAudioCtx() {
+  try {
+    if (!audioCtx) {
+      const C = window.AudioContext || window.webkitAudioContext;
+      if (!C) return null;
+      audioCtx = new C();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+    return audioCtx;
+  } catch(e) { return null; }
+}
+
+function startRest(exName) {
   stopRest();
-  const day = getDayById(dayId);
-  const ex = day ? day.exercises.find(e => e.id === exId) : null;
-  document.getElementById('rest-exercise-label').textContent = ex ? ex.name + ' sonrası' : 'Dinlenme';
-  const dur = (DB.settings.restDuration || 90);
-  restEndTime = Date.now() + dur * 1000;
+  document.getElementById('rest-exercise-label').textContent = exName ? exName + ' sonrası' : 'Dinlenme';
+  restEndTime = Date.now() + (DB.settings.restDuration || 90) * 1000;
   updateRestDisplay();
   document.getElementById('rest-banner').classList.add('visible');
   restInterval = setInterval(() => {
@@ -1847,32 +2061,31 @@ function startRest(exId, dayId) {
   }, 500);
 }
 function updateRestDisplay() {
-  const remaining = Math.max(0, Math.ceil((restEndTime - Date.now()) / 1000));
-  document.getElementById('rest-display').textContent = fmtDuration(remaining);
+  document.getElementById('rest-display').textContent = fmtDuration(Math.ceil((restEndTime - Date.now()) / 1000));
 }
 function playBeep() {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const beeps = [
-      { freq: 880, start: 0,   dur: 0.12 },
-      { freq: 880, start: 0.18, dur: 0.12 },
+    const t0 = ctx.currentTime;
+    [
+      { freq: 880,  start: 0,    dur: 0.12 },
+      { freq: 880,  start: 0.18, dur: 0.12 },
       { freq: 1320, start: 0.36, dur: 0.28 },
-    ];
-    beeps.forEach(({ freq, start, dur }) => {
+    ].forEach(({ freq, start, dur }) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'sine';
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0, ctx.currentTime + start);
-      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + start + 0.01);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur);
-      osc.start(ctx.currentTime + start);
-      osc.stop(ctx.currentTime + start + dur + 0.05);
+      gain.gain.setValueAtTime(0, t0 + start);
+      gain.gain.linearRampToValueAtTime(0.4, t0 + start + 0.01);
+      gain.gain.linearRampToValueAtTime(0, t0 + start + dur);
+      osc.start(t0 + start);
+      osc.stop(t0 + start + dur + 0.05);
     });
   } catch(e) {}
 }
-
 function stopRest() {
   clearInterval(restInterval);
   restInterval = null;
@@ -1885,86 +2098,104 @@ function skipRest() { stopRest(); }
 // ═══════════════════════════════════════════════
 let pendingWorkoutData = null;
 
-function finishWorkout() {
-  const duration = Math.floor((Date.now() - workoutStartTime) / 1000);
-  const day = getDayById(currentDayId);
-  // Collect all sets
-  const allSets = [];
-  day.exercises.forEach(ex => {
-    const exSets = pendingSets[ex.id] || [];
-    for (let s = 0; s < getSetCount(ex.id, currentDayId); s++) {
-      const row = exSets[s];
-      const kg    = parseFloat(document.getElementById(`kg-${ex.id}-${s}`)?.value) || 0;
-      const reps  = parseInt(document.getElementById(`reps-${ex.id}-${s}`)?.value) || 0;
-      const repsR = parseInt(document.getElementById(`repsR-${ex.id}-${s}`)?.value) || 0;
-      const repsL = parseInt(document.getElementById(`repsL-${ex.id}-${s}`)?.value) || 0;
-      if (ex.bilateral) {
-        allSets.push({ exId: ex.id, exName: ex.name, setIdx: s, kg: row ? row.kg : kg, repsR: row ? row.repsR : repsR, repsL: row ? row.repsL : repsL, reps: row ? row.reps : Math.max(repsR, repsL) });
-      } else {
-        allSets.push({ exId: ex.id, exName: ex.name, setIdx: s, kg: row ? row.kg : kg, reps: row ? row.reps : reps });
-      }
+// Ekrandaki güncel değerleri okur; boş setler kaydedilmez
+function collectWorkoutSets() {
+  const sets = [];
+  active.day.exercises.forEach((ex, ei) => {
+    for (let s = 0; s < active.sets[ei]; s++) {
+      const cur = readSet(ei, s);
+      const set = ex.bilateral
+        ? { exId: ex.id, exName: ex.name, setIdx: s, kg: cur.kg, repsR: cur.repsR, repsL: cur.repsL, reps: Math.max(cur.repsR, cur.repsL) }
+        : { exId: ex.id, exName: ex.name, setIdx: s, kg: cur.kg, reps: cur.reps };
+      if (hasValue(set)) sets.push(set);
     }
   });
-  // Collect notes
-  const notes = {};
-  day.exercises.forEach(ex => {
-    const val = document.getElementById(`note-${ex.id}`)?.value?.trim();
-    if (val) notes[ex.id] = val;
+  return sets;
+}
+
+function finishWorkout() {
+  if (!active) return;
+  captureActive();
+  const day = active.day;
+  const duration = Math.floor((Date.now() - active.startTime) / 1000);
+  const allSets = collectWorkoutSets();
+  if (!allSets.length && !confirm('Hiç set girilmedi. Yine de bitirilsin mi?')) return;
+
+  const notes = {}, exNotes = {};
+  day.exercises.forEach((ex, ei) => {
+    const val = document.getElementById(`note-${ei}`)?.value?.trim();
+    if (val) { notes[ex.id] = val; exNotes[normName(ex.name)] = val; }
   });
-  const totalSets = allSets.filter(s => s.kg || s.reps).length;
-  const totalVol = Math.round(allSets.reduce((a, s) => a + (s.kg||0)*(s.reps||0), 0));
-  const durMins = Math.round(duration / 60);
-  pendingWorkoutData = { date: today(), dayId: currentDayId, sets: allSets, notes, duration };
+  const totalVol = Math.round(allSets.reduce((a, s) => a + setVolume(s), 0));
+  pendingWorkoutData = { date: today(), dayId: active.dayId, dayName: day.name, sets: allSets, notes, exNotes, duration };
+
   document.getElementById('sum-sub').textContent = `${day.name} · ${fmtDate(today())}`;
-  document.getElementById('sum-dur').textContent = durMins + ' dk';
-  document.getElementById('sum-sets').textContent = totalSets;
+  document.getElementById('sum-dur').textContent = Math.round(duration / 60) + ' dk';
+  document.getElementById('sum-sets').textContent = allSets.length;
   document.getElementById('sum-vol').textContent = totalVol;
 
-  // PR'lar
   const prList = [];
   day.exercises.forEach(ex => {
-    const exSets = allSets.filter(s => s.exId === ex.id && s.kg && s.reps);
-    exSets.forEach(s => {
-      if (isPR(ex.name, s.kg * s.reps)) prList.push(ex.name);
+    allSets.filter(s => s.exId === ex.id && s.kg && s.reps).forEach(s => {
+      if (isPR(ex.name, s.kg * s.reps) && !prList.includes(ex.name)) prList.push(ex.name);
     });
   });
   const prSection = document.getElementById('sum-pr-section');
-  const prBanner = document.getElementById('sum-pr-banner');
   if (prList.length) {
     prSection.style.display = 'block';
-    prBanner.textContent = '🏆 ' + [...new Set(prList)].join(', ') + ' — Yeni kişisel rekor!';
+    document.getElementById('sum-pr-banner').textContent = '🏆 ' + prList.join(', ') + ' — Yeni kişisel rekor!';
   } else {
     prSection.style.display = 'none';
   }
 
-  // Egzersiz özeti
-  const exList = document.getElementById('sum-ex-list');
-  exList.innerHTML = day.exercises.map(ex => {
-    const exSets = allSets.filter(s => s.exId === ex.id && (s.kg || s.reps));
+  document.getElementById('sum-ex-list').innerHTML = day.exercises.map(ex => {
+    const exSets = allSets.filter(s => s.exId === ex.id);
     if (!exSets.length) return '';
-    const vol = Math.round(exSets.reduce((a,s) => a+(s.kg||0)*(s.reps||0),0));
-    const detail = exSets.map(s => `${s.kg}×${s.reps}`).join(', ');
+    const vol = Math.round(exSets.reduce((a, s) => a + setVolume(s), 0));
+    const detail = exSets.map(s => s.repsR != null ? `${s.kg}×${s.repsR}/${s.repsL}` : `${s.kg}×${s.reps}`).join(', ');
     return `<div class="sum-ex-item">
       <div class="sum-ex-name">${escapeHtml(ex.name)}</div>
-      <div class="sum-ex-detail">${detail} · ${vol} kg</div>
+      <div class="sum-ex-detail">${escapeHtml(detail)} · ${vol} kg</div>
     </div>`;
-  }).filter(Boolean).join('');
+  }).join('');
 
   document.getElementById('summary-overlay').classList.add('open');
+  pushLayer('summary');
 }
 
 function saveSummary() {
   if (!pendingWorkoutData) return;
   DB.workoutLogs.push(pendingWorkoutData);
-  saveData('workoutLogs', DB.workoutLogs);
+  if (!saveData('workoutLogs', DB.workoutLogs)) {
+    DB.workoutLogs.pop();
+    return;
+  }
   pendingWorkoutData = null;
-  closeSummary();
-  closeWorkoutScreen();
+  discardActive();
+  document.getElementById('summary-overlay').classList.remove('open');
+  closeAllLayers();
   toast('✅ Antrenman kaydedildi!');
   renderHome();
 }
 function closeSummary() {
-  document.getElementById('summary-overlay').classList.remove('open');
+  pendingWorkoutData = null;
+  closeLayer('summary');
+}
+
+// Uygulama yeniden açıldığında yarım kalan antrenmanı geri yükler
+function restoreActiveWorkout() {
+  const saved = readJSON('activeWorkout', null);
+  if (!isPlainObject(saved) || !isPlainObject(saved.day) || !Array.isArray(saved.day.exercises) || !Array.isArray(saved.sets)) {
+    lsRemove('activeWorkout');
+    return;
+  }
+  active = saved;
+  active.sets = active.day.exercises.map((ex, i) => Math.max(1, parseInt(active.sets[i]) || ex.sets || 1));
+  renderExerciseCards();
+  applyActiveValues();
+  if (active.screenOpen) showWorkoutScreen();
+  else showActiveWorkoutBanner();
+  toast('↩️ Yarım kalan antrenman geri yüklendi.');
 }
 
 // ═══════════════════════════════════════════════
@@ -1972,21 +2203,19 @@ function closeSummary() {
 // ═══════════════════════════════════════════════
 let progressChart = null;
 
-function openProgressModal(exId, dayId, exName) {
+function openProgressModal(exName) {
   document.getElementById('modal-ex-name').textContent = exName;
 
-  // İsim bazlı tüm kayıtları al
   const entries = getLogsByExName(exName);
   document.getElementById('modal-ex-sub').textContent =
     entries.length ? `${entries.length} antrenman kaydı (tüm günler)` : 'Henüz kayıt yok';
 
   const labels = [], oneRMs = [];
   entries.forEach(({ log, sets }) => {
-    const valid = sets.filter(s => s.kg && s.reps);
-    if (!valid.length) return;
-    const maxOneRM = Math.max(...valid.map(s => calcEpley(s.kg, s.reps)));
+    const best = Math.max(0, ...sets.map(s => calcEpley(s.kg, s.reps)));
+    if (!best) return;
     labels.push(fmtDateShort(log.date));
-    oneRMs.push(Math.round(maxOneRM * 10) / 10);
+    oneRMs.push(best);
   });
 
   const canvas = document.getElementById('progress-chart');
@@ -1994,7 +2223,7 @@ function openProgressModal(exId, dayId, exName) {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
   const textColor = '#8e8e93';
-  if (labels.length) {
+  if (labels.length && window.Chart) {
     progressChart = new Chart(canvas, {
       type: 'line',
       data: {
@@ -2025,24 +2254,21 @@ function openProgressModal(exId, dayId, exName) {
     histEl.innerHTML = '<div style="padding:12px 0;color:var(--text-secondary);font-size:14px;text-align:center;">Henüz kayıt yok</div>';
   } else {
     histEl.innerHTML = [...entries].reverse().slice(0, 8).map(({ log, sets, dayName }) => {
-      const valid = sets.filter(s => s.kg || s.reps);
-      const summary = valid.map(s => `${s.kg}kg×${s.reps}`).join(', ');
-      const maxORM = valid.length ? Math.round(Math.max(...valid.map(s => calcEpley(s.kg, s.reps))) * 10) / 10 : 0;
+      const summary = sets.map(s => s.repsR != null ? `${s.kg}kg×${s.repsR}/${s.repsL}` : `${s.kg}kg×${s.reps}`).join(', ');
+      const maxORM = Math.max(0, ...sets.map(s => calcEpley(s.kg, s.reps)));
       return `<div class="prog-history-item">
         <div>
           <span class="prog-date">${fmtDateShort(log.date)}</span>
-          <span style="font-size:10px;color:var(--text-tertiary);margin-left:6px;">${dayName}</span>
+          <span style="font-size:10px;color:var(--text-tertiary);margin-left:6px;">${escapeHtml(dayName)}</span>
         </div>
-        <span class="prog-vals">${summary || '—'} ${maxORM ? `<span style="color:var(--accent);font-size:11px;">(~${maxORM})</span>` : ''}</span>
+        <span class="prog-vals">${escapeHtml(summary) || '—'} ${maxORM ? `<span style="color:var(--accent);font-size:11px;">(~${maxORM})</span>` : ''}</span>
       </div>`;
     }).join('');
   }
   document.getElementById('progress-modal').classList.add('open');
-  history.pushState({ screen: 'progressModal' }, '');
+  pushLayer('progressModal');
 }
-function closeProgressModal() {
-  document.getElementById('progress-modal').classList.remove('open');
-}
+function closeProgressModal() { closeLayer('progressModal'); }
 
 // ═══════════════════════════════════════════════
 //  MEASUREMENTS
@@ -2058,13 +2284,19 @@ function setGender(g, silent) {
   if (!silent) saveProfile();
 }
 
+function parseBirthYear(v) {
+  const y = int(v);
+  const now = new Date().getFullYear();
+  return y >= 1900 && y <= now ? y : null;
+}
+
 function saveProfile(showToast) {
-  const age = parseInt(document.getElementById('m-birthyear').value);
-  const height = parseFloat(document.getElementById('m-height').value);
-  DB.settings.profile = { gender: selectedGender, age: age || null, height: height || null };
+  const birthYear = parseBirthYear(document.getElementById('m-birthyear').value);
+  const height = num(document.getElementById('m-height').value);
+  DB.settings.profile = { gender: selectedGender, birthYear, height: height > 0 ? height : null };
   saveData('settings', DB.settings);
   const badge = document.getElementById('profile-saved-badge');
-  if (badge) badge.style.display = (age || height) ? 'inline' : 'none';
+  if (badge) badge.style.display = (birthYear || height > 0) ? 'inline' : 'none';
   if (showToast) toast('✅ Profil kaydedildi.');
 }
 
@@ -2072,25 +2304,29 @@ function loadProfile() {
   const p = DB.settings.profile;
   const badge = document.getElementById('profile-saved-badge');
   if (!p) { if (badge) badge.style.display = 'none'; return; }
-  setGender(p.gender || 'male', true);
-  if (p.age) document.getElementById('m-birthyear').value = p.age;
+  setGender(p.gender === 'female' ? 'female' : 'male', true);
+  if (p.birthYear) document.getElementById('m-birthyear').value = p.birthYear;
   if (p.height) document.getElementById('m-height').value = p.height;
-  if (badge) badge.style.display = (p.age || p.height) ? 'inline' : 'none';
+  if (badge) badge.style.display = (p.birthYear || p.height) ? 'inline' : 'none';
 }
 
 function getProfileAge() {
   const p = DB.settings.profile;
-  return p && p.age ? p.age : null;
+  return p && p.birthYear ? new Date().getFullYear() - p.birthYear : null;
+}
+
+function measVal(id) {
+  const v = num(document.getElementById(id).value);
+  return v > 0 ? v : null;
 }
 
 function calculateFat() {
   const profile = DB.settings.profile || {};
-  const height = profile.height || parseFloat(document.getElementById('m-height').value);
-  const neck = parseFloat(document.getElementById('m-neck').value);
-  const waist = parseFloat(document.getElementById('m-waist').value);
-  const hip = parseFloat(document.getElementById('m-hip').value);
-  const age = getProfileAge();
-  const weight = parseFloat(document.getElementById('m-weight').value);
+  const height = profile.height || measVal('m-height');
+  const neck = measVal('m-neck');
+  const waist = measVal('m-waist');
+  const hip = measVal('m-hip');
+  const weight = measVal('m-weight');
   if (!height || !neck || !waist) { toast('Boy, boyun ve bel ölçümü gerekli.'); return; }
   let fat;
   if (selectedGender === 'male') {
@@ -2100,8 +2336,7 @@ function calculateFat() {
     fat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
   }
   fat = Math.round(fat * 10) / 10;
-  if (isNaN(fat) || fat < 1 || fat > 70) { toast('Geçersiz değerler, lütfen kontrol edin.'); return; }
-  // Category
+  if (!isFinite(fat) || fat < 1 || fat > 70) { toast('Geçersiz değerler, lütfen kontrol edin.'); return; }
   let cat = '';
   if (selectedGender === 'male') {
     if (fat < 6) cat = 'Temel Yağ';
@@ -2116,27 +2351,25 @@ function calculateFat() {
     else if (fat < 32) cat = 'Ortalama';
     else cat = 'Obez';
   }
-  // Save
   const entry = {
     date: today(), gender: selectedGender, fat,
-    weight: weight||null, age: age,
-    neck: neck||null, waist: waist||null, hip: hip||null,
-    chest: parseFloat(document.getElementById('m-chest').value)||null,
-    shoulder: parseFloat(document.getElementById('m-shoulder').value)||null,
-    armR: parseFloat(document.getElementById('m-arm-r').value)||null,
-    armL: parseFloat(document.getElementById('m-arm-l').value)||null,
-    forearmR: parseFloat(document.getElementById('m-forearm-r').value)||null,
-    forearmL: parseFloat(document.getElementById('m-forearm-l').value)||null,
-    thighR: parseFloat(document.getElementById('m-thigh-r').value)||null,
-    thighL: parseFloat(document.getElementById('m-thigh-l').value)||null,
-    calfR: parseFloat(document.getElementById('m-calf-r').value)||null,
-    calfL: parseFloat(document.getElementById('m-calf-l').value)||null,
+    weight, age: getProfileAge(),
+    neck, waist, hip: selectedGender === 'female' ? hip : null,
+    chest: measVal('m-chest'),
+    shoulder: measVal('m-shoulder'),
+    armR: measVal('m-arm-r'),
+    armL: measVal('m-arm-l'),
+    forearmR: measVal('m-forearm-r'),
+    forearmL: measVal('m-forearm-l'),
+    thighR: measVal('m-thigh-r'),
+    thighL: measVal('m-thigh-l'),
+    calfR: measVal('m-calf-r'),
+    calfL: measVal('m-calf-l'),
   };
-  DB.measurements = DB.measurements.filter(m => m.date !== today()); // one per day
+  DB.measurements = DB.measurements.filter(m => m.date !== entry.date); // günde bir ölçüm
   DB.measurements.push(entry);
-  DB.measurements.sort((a,b) => a.date.localeCompare(b.date));
+  DB.measurements.sort((a,b) => String(a.date).localeCompare(String(b.date)));
   saveData('measurements', DB.measurements);
-  // Show result
   const rc = document.getElementById('fat-result-card');
   rc.style.display = 'block';
   rc.innerHTML = `<div class="result-card">
@@ -2164,7 +2397,6 @@ function renderMeasSummaryCard() {
 
   const last = data[data.length - 1];
   const prev = data.length > 1 ? data[data.length - 2] : null;
-
   const fatDiff = prev && prev.fat ? (last.fat - prev.fat) : null;
   const wDiff   = prev && prev.weight && last.weight ? (last.weight - prev.weight) : null;
 
@@ -2181,12 +2413,12 @@ function renderMeasSummaryCard() {
     <div class="meas-sum-date">${fmtDate(last.date)} · Son ölçüm</div>
     <div class="meas-sum-row">
       <div class="meas-sum-item">
-        <div class="meas-sum-val">%${last.fat}</div>
+        <div class="meas-sum-val">%${escapeHtml(last.fat)}</div>
         <div class="meas-sum-lbl">Yağ Oranı ${diffBadge(fatDiff, '%', false)}</div>
       </div>
       ${last.weight ? `<div class="meas-sum-divider"></div>
       <div class="meas-sum-item">
-        <div class="meas-sum-val">${last.weight} kg</div>
+        <div class="meas-sum-val">${escapeHtml(last.weight)} kg</div>
         <div class="meas-sum-lbl">Vücut Ağırlığı ${diffBadge(wDiff, ' kg', false)}</div>
       </div>` : ''}
     </div>
@@ -2205,21 +2437,21 @@ function switchTrend(key, btn) {
 }
 
 const trendMeta = {
-  fat:    { label: 'Yağ Oranı', unit: '%', color: '#007AFF', suffix: v => '%' + v },
-  weight: { label: 'Ağırlık',   unit: 'kg', color: '#34c759', suffix: v => v + ' kg' },
-  armR:   { label: 'Kol',       unit: 'cm', color: '#ff9f0a', suffix: v => v + ' cm' },
-  chest:  { label: 'Göğüs',     unit: 'cm', color: '#ff3b30', suffix: v => v + ' cm' },
-  waist:  { label: 'Bel',       unit: 'cm', color: '#af52de', suffix: v => v + ' cm' },
-  thighR: { label: 'Uyluk',     unit: 'cm', color: '#5ac8fa', suffix: v => v + ' cm' },
+  fat:    { label: 'Yağ Oranı', color: '#007AFF', suffix: v => '%' + v },
+  weight: { label: 'Ağırlık',   color: '#34c759', suffix: v => v + ' kg' },
+  armR:   { label: 'Kol',       color: '#ff9f0a', suffix: v => v + ' cm' },
+  chest:  { label: 'Göğüs',     color: '#ff3b30', suffix: v => v + ' cm' },
+  waist:  { label: 'Bel',       color: '#af52de', suffix: v => v + ' cm' },
+  thighR: { label: 'Uyluk',     color: '#5ac8fa', suffix: v => v + ' cm' },
 };
 
 function renderFatChart() {
   const canvas = document.getElementById('fat-chart');
   if (fatChart) { fatChart.destroy(); fatChart = null; }
-  const key = currentTrendKey;
-  const meta = trendMeta[key] || trendMeta.fat;
+  const meta = trendMeta[currentTrendKey] || trendMeta.fat;
+  const key = trendMeta[currentTrendKey] ? currentTrendKey : 'fat';
   const data = DB.measurements.filter(m => m[key] != null);
-  if (data.length < 2) return;
+  if (data.length < 2 || !window.Chart) return;
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
   const textColor = '#8e8e93';
@@ -2248,15 +2480,15 @@ function renderFatChart() {
 
 function renderMeasHistory() {
   const list = document.getElementById('meas-history-list');
-  const data = [...DB.measurements].reverse();
-  if (!data.length) {
+  const items = DB.measurements.map((m, idx) => ({ m, idx })).reverse();
+  if (!items.length) {
     list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz ölçüm kaydedilmedi.</div>';
     return;
   }
-  list.innerHTML = data.map((m) => {
+  list.innerHTML = items.map(({ m, idx }) => {
     const d = new Date(m.date + 'T00:00:00');
-    const day = d.getDate();
-    const mo = d.toLocaleDateString('tr-TR', { month:'short' });
+    const day = isNaN(d) ? '?' : d.getDate();
+    const mo = isNaN(d) ? '' : d.toLocaleDateString('tr-TR', { month:'short' });
     const extras = [
       m.chest    ? `Göğüs ${m.chest} cm` : null,
       m.shoulder ? `Omuz ${m.shoulder} cm` : null,
@@ -2266,21 +2498,22 @@ function renderMeasHistory() {
     ].filter(Boolean).join(' · ');
     return `<div class="meas-history-item" style="flex-direction:column;align-items:stretch;gap:6px;padding:14px 16px;">
       <div style="display:flex;align-items:center;gap:10px;">
-        <div class="meas-date-badge"><span>${day}<br>${mo}</span></div>
+        <div class="meas-date-badge"><span>${day}<br>${escapeHtml(mo)}</span></div>
         <div style="flex:1;">
-          <div style="font-size:14px;font-weight:600;">%${m.fat} yağ oranı</div>
-          <div style="font-size:12px;color:var(--text-secondary);">${m.weight ? m.weight + ' kg · ' : ''}${m.gender === 'male' ? 'Erkek' : 'Kadın'}</div>
+          <div style="font-size:14px;font-weight:600;">%${escapeHtml(m.fat)} yağ oranı</div>
+          <div style="font-size:12px;color:var(--text-secondary);">${m.weight ? escapeHtml(m.weight) + ' kg · ' : ''}${m.gender === 'female' ? 'Kadın' : 'Erkek'}</div>
         </div>
-        <button class="delete-btn" onclick="deleteMeasurement('${m.date}')">✕</button>
+        <button class="delete-btn" onclick="deleteMeasurement(${idx})">✕</button>
       </div>
-      ${extras ? `<div style="font-size:12px;color:var(--text-secondary);padding-left:2px;">${extras}</div>` : ''}
+      ${extras ? `<div style="font-size:12px;color:var(--text-secondary);padding-left:2px;">${escapeHtml(extras)}</div>` : ''}
     </div>`;
   }).join('');
 }
 
-function deleteMeasurement(date) {
+function deleteMeasurement(idx) {
+  if (!DB.measurements[idx]) return;
   if (!confirm('Bu ölçümü silmek istiyor musunuz?')) return;
-  DB.measurements = DB.measurements.filter(m => m.date !== date);
+  DB.measurements.splice(idx, 1);
   saveData('measurements', DB.measurements);
   renderMeasurements();
   toast('Ölçüm silindi.');
@@ -2289,23 +2522,18 @@ function deleteMeasurement(date) {
 // ═══════════════════════════════════════════════
 //  PR & 1RM
 // ═══════════════════════════════════════════════
-function epley(kg, reps) {
-  if (reps === 1) return kg;
-  return Math.round(kg * (1 + reps / 30) * 10) / 10;
-}
-
 function stepOrm(field, delta) {
   const input = document.getElementById(`orm-${field}`);
-  const base = parseFloat(input.value) || 0;
-  if (field === 'kg') input.value = Math.max(0, Math.round((base + delta) * 10) / 10) || '';
+  const base = num(input.value) || 0;
+  if (field === 'kg') input.value = Math.max(0, Math.round((base + delta) * 100) / 100) || '';
   else input.value = Math.max(1, Math.round(base + delta)) || '';
 }
 
 function calculateOrm() {
-  const kg = parseFloat(document.getElementById('orm-kg').value);
-  const reps = parseInt(document.getElementById('orm-reps').value);
-  if (!kg || !reps) { toast('Ağırlık ve tekrar girin.'); return; }
-  const orm = epley(kg, reps);
+  const kg = num(document.getElementById('orm-kg').value);
+  const reps = int(document.getElementById('orm-reps').value);
+  if (!(kg > 0) || !(reps > 0)) { toast('Ağırlık ve tekrar girin.'); return; }
+  const orm = calcEpley(kg, reps);
   document.getElementById('orm-result').style.display = 'block';
   document.getElementById('orm-result-val').textContent = orm + ' kg';
   const pcts = [100,95,90,85,80,75,70];
@@ -2317,9 +2545,9 @@ function calculateOrm() {
 }
 
 function filterPR(query) {
-  const q = query.trim().toLocaleLowerCase('tr');
+  const q = normName(query);
   document.querySelectorAll('#pr-list .pr-item').forEach(el => {
-    el.style.display = el.dataset.name.toLocaleLowerCase('tr').includes(q) ? '' : 'none';
+    el.style.display = normName(el.dataset.name).includes(q) ? '' : 'none';
   });
 }
 
@@ -2336,37 +2564,37 @@ function renderPrList() {
     return;
   }
 
-  // Her egzersiz için en iyi kg, en iyi 1RM, en iyi hacim bul
-  const prMap = {}; // exName -> { bestKg, best1RM, bestVol, bestKgDate, best1RMDate }
+  // Aynı hareket büyük/küçük harf farkıyla yazılmış olsa da tek satırda toplanır
+  const prMap = {};
   DB.workoutLogs.forEach(log => {
     (log.sets || []).forEach(s => {
-      if (!s.exName || (!s.kg && !s.reps)) return;
-      const name = s.exName.trim();
-      if (!prMap[name]) prMap[name] = { bestKg: 0, bestKgReps: 0, best1RM: 0, bestVol: 0, bestKgDate: '', best1RMDate: '' };
-      const pr = prMap[name];
-      if (s.kg > pr.bestKg) { pr.bestKg = s.kg; pr.bestKgReps = s.reps || 0; pr.bestKgDate = log.date; }
-      const orm = epley(s.kg || 0, s.reps || 0);
+      if (!s.exName || !hasValue(s)) return;
+      const key = normName(s.exName);
+      if (!prMap[key]) prMap[key] = { name: s.exName.trim(), bestKg: 0, bestKgReps: 0, best1RM: 0, bestVol: 0, best1RMDate: '' };
+      const pr = prMap[key];
+      const kg = s.kg || 0, reps = s.reps || 0;
+      if (kg > pr.bestKg || (kg === pr.bestKg && reps > pr.bestKgReps)) { pr.bestKg = kg; pr.bestKgReps = reps; }
+      const orm = calcEpley(kg, reps);
       if (orm > pr.best1RM) { pr.best1RM = orm; pr.best1RMDate = log.date; }
-      const vol = (s.kg || 0) * (s.reps || 0);
-      if (vol > pr.bestVol) pr.bestVol = vol;
+      pr.bestVol = Math.max(pr.bestVol, Math.round(kg * reps * 10) / 10);
     });
   });
 
-  const entries = Object.entries(prMap).sort((a,b) => a[0].localeCompare(b[0], 'tr'));
+  const entries = Object.values(prMap).sort((a,b) => a.name.localeCompare(b.name, 'tr'));
   if (!entries.length) {
     list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Kayıtlı set bulunamadı.</div>';
     return;
   }
 
-  list.innerHTML = entries.map(([name, pr]) => `
-    <div class="pr-item" data-name="${escapeHtml(name)}">
-      <div class="pr-name">${escapeHtml(name)}</div>
+  list.innerHTML = entries.map(pr => `
+    <div class="pr-item" data-name="${escapeHtml(pr.name)}">
+      <div class="pr-name">${escapeHtml(pr.name)}</div>
       <div class="pr-stats">
         <div class="pr-stat"><span class="pr-stat-val">${pr.bestKg} kg</span><span class="pr-stat-sub">${pr.bestKgReps} tekrar</span><span class="pr-stat-lbl">Max ağırlık</span></div>
         <div class="pr-stat"><span class="pr-stat-val">${pr.best1RM} kg</span><span class="pr-stat-sub">&nbsp;</span><span class="pr-stat-lbl">Tahmini 1RM</span></div>
         <div class="pr-stat"><span class="pr-stat-val">${pr.bestVol} kg</span><span class="pr-stat-sub">&nbsp;</span><span class="pr-stat-lbl">Max hacim/set</span></div>
       </div>
-      <div class="pr-date">Son güncelleme: ${fmtDate(pr.best1RMDate)}</div>
+      ${pr.best1RMDate ? `<div class="pr-date">1RM rekoru: ${fmtDate(pr.best1RMDate)}</div>` : ''}
     </div>
   `).join('');
 }
@@ -2374,7 +2602,7 @@ function renderPrList() {
 // ═══════════════════════════════════════════════
 //  SETTINGS
 // ═══════════════════════════════════════════════
-function toggleLogHistory(btn) {
+function toggleLogHistory() {
   const list = document.getElementById('log-delete-list');
   const chevron = document.getElementById('log-history-chevron');
   const isOpen = list.style.display !== 'none';
@@ -2387,32 +2615,28 @@ function toggleLogHistory(btn) {
 function renderLogDeleteList() {
   const el = document.getElementById('log-delete-list');
   if (!el) return;
-  const logs = [...DB.workoutLogs].reverse();
-  if (!logs.length) {
+  const items = DB.workoutLogs.map((log, idx) => ({ log, idx })).reverse();
+  if (!items.length) {
     el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-secondary);font-size:14px;">Kayıtlı antrenman yok.</div>';
     return;
   }
-  el.innerHTML = logs.map((log, i) => {
-    const day = getDayById(log.dayId);
-    const name = day ? day.name : log.dayId;
+  el.innerHTML = items.map(({ log, idx }) => {
     const dur = log.duration ? ` · ${Math.round(log.duration/60)} dk` : '';
-    const setCount = (log.sets || []).length;
+    const setCount = (log.sets || []).filter(hasValue).length;
     return `<div class="suppl-setting-item">
       <div style="flex:1;min-width:0;">
-        <div style="font-size:14px;font-weight:600;">${escapeHtml(name)}</div>
+        <div style="font-size:14px;font-weight:600;">${escapeHtml(dayDisplayName(log))}</div>
         <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${fmtDate(log.date)}${dur} · ${setCount} set</div>
       </div>
-      <button class="suppl-remove-btn" onclick="deleteWorkoutLog('${log.date}','${log.dayId}')" aria-label="Sil">−</button>
+      <button class="suppl-remove-btn" onclick="deleteWorkoutLog(${idx})" aria-label="Sil">−</button>
     </div>`;
   }).join('');
 }
 
-function deleteWorkoutLog(date, dayId) {
-  const idx = DB.workoutLogs.findIndex(l => l.date === date && l.dayId === dayId);
-  if (idx === -1) return;
-  const day = getDayById(dayId);
-  const name = day ? day.name : dayId;
-  if (!confirm(`"${name}" – ${fmtDate(date)} tarihli antrenman silinsin mi?`)) return;
+function deleteWorkoutLog(idx) {
+  const log = DB.workoutLogs[idx];
+  if (!log) return;
+  if (!confirm(`"${dayDisplayName(log)}" – ${fmtDate(log.date)} tarihli antrenman silinsin mi?`)) return;
   DB.workoutLogs.splice(idx, 1);
   saveData('workoutLogs', DB.workoutLogs);
   renderLogDeleteList();
@@ -2423,21 +2647,15 @@ function deleteWorkoutLog(date, dayId) {
 
 function renderSettings() {
   const s = DB.settings;
-  // Theme
   document.getElementById('theme-light-btn').classList.toggle('active', s.theme !== 'dark');
   document.getElementById('theme-dark-btn').classList.toggle('active', s.theme === 'dark');
-  // Rest timer toggle
   document.getElementById('rest-toggle').checked = !!s.restTimerEnabled;
-  // Duration buttons
   document.querySelectorAll('.dur-btn').forEach(btn => {
     btn.classList.toggle('active', parseInt(btn.dataset.dur) === s.restDuration);
   });
-  // Day count
   document.getElementById('day-count-label').textContent = DB.workoutDays.length + ' gün';
-  // Order label
   const orderNames = DB.workoutOrder.map(id => { const d = getDayById(id); return d ? d.name : id; });
   document.getElementById('order-label').textContent = orderNames.length ? orderNames.slice(0,2).join(' → ') + (orderNames.length > 2 ? ' → ...' : '') : '—';
-  // Backup reminder
   const lastBackup = lsGet('lastBackup');
   const backupLabel = document.getElementById('last-backup-label');
   if (backupLabel) {
@@ -2446,7 +2664,7 @@ function renderSettings() {
       backupLabel.style.color = 'var(--red)';
     } else {
       const daysSince = Math.floor((new Date(today()) - new Date(lastBackup)) / 86400000);
-      backupLabel.textContent = daysSince === 0 ? 'Bugün' : `${daysSince} gün önce`;
+      backupLabel.textContent = daysSince <= 0 ? 'Bugün' : `${daysSince} gün önce`;
       backupLabel.style.color = daysSince > 14 ? 'var(--orange)' : 'var(--text-secondary)';
     }
   }
@@ -2482,16 +2700,14 @@ function setRestDuration(dur) {
 let editorDays = [];
 
 function openDayEditor() {
-  editorDays = JSON.parse(JSON.stringify(DB.workoutDays));
+  editorDays = deepCopy(DB.workoutDays);
   renderDayEditor();
   document.getElementById('day-editor').classList.add('open');
-  history.pushState({ screen: 'dayEditor' }, '');
+  pushLayer('dayEditor');
 }
-function closeDayEditor() {
-  document.getElementById('day-editor').classList.remove('open');
-}
+function closeDayEditor() { closeLayer('dayEditor'); }
+
 function renderDayEditor() {
-  // Datalist: tüm geçmiş ve mevcut egzersiz adları
   const nameSet = new Set();
   DB.workoutDays.forEach(d => d.exercises.forEach(e => e.name && nameSet.add(e.name)));
   DB.workoutLogs.forEach(l => (l.sets||[]).forEach(s => s.exName && nameSet.add(s.exName)));
@@ -2501,7 +2717,7 @@ function renderDayEditor() {
   body.innerHTML = editorDays.map((day, di) => `
     <div class="day-item">
       <div class="day-item-header">
-        <input class="day-item-name-input" value="${escapeHtml(day.name)}" onchange="editorDays[${di}].name=this.value" placeholder="Gün adı">
+        <input class="day-item-name-input" value="${escapeHtml(day.name)}" oninput="editorDays[${di}].name=this.value" placeholder="Gün adı">
         <button class="remove-day-btn" onclick="removeDay(${di})">−</button>
         <button class="day-toggle-btn" onclick="toggleDayExercises(${di})" id="day-toggle-${di}">▾</button>
       </div>
@@ -2512,8 +2728,8 @@ function renderDayEditor() {
               <button class="order-arrow-btn" style="width:24px;height:22px;font-size:12px;" onclick="moveEx(${di},${ei},-1)" ${ei === 0 ? 'disabled' : ''}>↑</button>
               <button class="order-arrow-btn" style="width:24px;height:22px;font-size:12px;" onclick="moveEx(${di},${ei},1)" ${ei === day.exercises.length - 1 ? 'disabled' : ''}>↓</button>
             </div>
-            <input class="day-ex-name-input" list="ex-names-list" value="${escapeHtml(ex.name)}" onchange="editorDays[${di}].exercises[${ei}].name=this.value" placeholder="Hareket adı">
-            <input class="day-ex-sets-input" type="number" value="${ex.sets}" min="1" max="10" onchange="editorDays[${di}].exercises[${ei}].sets=parseInt(this.value)||1" title="Set sayısı">
+            <input class="day-ex-name-input" list="ex-names-list" value="${escapeHtml(ex.name)}" oninput="editorDays[${di}].exercises[${ei}].name=this.value" placeholder="Hareket adı">
+            <input class="day-ex-sets-input" type="number" value="${ex.sets}" min="1" max="10" oninput="editorDays[${di}].exercises[${ei}].sets=Math.min(10,Math.max(1,parseInt(this.value)||1))" title="Set sayısı">
             <button class="bi-toggle-btn${ex.bilateral ? ' active' : ''}" onclick="toggleBilateral(${di},${ei})" title="Sağ/Sol ayrı tekrar">S/L</button>
             <button class="remove-ex-btn" onclick="removeEx(${di},${ei})">−</button>
           </div>
@@ -2526,24 +2742,20 @@ function renderDayEditor() {
 function toggleBilateral(di, ei) {
   const ex = editorDays[di].exercises[ei];
   const newVal = !ex.bilateral;
-  const name = ex.name.trim().toLowerCase();
+  const name = normName(ex.name);
+  if (!name) { ex.bilateral = newVal; renderDayEditor(); return; }
   // Aynı isimli tüm egzersizlere uygula
-  editorDays.forEach(day => {
-    day.exercises.forEach(e => {
-      if (e.name.trim().toLowerCase() === name) e.bilateral = newVal;
-    });
-  });
+  editorDays.forEach(day => day.exercises.forEach(e => {
+    if (normName(e.name) === name) e.bilateral = newVal;
+  }));
   renderDayEditor();
 }
-
 function toggleDayExercises(di) {
-  const el = document.getElementById(`day-exs-${di}`);
-  const btn = document.getElementById(`day-toggle-${di}`);
-  el.classList.toggle('open');
-  btn.classList.toggle('open');
+  document.getElementById(`day-exs-${di}`).classList.toggle('open');
+  document.getElementById(`day-toggle-${di}`).classList.toggle('open');
 }
 function removeDay(di) {
-  if (!confirm('Bu günü silmek istiyor musunuz?')) return;
+  if (!confirm('Bu günü silmek istiyor musunuz? Geçmiş antrenman kayıtları silinmez.')) return;
   editorDays.splice(di, 1);
   renderDayEditor();
 }
@@ -2559,15 +2771,81 @@ function moveEx(di, ei, dir) {
   renderDayEditor();
 }
 
-function uid() { return crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2); }
+function uid() {
+  try { if (crypto.randomUUID) return crypto.randomUUID(); } catch(e) {}
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
 function addEx(di) {
   editorDays[di].exercises.push({ id: uid(), name: '', sets: 3 });
   renderDayEditor();
+  const inputs = document.querySelectorAll(`#day-exs-${di} .day-ex-name-input`);
+  if (inputs.length) inputs[inputs.length - 1].focus();
 }
 function addDay() {
   editorDays.push({ id: uid(), name: 'Yeni Gün', exercises: [] });
   renderDayEditor();
 }
+
+function saveDays() {
+  // Boş isimli hareketleri temizle
+  const emptyCount = editorDays.reduce((a, d) => a + d.exercises.filter(e => !String(e.name || '').trim()).length, 0);
+  if (emptyCount && !confirm(`Adı boş ${emptyCount} hareket var. Bunlar kaydedilmeden silinecek. Devam edilsin mi?`)) return;
+  const newDays = editorDays.map((d, i) => ({
+    ...d,
+    name: String(d.name || '').trim() || `Gün ${i + 1}`,
+    exercises: d.exercises.filter(e => String(e.name || '').trim()).map(e => ({
+      ...e,
+      id: e.id || uid(),
+      name: String(e.name).trim(),
+      sets: Math.min(10, Math.max(1, parseInt(e.sets) || 1)),
+    })),
+  }));
+
+  // Yeniden adlandırılan hareketlerin geçmişini taşı
+  const oldNames = {};
+  DB.workoutDays.forEach(d => d.exercises.forEach(e => { oldNames[e.id] = e.name; }));
+  const newNameSet = new Set();
+  newDays.forEach(d => d.exercises.forEach(e => newNameSet.add(normName(e.name))));
+  const renames = [];
+  newDays.forEach(d => d.exercises.forEach(e => {
+    const oldName = oldNames[e.id];
+    if (!oldName || normName(oldName) === normName(e.name)) return;
+    if (newNameSet.has(normName(oldName))) return; // eski isim başka günde hâlâ kullanılıyor
+    if (renames.find(r => normName(r.from) === normName(oldName))) return;
+    if (getLogsByExName(oldName).length) renames.push({ from: oldName, to: e.name });
+  }));
+  if (renames.length) {
+    const list = renames.map(r => `• ${r.from} → ${r.to}`).join('\n');
+    if (confirm(`Yeniden adlandırılan hareketler:\n${list}\n\nGeçmiş kayıtları da yeni isme taşınsın mı? (Grafik ve rekorlar devam eder)`)) {
+      renames.forEach(r => {
+        const from = normName(r.from);
+        DB.workoutLogs.forEach(log => (log.sets || []).forEach(s => {
+          if (setMatchesName(s, log, from)) s.exName = r.to;
+        }));
+        DB.workoutLogs.forEach(log => {
+          if (log.exNotes && log.exNotes[from]) { log.exNotes[normName(r.to)] = log.exNotes[from]; delete log.exNotes[from]; }
+        });
+      });
+      saveData('workoutLogs', DB.workoutLogs);
+    }
+  }
+
+  // Silinen günlerin adı geçmiş kayıtlarda kalsın
+  DB.workoutLogs.forEach(log => {
+    if (!log.dayName) { const d = getDayById(log.dayId); if (d) log.dayName = d.name; }
+  });
+  saveData('workoutLogs', DB.workoutLogs);
+
+  DB.workoutDays = newDays;
+  saveData('workoutDays', DB.workoutDays);
+  syncOrder();
+  saveData('workoutOrder', DB.workoutOrder);
+  closeDayEditor();
+  toast('✅ Günler kaydedildi!');
+  renderHome();
+  renderSettings();
+}
+
 // ═══════════════════════════════════════════════
 //  ORDER EDITOR
 // ═══════════════════════════════════════════════
@@ -2576,18 +2854,15 @@ function openOrderEditor() {
   editorOrder = [...DB.workoutOrder];
   renderOrderEditor();
   document.getElementById('order-editor').classList.add('open');
-  history.pushState({ screen: 'orderEditor' }, '');
+  pushLayer('orderEditor');
 }
-function closeOrderEditor() {
-  document.getElementById('order-editor').classList.remove('open');
-}
+function closeOrderEditor() { closeLayer('orderEditor'); }
 function renderOrderEditor() {
   document.getElementById('order-editor-body').innerHTML = editorOrder.map((id, i) => {
     const day = getDayById(id);
-    const name = escapeHtml(day ? day.name : id);
     return `<div class="order-item">
       <div class="order-item-num">${i + 1}</div>
-      <div class="order-item-name">${name}</div>
+      <div class="order-item-name">${escapeHtml(day ? day.name : id)}</div>
       <button class="order-arrow-btn" onclick="moveOrder(${i},-1)" ${i === 0 ? 'disabled' : ''}>↑</button>
       <button class="order-arrow-btn" onclick="moveOrder(${i},1)" ${i === editorOrder.length - 1 ? 'disabled' : ''}>↓</button>
     </div>`;
@@ -2601,6 +2876,7 @@ function moveOrder(i, dir) {
 }
 function saveOrder() {
   DB.workoutOrder = editorOrder;
+  syncOrder();
   saveData('workoutOrder', DB.workoutOrder);
   closeOrderEditor();
   toast('✅ Sıra kaydedildi!');
@@ -2619,34 +2895,30 @@ function getDefaultSupplements() {
     { id: 'protein', name: 'Protein', color: '#34c759' },
   ];
 }
-
 function getSupplements() {
-  if (!DB.settings.supplements) DB.settings.supplements = getDefaultSupplements();
+  if (!Array.isArray(DB.settings.supplements)) DB.settings.supplements = getDefaultSupplements();
   return DB.settings.supplements;
 }
 
 function getSupplHistory() {
-  const raw = lsGet('supplHistory');
-  return raw ? JSON.parse(raw) : {};
+  const h = readJSON('supplHistory', {});
+  return isPlainObject(h) ? h : {};
 }
 function saveSupplHistory(h) { lsSet('supplHistory', JSON.stringify(h)); }
 
 function getSuppl(date) {
   const d = date || today();
   const h = getSupplHistory();
-  // Migrate old format
+  // Çok eski tek-günlük formatı taşı
   if (!h[d] && !date) {
-    const old = lsGet('suppl');
-    if (old) {
-      const o = JSON.parse(old);
-      if (o.date === d) {
-        const items = {};
-        getSupplements().forEach(s => { items[s.id] = !!o[s.id]; });
-        return { items, water: o.water || 0 };
-      }
+    const o = readJSON('suppl', null);
+    if (isPlainObject(o) && o.date === d) {
+      const items = {};
+      getSupplements().forEach(s => { items[s.id] = !!o[s.id]; });
+      return { items, water: o.water || 0 };
     }
   }
-  return h[d] || { items: {}, water: 0 };
+  return isPlainObject(h[d]) ? h[d] : { items: {}, water: 0 };
 }
 function saveTodaySuppl(data) {
   const h = getSupplHistory();
@@ -2684,16 +2956,17 @@ function renderSuppl() {
   if (list) {
     list.innerHTML = supps.map(s => {
       const done = !!(data.items && data.items[s.id]);
-      return `<div class="suppl-row" onclick="toggleSuppl('${s.id}')">
-        <div class="suppl-check ${done ? 'done' : ''}" style="${done ? `background:${s.color};border-color:${s.color};` : ''}"></div>
+      const color = safeColor(s.color);
+      return `<div class="suppl-row" onclick="toggleSuppl(${jsArg(s.id)})">
+        <div class="suppl-check ${done ? 'done' : ''}" style="${done ? `background:${color};border-color:${color};` : ''}"></div>
         <span class="suppl-label ${done ? 'done' : ''}">${escapeHtml(s.name)}</span>
-        <span style="width:10px;height:10px;border-radius:50%;background:${s.color};display:inline-block;flex-shrink:0;"></span>
+        <span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0;"></span>
       </div>`;
     }).join('');
   }
   const drops = document.getElementById('water-drops');
   if (!drops) return;
-  const filled = data.water || 0;
+  const filled = Math.max(0, parseInt(data.water) || 0);
   drops.innerHTML = Array.from({length: filled + 1}, (_, i) =>
     `<button class="water-drop ${i < filled ? 'filled' : ''}" onclick="${i < filled ? `removeWater(${i})` : 'addWater()'}"></button>`
   ).join('');
@@ -2712,13 +2985,15 @@ function renderSupplCalendar() {
   if (!gridEl) return;
 
   const supps = getSupplements();
-  const history = getSupplHistory();
-  const now = new Date();
-  now.setMonth(now.getMonth() + supplCalOffset);
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  const supplHist = getSupplHistory();
+  // Önce ayın 1'ine al; yoksa 31'inde bir önceki aya geçerken tarih taşar
+  const base = logicalNow();
+  base.setDate(1);
+  base.setMonth(base.getMonth() + supplCalOffset);
+  const year = base.getFullYear();
+  const month = base.getMonth();
 
-  titleEl.textContent = new Date(year, month, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+  titleEl.textContent = base.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
   dowsEl.innerHTML = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'].map(d => `<div class="suppl-cal-dow">${d}</div>`).join('');
 
   const firstDow = (new Date(year, month, 1).getDay() + 6) % 7;
@@ -2729,20 +3004,19 @@ function renderSupplCalendar() {
   for (let i = 0; i < firstDow; i++) html += `<div class="suppl-cal-day empty-day"></div>`;
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const entry = history[dateStr];
-    const taken = entry ? supps.filter(s => entry.items && entry.items[s.id]) : [];
+    const entry = supplHist[dateStr];
+    const taken = entry && isPlainObject(entry.items) ? supps.filter(s => entry.items[s.id]) : [];
     const isToday = dateStr === todayStr ? ' today' : '';
     let inner = '';
     if (taken.length) {
-      const segs = taken.map(s => `<div class="suppl-cal-fill-seg" style="background:${s.color};"></div>`).join('');
-      inner = `<div class="suppl-cal-fill">${segs}</div>`;
+      inner = `<div class="suppl-cal-fill">${taken.map(s => `<div class="suppl-cal-fill-seg" style="background:${safeColor(s.color)};"></div>`).join('')}</div>`;
     }
     html += `<div class="suppl-cal-day${isToday}">${inner}</div>`;
   }
   gridEl.innerHTML = html;
 
   legendEl.innerHTML = supps.map(s =>
-    `<div class="suppl-legend-item"><div class="suppl-legend-dot" style="background:${s.color};"></div>${escapeHtml(s.name)}</div>`
+    `<div class="suppl-legend-item"><div class="suppl-legend-dot" style="background:${safeColor(s.color)};"></div>${escapeHtml(s.name)}</div>`
   ).join('');
 }
 
@@ -2754,11 +3028,11 @@ function renderSupplSettings() {
     el.innerHTML = '<div style="padding:14px 16px;color:var(--text-secondary);font-size:14px;">Supplement eklenmedi.</div>';
     return;
   }
-  el.innerHTML = supps.map((s, i) => `
+  el.innerHTML = supps.map(s => `
     <div class="suppl-setting-item">
-      <div class="suppl-color-swatch" style="background:${s.color};width:12px;height:12px;border-radius:50%;flex-shrink:0;"></div>
+      <div class="suppl-color-swatch" style="background:${safeColor(s.color)};width:12px;height:12px;border-radius:50%;flex-shrink:0;"></div>
       <span class="suppl-setting-name">${escapeHtml(s.name)}</span>
-      <button class="suppl-remove-btn" onclick="removeSupplement('${s.id}')">−</button>
+      <button class="suppl-remove-btn" onclick="removeSupplement(${jsArg(s.id)})">−</button>
     </div>`).join('');
 }
 
@@ -2767,9 +3041,8 @@ function addSupplement() {
   const name = input.value.trim();
   if (!name) { toast('Supplement adı girin.'); return; }
   const supps = getSupplements();
-  if (supps.find(s => s.name.toLowerCase() === name.toLowerCase())) { toast('Bu supplement zaten var.'); return; }
-  const color = SUPPL_COLORS[supps.length % SUPPL_COLORS.length];
-  supps.push({ id: uid(), name, color });
+  if (supps.find(s => normName(s.name) === normName(name))) { toast('Bu supplement zaten var.'); return; }
+  supps.push({ id: uid(), name, color: SUPPL_COLORS[supps.length % SUPPL_COLORS.length] });
   DB.settings.supplements = supps;
   saveData('settings', DB.settings);
   input.value = '';
@@ -2789,30 +3062,15 @@ function removeSupplement(id) {
   toast('Supplement silindi.');
 }
 
-function saveDays() {
-  // Sync IDs for new exercises
-  editorDays.forEach(day => {
-    day.exercises.forEach(ex => {
-      if (!ex.id) ex.id = uid();
-    });
-  });
-  DB.workoutDays = editorDays;
-  saveData('workoutDays', DB.workoutDays);
-  // Update order: add new days, remove deleted
-  const ids = DB.workoutDays.map(d => d.id);
-  DB.workoutOrder = DB.workoutOrder.filter(id => ids.includes(id));
-  ids.forEach(id => { if (!DB.workoutOrder.includes(id)) DB.workoutOrder.push(id); });
-  saveData('workoutOrder', DB.workoutOrder);
-  closeDayEditor();
-  toast('✅ Günler kaydedildi!');
-  renderHome();
-  renderSettings();
-}
-
 // ═══════════════════════════════════════════════
 //  DATA EXPORT / IMPORT / RESET
 // ═══════════════════════════════════════════════
-function exportData() {
+function markBackup() {
+  lsSet('lastBackup', today());
+  renderSettings();
+}
+
+async function exportData() {
   const data = {
     workoutDays: DB.workoutDays,
     workoutLogs: DB.workoutLogs,
@@ -2822,27 +3080,51 @@ function exportData() {
     supplHistory: getSupplHistory(),
     exportDate: new Date().toISOString(),
   };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const json = JSON.stringify(data, null, 2);
+  const fileName = `antrenman-yedek-${today()}.json`;
+
+  // Telefonda paylaşım menüsü (iOS'ta "Dosyalar'a Kaydet") en güvenilir yol
+  const isTouch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  if (isTouch && typeof File === 'function' && navigator.canShare) {
+    try {
+      const file = new File([json], fileName, { type: 'application/json' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Antrenman yedeği' });
+        markBackup();
+        toast('📤 Yedek kaydedildi.');
+        return;
+      }
+    } catch(e) {
+      if (e && e.name === 'AbortError') { toast('Dışa aktarma iptal edildi.'); return; }
+      // Paylaşım başarısızsa indirmeye geç
+    }
+  }
+
+  const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `antrenman-yedek-${today()}.json`; a.click();
-  URL.revokeObjectURL(url);
-  lsSet('lastBackup', today());
-  renderSettings();
+  a.href = url; a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  markBackup();
   toast('📤 Veri dışa aktarıldı.');
 }
 
 function validateImport(data) {
+  if (!isPlainObject(data)) return 'Dosya bir yedek değil.';
   if (!Array.isArray(data.workoutDays) || !Array.isArray(data.workoutLogs)) return 'workoutDays ve workoutLogs dizisi gerekli.';
   for (const d of data.workoutDays) {
-    if (!d.id || !d.name || !Array.isArray(d.exercises)) return `Geçersiz gün: id/name/exercises eksik.`;
+    if (!isPlainObject(d) || !d.id || typeof d.name !== 'string' || !Array.isArray(d.exercises)) return 'Geçersiz gün: id/name/exercises eksik.';
     for (const ex of d.exercises) {
-      if (!ex.id || !ex.name || typeof ex.sets !== 'number') return `Geçersiz egzersiz: ${d.name} içinde.`;
+      if (!isPlainObject(ex) || !ex.id || typeof ex.name !== 'string') return `Geçersiz egzersiz: ${d.name} içinde.`;
     }
   }
   for (const log of data.workoutLogs) {
-    if (!log.date || !log.dayId || !Array.isArray(log.sets)) return `Geçersiz antrenman logu: date/dayId/sets eksik.`;
+    if (!isPlainObject(log) || !/^\d{4}-\d{2}-\d{2}$/.test(String(log.date)) || !log.dayId || !Array.isArray(log.sets)) return 'Geçersiz antrenman logu: date/dayId/sets eksik.';
   }
+  if (data.measurements != null && !Array.isArray(data.measurements)) return 'measurements bir dizi olmalı.';
   return null;
 }
 
@@ -2851,32 +3133,41 @@ function importData(evt) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      const err = validateImport(data);
-      if (err) { toast('❌ ' + err); return; }
-      if (!confirm('Mevcut tüm veriler bu yedekle değiştirilecek. Emin misiniz?')) return;
-      DB.workoutDays = data.workoutDays;
-      DB.workoutLogs = data.workoutLogs;
-      DB.measurements = data.measurements || [];
-      DB.settings = data.settings || DB.settings;
-      DB.workoutOrder = data.workoutOrder || data.workoutDays.map(d => d.id);
-      ['workoutDays','workoutLogs','measurements','settings','workoutOrder'].forEach(k => saveData(k, DB[k]));
-      if (data.supplHistory) saveSupplHistory(data.supplHistory);
-      applyTheme(); renderHome(); renderSettings();
-      toast('✅ Veri içe aktarıldı!');
-    } catch { toast('❌ Geçersiz dosya formatı.'); }
+    let data;
+    try { data = JSON.parse(e.target.result); }
+    catch { toast('❌ Geçersiz dosya formatı.'); return; }
+    const err = validateImport(data);
+    if (err) { toast('❌ ' + err, 3500); return; }
+    if (!confirm('Mevcut tüm veriler bu yedekle değiştirilecek. Emin misiniz?')) return;
+    const days = normalizeDays(data.workoutDays).map(d => ({ ...d, exercises: d.exercises.filter(e => e.name) }));
+    DB.workoutDays = days;
+    DB.workoutLogs = normalizeLogs(data.workoutLogs, days);
+    DB.measurements = (data.measurements || []).filter(m => isPlainObject(m) && m.date);
+    DB.settings = Object.assign({}, DEFAULT_SETTINGS, isPlainObject(data.settings) ? data.settings : {});
+    const p = DB.settings.profile;
+    if (p && p.age && !p.birthYear) { p.birthYear = new Date().getFullYear() - p.age; delete p.age; }
+    DB.workoutOrder = Array.isArray(data.workoutOrder) ? data.workoutOrder.map(String) : [];
+    syncOrder();
+    ['workoutDays','workoutLogs','measurements','settings','workoutOrder'].forEach(k => saveData(k, DB[k]));
+    if (isPlainObject(data.supplHistory)) saveSupplHistory(data.supplHistory);
+    applyTheme(); renderHome(); renderSettings();
+    toast('✅ Veri içe aktarıldı!');
   };
   reader.readAsText(file);
   evt.target.value = '';
 }
+
 function resetData() {
   if (!confirm('Tüm veriler silinecek! Bu işlem geri alınamaz. Emin misiniz?')) return;
   if (!confirm('Son onay: Gerçekten tüm verileri silmek istiyor musunuz?')) return;
-  localStorage.clear();
+  discardActive();
+  // Sadece bu uygulamaya ait anahtarlar silinir
+  lsOwnKeys().forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+  lsSet('migrated', '1');
   DB = loadData();
-  DB.workoutOrder = DB.workoutDays.map(d => d.id);
-  saveData('workoutOrder', DB.workoutOrder);
+  syncOrder();
+  migrateDB();
+  applyTheme();
   renderHome(); renderSettings();
   toast('🗑️ Tüm veriler sıfırlandı.');
 }
@@ -2886,26 +3177,20 @@ function resetData() {
 // ═══════════════════════════════════════════════
 applyTheme();
 setGender('male', true);
+loadProfile();
 renderHome();
 renderSettings();
+restoreActiveWorkout();
+
+// Uygulama arka plana alınırken son durumu kaydet
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') captureActive();
+});
+window.addEventListener('pagehide', () => captureActive());
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
-
-window.addEventListener('popstate', () => {
-  if (document.getElementById('progress-modal').classList.contains('open')) {
-    closeProgressModal();
-  } else if (document.getElementById('history-modal').classList.contains('open')) {
-    closeHistoryModal();
-  } else if (document.getElementById('order-editor').classList.contains('open')) {
-    closeOrderEditor();
-  } else if (document.getElementById('day-editor').classList.contains('open')) {
-    closeDayEditor();
-  } else if (document.getElementById('workout-screen').classList.contains('open')) {
-    hideWorkoutScreen();
-  }
-});
 </script>
 </body>
 </html>

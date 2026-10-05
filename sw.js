@@ -1,9 +1,11 @@
-const CACHE = 'antrenman-assets-v2';
+const CACHE = 'antrenman-assets-v3';
 
 const PRECACHE = [
   '/antrenman/',
   '/antrenman/index.html',
   '/antrenman/manifest.json',
+  '/antrenman/icon-192.png',
+  '/antrenman/icon-512.png',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'
 ];
 
@@ -21,7 +23,16 @@ self.addEventListener('activate', e => {
   );
 });
 
+// Yanıtın kopyası, yanıt sayfaya verilmeden ÖNCE alınmalı; aksi halde
+// gövde tüketilmiş olabilir ve önbelleğe yazma "body already used" ile başarısız olur.
+function cachePut(request, res) {
+  if (!res || res.status !== 200) return;
+  const copy = res.clone();
+  caches.open(CACHE).then(c => c.put(request, copy)).catch(() => {});
+}
+
 self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
 
   // CDN varlıkları: önce önbellek, yoksa ağdan çek ve önbelleğe al
@@ -29,12 +40,7 @@ self.addEventListener('fetch', e => {
     e.respondWith(
       caches.match(e.request).then(cached => {
         if (cached) return cached;
-        return fetch(e.request).then(res => {
-          if (res && res.status === 200) {
-            caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-          }
-          return res;
-        });
+        return fetch(e.request).then(res => { cachePut(e.request, res); return res; });
       })
     );
     return;
@@ -44,12 +50,7 @@ self.addEventListener('fetch', e => {
   // Bu sayede index.html her zaman güncel sürümü yükler
   e.respondWith(
     fetch(e.request)
-      .then(res => {
-        if (res && res.status === 200) {
-          caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-        }
-        return res;
-      })
-      .catch(() => caches.match(e.request))
+      .then(res => { cachePut(e.request, res); return res; })
+      .catch(() => caches.match(e.request).then(r => r || (e.request.mode === 'navigate' ? caches.match('/antrenman/index.html') : undefined)))
   );
 });
