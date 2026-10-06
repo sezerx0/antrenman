@@ -109,7 +109,52 @@ function confirmCloseWorkout() {
   discardActive();
 }
 
+// ── Bildirim: uygulamadan çıkınca aktif antrenmanı göster ──
+// İçerik çıkış anındaki durumdur (web uygulaması arka planda güncelleyemez).
+const WORKOUT_NOTIF_TAG = 'active-workout';
+function hhmm(t, sec) {
+  return new Date(t).toLocaleTimeString('tr-TR', sec ? { hour: '2-digit', minute: '2-digit', second: '2-digit' } : { hour: '2-digit', minute: '2-digit' });
+}
+function workoutNotifContent() {
+  const skipped = active.skipped || [];
+  const total = active.sets.reduce((a, n, i) => a + (skipped.includes(i) ? 0 : n), 0);
+  const doneIds = new Set(active.done || []);
+  let done = 0, next = null;
+  active.day.exercises.forEach((ex, ei) => {
+    if (skipped.includes(ei)) return;
+    for (let s = 0; s < active.sets[ei]; s++) {
+      if (doneIds.has(`set-done-${ei}-${s}`)) done++;
+      else if (!next) next = `${ex.name} · ${s + 1}. set`;
+    }
+  });
+  const lines = [`${done}/${total} set · başlangıç ${hhmm(active.startTime)}`];
+  if (restInterval && restEndTime > Date.now()) lines.push(`Dinlenme bitişi: ${hhmm(restEndTime, true)}`);
+  if (next) lines.push(`Sıradaki: ${next}`);
+  return { title: `${active.day.name} devam ediyor`, body: lines.join('\n') };
+}
+function postWorkoutNotification() {
+  if (!active || active.mode === 'edit' || !workoutNotifOn() || !navigator.serviceWorker) return;
+  // İçeriği hemen hesapla: sayfa askıya alınmadan önce hazır olsun
+  const { title, body } = workoutNotifContent();
+  return navigator.serviceWorker.getRegistration().then(reg => {
+    if (!reg) return;
+    return reg.showNotification(title, {
+      body, tag: WORKOUT_NOTIF_TAG, renotify: false, silent: true,
+      icon: 'icon-192.png', badge: 'icon-192.png', timestamp: active.startTime,
+      data: { url: './' },
+    });
+  }).catch(() => {});
+}
+function clearWorkoutNotification() {
+  if (!navigator.serviceWorker) return;
+  return navigator.serviceWorker.getRegistration().then(reg => {
+    if (!reg || !reg.getNotifications) return;
+    return reg.getNotifications({ tag: WORKOUT_NOTIF_TAG }).then(list => list.forEach(n => n.close()));
+  }).catch(() => {});
+}
+
 function discardActive() {
+  clearWorkoutNotification();
   active = null;
   prevCache = [];
   lsRemove('activeWorkout');

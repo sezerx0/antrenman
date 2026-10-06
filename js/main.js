@@ -11,13 +11,15 @@ renderHome();
 renderSettings();
 restoreActiveWorkout();
 ensurePersistentStorage();
+clearWorkoutNotification();
 
 // Uygulama arka plana alınırken son durumu kaydet
+// ve aktif antrenmanı bildirimde göster; geri dönünce bildirimi kaldır
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') captureActive();
-  else acquireWakeLock();
+  if (document.visibilityState === 'hidden') { captureActive(); postWorkoutNotification(); }
+  else { acquireWakeLock(); clearWorkoutNotification(); }
 });
-window.addEventListener('pagehide', () => captureActive());
+window.addEventListener('pagehide', () => { captureActive(); postWorkoutNotification(); });
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});

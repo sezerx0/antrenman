@@ -1,4 +1,4 @@
-const CACHE = 'antrenman-assets-v5';
+const CACHE = 'antrenman-assets-v6';
 
 const PRECACHE = [
   '/antrenman/',
@@ -61,5 +61,17 @@ self.addEventListener('fetch', e => {
     fetch(e.request)
       .then(res => { cachePut(e.request, res); return res; })
       .catch(() => caches.match(e.request).then(r => r || (e.request.mode === 'navigate' ? caches.match('/antrenman/index.html') : undefined)))
+  );
+});
+
+// Antrenman bildirimine dokununca: açık pencere varsa öne getir, yoksa uygulamayı aç
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || './', self.registration.scope).href;
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const c of list) if ('focus' in c) return c.focus();
+      return self.clients.openWindow ? self.clients.openWindow(url) : undefined;
+    })
   );
 });

@@ -630,6 +630,49 @@ with sync_playwright() as p:
 
     check('sayfa hatası yok', not errors, errors)
 
+    # ── 35. Antrenman bildirimi ──
+    # Varsayılan headless shell bildirim iznini hep reddediyor; tam Chromium'un başsız modu gerekiyor
+    browser3 = p.chromium.launch(channel='chromium')
+    ctx3 = browser3.new_context(service_workers='allow', viewport={'width': 390, 'height': 844})
+    ctx3.grant_permissions(['notifications'], origin=BASE)
+    pg3 = ctx3.new_page()
+    errs3 = []
+    pg3.on('pageerror', lambda e: errs3.append(str(e)))
+    pg3.goto(BASE + '/antrenman/index.html')
+    pg3.wait_for_function("navigator.serviceWorker && navigator.serviceWorker.controller !== null", timeout=15000)
+    pg3.evaluate("switchTab('settings')")
+    check('bildirim ayarı varsayılan kapalı', not pg3.is_checked('#workout-notif-toggle'))
+    pg3.locator('#workout-notif-toggle').scroll_into_view_if_needed()
+    pg3.locator('label.ios-toggle:has(#workout-notif-toggle)').click()
+    pg3.wait_for_timeout(300)
+    check('izin verilince bildirim ayarı açılıyor', pg3.evaluate("workoutNotifOn()") and pg3.is_checked('#workout-notif-toggle') and 'uygulamadan çıkınca' in pg3.inner_text('#notif-status'))
+    pg3.evaluate("renderSettings()")
+    check('ayarlar yeniden çizilince anahtar açık kalıyor', pg3.is_checked('#workout-notif-toggle'))
+    get_n = """async () => { const r = await navigator.serviceWorker.getRegistration(); return (await r.getNotifications({tag:'active-workout'})).map(n => ({title: n.title, body: n.body})); }"""
+    pg3.evaluate("openWorkoutScreen('torso-a')"); pg3.wait_for_timeout(300)
+    pg3.fill('#kg-0-0', '40'); pg3.fill('#reps-0-0', '10'); pg3.click('#set-done-0-0'); pg3.wait_for_timeout(200)
+    pg3.evaluate("postWorkoutNotification()"); pg3.wait_for_timeout(400)
+    ns = pg3.evaluate(get_n)
+    ok = len(ns) == 1 and ns[0]['title'] == 'Torso A devam ediyor' and '1/13 set' in ns[0]['body'] and 'Dinlenme bitişi' in ns[0]['body'] and 'Sıradaki: Pec Deck Fly · 2. set' in ns[0]['body']
+    check('çıkınca bildirim: gün, set, dinlenme bitişi, sıradaki set', ok, ns)
+    pg3.evaluate("postWorkoutNotification()"); pg3.wait_for_timeout(300)
+    check('tekrar çıkınca bildirim çoğalmıyor (aynı etiket)', len(pg3.evaluate(get_n)) == 1)
+    pg3.evaluate("clearWorkoutNotification()"); pg3.wait_for_timeout(300)
+    check('geri dönünce bildirim kalkıyor', len(pg3.evaluate(get_n)) == 0)
+    pg3.evaluate("postWorkoutNotification()"); pg3.wait_for_timeout(300)
+    pg3.evaluate("discardActive()"); pg3.wait_for_timeout(300)
+    check('antrenman bitince/iptal edilince bildirim kalkıyor', len(pg3.evaluate(get_n)) == 0)
+    pg3.evaluate("postWorkoutNotification()"); pg3.wait_for_timeout(300)
+    check('aktif antrenman yokken bildirim yok', len(pg3.evaluate(get_n)) == 0)
+    pg3.evaluate("openWorkoutScreen('torso-a'); toggleWorkoutNotif(false)"); pg3.wait_for_timeout(200)
+    pg3.evaluate("postWorkoutNotification()"); pg3.wait_for_timeout(300)
+    check('ayar kapalıyken bildirim yok', len(pg3.evaluate(get_n)) == 0)
+    pg3.evaluate("discardActive(); notifProblem = 'needs-install'; renderNotifStatus()")
+    check('iPhone\'da ana ekrana eklenmemişse yol tarifi', 'Ana Ekrana Ekle' in pg3.inner_text('#notif-status'))
+    check('bildirim testinde sayfa hatası yok', not errs3, errs3)
+    ctx3.close()
+    browser3.close()
+
     # ── 33. Çevrimdışı çalışma (service worker önbelleği) ──
     ctx2 = browser.new_context(service_workers='allow', viewport={'width': 390, 'height': 844})
     pg2 = ctx2.new_page()

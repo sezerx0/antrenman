@@ -59,6 +59,8 @@ function renderSettings() {
   document.getElementById('theme-dark-btn').classList.toggle('active', s.theme === 'dark');
   document.getElementById('rest-toggle').checked = !!s.restTimerEnabled;
   document.getElementById('keep-awake-toggle').checked = s.keepAwake !== false;
+  document.getElementById('workout-notif-toggle').checked = workoutNotifOn();
+  renderNotifStatus();
   document.getElementById('rest-dur-label').textContent = fmtRest(s.restDuration || 90);
   document.getElementById('day-count-label').textContent = DB.workoutDays.length + ' gün';
   const orderNames = DB.workoutOrder.map(id => { const d = getDayById(id); return d ? d.name : id; });
@@ -130,6 +132,59 @@ function releaseWakeLock() {
   wakeLock = null;
   if (wl) wl.release().catch(() => {});
 }
+// ── Antrenman bildirimi ──
+// iPhone'da web bildirimleri yalnızca ana ekrana eklenmiş uygulamada (iOS 16.4+)
+// ve kullanıcı izin verdiyse çalışır. İzin isteği bir dokunuşla tetiklenmeli.
+function isIOS() {
+  return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+function isStandalone() {
+  return navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+}
+function notifSupport() {
+  if ('Notification' in window && 'serviceWorker' in navigator) return 'ok';
+  return isIOS() && !isStandalone() ? 'needs-install' : 'unsupported';
+}
+function notifPermission() { return 'Notification' in window ? Notification.permission : 'unsupported'; }
+function workoutNotifOn() { return DB.settings.workoutNotif === true && notifPermission() === 'granted'; }
+
+let notifProblem = null;
+function renderNotifStatus() {
+  const el = document.getElementById('notif-status');
+  if (!el) return;
+  let msg = '';
+  if (notifProblem === 'needs-install') msg = "iPhone'da bildirimler için uygulamayı Safari'de Paylaş → Ana Ekrana Ekle ile ekleyip ana ekrandaki simgeden açman gerekiyor.";
+  else if (notifProblem === 'denied' || (DB.settings.workoutNotif && notifPermission() === 'denied')) msg = 'Bildirim izni kapalı. iPhone Ayarlar → Bildirimler → Antrenman bölümünden açıp tekrar dene.';
+  else if (notifProblem === 'unsupported') msg = 'Bu tarayıcı bildirimleri desteklemiyor.';
+  else if (workoutNotifOn()) msg = 'Antrenman sürerken uygulamadan çıkınca bildirim gelir; dokununca kaldığın yerden açılır.';
+  el.textContent = msg;
+  el.classList.toggle('warn', !!notifProblem || (DB.settings.workoutNotif && notifPermission() === 'denied'));
+  el.style.display = msg ? 'block' : 'none';
+}
+async function toggleWorkoutNotif(val) {
+  const box = document.getElementById('workout-notif-toggle');
+  notifProblem = null;
+  if (!val) {
+    DB.settings.workoutNotif = false;
+    saveData('settings', DB.settings);
+    clearWorkoutNotification();
+    renderNotifStatus();
+    return;
+  }
+  const support = notifSupport();
+  if (support !== 'ok') { notifProblem = support; box.checked = false; renderNotifStatus(); return; }
+  let perm = Notification.permission;
+  if (perm === 'default') {
+    try { perm = await Notification.requestPermission(); } catch(e) { perm = 'denied'; }
+  }
+  if (perm !== 'granted') { notifProblem = 'denied'; box.checked = false; renderNotifStatus(); return; }
+  DB.settings.workoutNotif = true;
+  saveData('settings', DB.settings);
+  box.checked = true;
+  renderNotifStatus();
+  toast('✅ Antrenman bildirimi açık');
+}
+
 function toggleKeepAwake(val) {
   DB.settings.keepAwake = !!val;
   saveData('settings', DB.settings);
