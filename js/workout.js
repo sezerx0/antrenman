@@ -188,6 +188,7 @@ function buildSetRow(ei, s, ex, ps, sug) {
       </div>`;
   return `<div class="set-row${sug && sug.up ? ' sug-up' : ''}" id="set-row-${id}">
     <span class="set-num">${s+1}</span>
+    ${prevCell(ei, s, ps)}
     <div class="kg-stepper">
       <button class="stepper-btn" onclick="stepKg(${ei},${s},-2.5)" type="button">−</button>
       <input class="kg-val" type="text" inputmode="decimal" placeholder="${escapeHtml(phKg || 'kg')}" data-prev="${escapeHtml(prevKg)}"${sugAttr(sug && sug.kg)} id="kg-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'kg',${ei},${s})">
@@ -196,6 +197,23 @@ function buildSetRow(ei, s, ex, ps, sug) {
     ${repsHtml}
     <button class="set-done-btn" onclick="completeSet(${ei},${s})" id="set-done-${id}" aria-label="Seti tamamla">${icon('check')}</button>
   </div>`;
+}
+
+// "Önceki" sütunu: bu hareketin son yapıldığı antrenmanda aynı sıradaki set.
+// Dokununca değerler satıra doldurulur (set işaretlenmez).
+function prevCell(ei, s, ps) {
+  if (!ps || !hasValue(ps)) return `<span class="set-prev empty" aria-label="Önceki set yok">—</span>`;
+  const bi = ps.repsR != null || ps.repsL != null;
+  const kg = ps.kg ? String(ps.kg) : 'VA';
+  const reps = bi ? `${ps.repsR || 0}/${ps.repsL || 0}` : `${ps.reps || 0}`;
+  const label = `Önceki: ${ps.kg ? ps.kg + ' kg' : 'vücut ağırlığı'} × ${bi ? `sağ ${ps.repsR || 0}, sol ${ps.repsL || 0}` : (ps.reps || 0)} tekrar. Dokun: satıra doldur`;
+  return `<button class="set-prev" type="button" onclick="fillFromPrev(${ei},${s})" aria-label="${escapeHtml(label)}"><span class="sp-kg">${escapeHtml(kg)}</span><span class="sp-reps">×${escapeHtml(reps)}</span></button>`;
+}
+function fillFromPrev(ei, s) {
+  const row = document.getElementById(`set-row-${ei}-${s}`);
+  if (!row) return;
+  row.querySelectorAll('input').forEach(inp => { if (inp.dataset.prev) inp.value = inp.dataset.prev; });
+  onSetInput(ei, s);
 }
 
 // ── İlerleme önerisi (çift ilerleme) ──
@@ -272,7 +290,11 @@ function renderExerciseCards() {
     let prevHint = '';
     if (entry) {
       const dayLabel = entry.dayName ? ` · ${escapeHtml(entry.dayName)}` : '';
-      prevHint = `<div class="ex-prev-hint">Son: ${fmtDateShort(entry.log.date)}${dayLabel} — <b>${escapeHtml(entry.sets.map(fmtSetShort).join(', '))}</b></div>`;
+      const extra = bySet.slice(active.sets[ei]).filter(s => s && hasValue(s));
+      const extraTxt = extra.length ? ` · fazladan ${extra.length} set: <b>${escapeHtml(extra.map(fmtSetShort).join(', '))}</b>` : '';
+      prevHint = `<div class="ex-prev-hint">Önceki: ${fmtDateShort(entry.log.date)}${dayLabel}${extraTxt}</div>`;
+    } else if (!isEdit) {
+      prevHint = `<div class="ex-prev-hint">İlk kez yapıyorsun</div>`;
     }
     const plateau = isEdit ? null : plateauInfo(ex.name);
     const plateauLine = plateau
@@ -322,6 +344,7 @@ function renderExerciseCards() {
       <div class="ex-sets-container">
         <div class="set-col-header">
           <span class="set-num"></span>
+          <span class="set-col-label set-prev-label">Önceki</span>
           <span class="set-col-label" style="flex:1.2;">Kilogram</span>
           <span class="set-col-label" style="flex:1;">Tekrar</span>
           <span style="width:34px;flex-shrink:0;"></span>

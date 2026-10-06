@@ -93,7 +93,8 @@ with sync_playwright() as p:
     # ── 3. Antrenman: virgül, ✓ sonrası düzenleme, yeniden yükleme ──
     page.evaluate("openWorkoutScreen('torso-a')")
     hint = page.inner_text('#ex-card-0 .ex-prev-hint')
-    check('önceki performans ipucu görünüyor', '42.5' in hint and 'koltuk 4' in page.inner_text('#ex-card-0'), hint)
+    prev_cells = page.evaluate("[...document.querySelectorAll('#ex-card-0 .set-prev')].map(e => e.innerText.replace(/\\s+/g, ''))")
+    check('önceki performans sütunda ve not görünüyor', prev_cells == ['40×10', '42.5×8'] and 'Önceki:' in hint and 'koltuk 4' in page.inner_text('#ex-card-0'), (prev_cells, hint))
     check('placeholder önceki değerden', page.get_attribute('#kg-0-1', 'placeholder') == '42.5')
     page.fill('#kg-0-0', '22,5')
     page.fill('#reps-0-0', '8')
@@ -595,6 +596,37 @@ with sync_playwright() as p:
     check('kilo grafiği iki seri (tartı + ortalama)', page.evaluate("fatChart && fatChart.data.datasets.length") == 2)
     check('özet kartta 7 gün ortalaması', '7 gün ort.' in page.inner_text('#meas-summary-card'))
     page.evaluate("switchTrend('fat', document.querySelectorAll('.trend-tab')[0])")
+
+
+    # ── 34. "Önceki" sütunu: farklı gün tipinden aynı hareket ──
+    page.evaluate("""() => { discardActive();
+      DB.workoutLogs.push({date:'2099-02-01', dayId:'torso-b', dayName:'Torso B', __test:1, sets:[
+        {exId:'pec-deck-b', exName:'Pec Deck Fly', setIdx:0, kg:47.5, reps:11},
+        {exId:'pec-deck-b', exName:'Pec Deck Fly', setIdx:1, kg:50, reps:8},
+        {exId:'pec-deck-b', exName:'Pec Deck Fly', setIdx:2, kg:50, reps:6}], notes:{}},
+        {date:'2099-02-01', dayId:'limbs-a', dayName:'Limbs A', __test:1, sets:[
+        {exId:'pc', exName:'Preacher Curl Machine', setIdx:0, kg:25, repsR:10, repsL:9, reps:10}], notes:{}});
+      openWorkoutScreen('torso-a'); }""")
+    page.wait_for_timeout(300)
+    cells = page.evaluate("[...document.querySelectorAll('#ex-card-0 .set-prev')].map(e => e.innerText.replace(/\\s+/g, ''))")
+    check('Torso A, Torso B\'deki son Pec Deck setlerini gösteriyor', cells == ['47.5×11', '50×8'], cells)
+    hint = page.inner_text('#ex-card-0 .ex-prev-hint')
+    check('nereden geldiği ve fazladan set yazıyor', 'Torso B' in hint and 'fazladan 1 set' in hint and '50×6' in hint, hint)
+    page.click('#ex-card-0 .set-prev >> nth=1')
+    check('önceki hücresine dokununca satır doluyor (işaretlenmeden)', page.input_value('#kg-0-1') == '50' and page.input_value('#reps-0-1') == '8' and not page.evaluate("document.getElementById('set-done-0-1').classList.contains('done')"))
+    page.click('#ex-card-0 .set-count-btn.accent')
+    check('+ Set ile eklenen satırda 3. setin önceki değeri', page.evaluate("document.querySelectorAll('#ex-card-0 .set-prev')[2].innerText.replace(/\\s+/g, '')") == '50×6')
+    check('hiç yapılmamış harekette "—" ve "İlk kez"', page.evaluate("document.querySelector('#ex-card-1 .set-prev').classList.contains('empty')") and 'İlk kez' in page.inner_text('#ex-card-1 .ex-prev-hint'))
+    for w in (390, 360):
+        page.set_viewport_size({'width': w, 'height': 844}); page.wait_for_timeout(150)
+        ov = page.evaluate("[...document.querySelectorAll('.set-row, .set-col-header')].filter(r => r.scrollWidth > r.clientWidth + 1).length")
+        kgw = page.evaluate("document.getElementById('kg-0-0').getBoundingClientRect().width")
+        check(f'{w}px genişlikte set satırları taşmıyor, kilo alanı okunur ({kgw:.0f}px)', ov == 0 and kgw >= 34, (ov, kgw))
+    page.set_viewport_size({'width': 390, 'height': 844})
+    page.evaluate("discardActive(); openWorkoutScreen('limbs-a')"); page.wait_for_timeout(300)
+    bi = page.evaluate("document.querySelector('#ex-card-0 .set-prev').innerText.replace(/\\s+/g, '')")
+    check('sağ/sol harekette önceki "25×10/9"', bi == '25×10/9', bi)
+    page.evaluate("discardActive(); DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs)")
 
     check('sayfa hatası yok', not errors, errors)
 
