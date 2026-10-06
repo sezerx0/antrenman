@@ -1,0 +1,2911 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Antrenman">
+<meta name="theme-color" content="#ffffff" id="theme-color-meta">
+<link rel="manifest" href="manifest.json">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+<title>Antrenman Takip</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --accent: #007AFF;
+  --accent-light: #007AFF18;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f2f2f7;
+  --bg-tertiary: #e5e5ea;
+  --text-primary: #1c1c1e;
+  --text-secondary: #8e8e93;
+  --text-tertiary: #aeaeb2;
+  --border: rgba(0,0,0,0.1);
+  --border-strong: rgba(0,0,0,0.18);
+  --card-radius: 14px;
+  --green: #34c759;
+  --red: #ff3b30;
+  --orange: #ff9f0a;
+  --purple: #5856d6;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --tab-height: 72px;
+}
+[data-theme="dark"] {
+  --bg-primary: #1c1c1e;
+  --bg-secondary: #2c2c2e;
+  --bg-tertiary: #3a3a3c;
+  --text-primary: #ffffff;
+  --text-secondary: #8e8e93;
+  --text-tertiary: #636366;
+  --border: rgba(255,255,255,0.1);
+  --border-strong: rgba(255,255,255,0.18);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+/* ── Layout ── */
+#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-width: 430px; margin: 0 auto; position: relative; }
+.screen { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 96px; -webkit-overflow-scrolling: touch; }
+.screen::-webkit-scrollbar { display: none; }
+/* ── Tab Bar — iOS 26 Liquid Glass ── */
+.tab-bar {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+  width: calc(100% - 32px); max-width: 398px;
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 0.5px solid rgba(255,255,255,0.7);
+  border-bottom: 0.5px solid rgba(255,255,255,0.4);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 1px 0 rgba(255,255,255,0.6) inset;
+  display: flex;
+  height: 60px;
+  border-radius: 22px;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 100;
+  overflow: hidden;
+}
+[data-theme="dark"] .tab-bar {
+  background: rgba(30,30,32,0.6);
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.08) inset;
+}
+.tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 3px; background: none; border: none; padding: 0;
+  font-size: 10px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 18px;
+  margin: 6px 2px;
+  transition: color 0.2s, background 0.2s;
+  position: relative;
+}
+.tab-item.active {
+  color: var(--accent);
+  background: rgba(0,122,255,0.12);
+}
+[data-theme="dark"] .tab-item.active {
+  background: rgba(0,122,255,0.18);
+}
+.tab-icon { font-size: 22px; line-height: 1; }
+/* ── Nav Header ── */
+.nav-header { background: var(--bg-primary); padding: 16px 20px 14px; border-bottom: 0.5px solid var(--border); }
+.nav-header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+.nav-header p { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+/* ── Section ── */
+.section { padding: 16px 16px 0; }
+.section-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 8px; padding: 0 4px; }
+/* ── Cards ── */
+.card { background: var(--bg-primary); border-radius: var(--card-radius); box-shadow: var(--shadow); }
+.card + .card { margin-top: 10px; }
+/* ── Day Select List ── */
+.day-select-card { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: opacity 0.15s, transform 0.1s; margin-bottom: 0; }
+.day-select-card:active { opacity: 0.7; transform: scale(0.98); }
+.day-select-card + .day-select-card { margin-top: 8px; }
+.day-select-next { border-left: 3px solid var(--accent); }
+.day-select-left { display: flex; align-items: center; gap: 12px; }
+.day-select-badge { width: 38px; height: 38px; border-radius: 12px; background: var(--accent-light); color: var(--accent); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.day-select-next .day-select-badge { background: var(--accent); color: #fff; }
+.day-select-name { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
+.day-select-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.next-tag { display: inline-block; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.2px; }
+.day-select-arrow { color: var(--text-secondary); font-size: 20px; font-weight: 300; }
+.day-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; letter-spacing: 0.3px; }
+.btn-primary { display: block; width: 100%; margin-top: 14px; background: var(--accent); color: #fff; border: none; border-radius: 11px; padding: 13px; font-size: 15px; font-weight: 600; text-align: center; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+.btn-primary:active { opacity: 0.85; transform: scale(0.98); }
+/* ── Stats Row ── */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; }
+.stats-grid .card + .card { margin-top: 0; }
+.stat-card { padding: 14px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+/* ── Weekly Goal ── */
+.weekly-goal-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.weekly-goal-label { font-size: 14px; font-weight: 600; }
+.weekly-goal-stepper { display: flex; align-items: center; gap: 10px; }
+.weekly-goal-stepper span { font-size: 16px; font-weight: 700; min-width: 20px; text-align: center; }
+.weekly-goal-bar-bg { height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; }
+.weekly-goal-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+.weekly-goal-days { display: flex; gap: 6px; margin-top: 10px; justify-content: flex-start; }
+.wg-day { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+.wg-day.done { background: var(--accent); color: #fff; }
+.wg-day.today { border: 2px solid var(--accent); color: var(--accent); background: var(--accent-light); }
+.wg-day.empty { background: var(--bg-tertiary); color: var(--text-secondary); }
+/* ── History Modal ── */
+.hm-ex-block { margin-bottom: 14px; }
+.hm-ex-name { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+.hm-set-row { display: flex; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.hm-set-row:last-child { border-bottom: none; }
+.hm-set-num { width: 22px; color: var(--text-secondary); font-size: 11px; font-weight: 600; }
+.hm-set-val { flex: 1; font-weight: 500; }
+.hm-set-vol { color: var(--text-secondary); font-size: 12px; }
+/* ── Summary enhancements ── */
+.sum-emoji { font-size: 40px; margin-bottom: 4px; }
+.sum-pr-banner { background: #ff9f0a20; color: var(--orange); border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 600; margin: 8px 0; }
+.sum-ex-item { padding: 8px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.sum-ex-item:last-child { border-bottom: none; }
+.sum-ex-name { font-weight: 600; margin-bottom: 2px; }
+.sum-ex-detail { color: var(--text-secondary); font-size: 12px; }
+/* ── Trend tabs ── */
+.trend-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.trend-tab { background: var(--bg-tertiary); color: var(--text-secondary); border: none; border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.trend-tab.active { background: var(--accent); color: #fff; }
+/* ── PR & 1RM ── */
+.orm-row { display: flex; gap: 10px; }
+.orm-field { flex: 1 1 0; min-width: 0; }
+.orm-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+.orm-result-val { font-size: 36px; font-weight: 800; color: var(--accent); letter-spacing: -1px; }
+.orm-result-lbl { font-size: 12px; color: var(--text-secondary); margin-top: 2px; margin-bottom: 10px; }
+.orm-result-grid { background: var(--bg-secondary); border-radius: 10px; overflow: hidden; margin-top: 4px; }
+.orm-pct-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.orm-pct-row:last-child { border-bottom: none; }
+.orm-pct-label { color: var(--text-secondary); }
+.orm-pct-val { font-weight: 700; color: var(--text-primary); }
+.pr-list { overflow: hidden; }
+.pr-item { padding: 14px 16px; border-bottom: 0.5px solid var(--border); }
+.pr-item:last-child { border-bottom: none; }
+.pr-name { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.pr-stats { display: flex; gap: 8px; }
+.pr-stat { flex: 1; background: var(--bg-secondary); border-radius: 10px; padding: 10px 8px 8px; display: flex; flex-direction: column; align-items: center; gap: 0; }
+.pr-stat-val { font-size: 17px; font-weight: 700; color: var(--accent); line-height: 1.1; }
+.pr-stat-sub { font-size: 11px; color: var(--text-secondary); margin-top: 3px; font-weight: 500; }
+.pr-stat-lbl { font-size: 10px; color: var(--text-tertiary); margin-top: 5px; font-weight: 500; letter-spacing: 0.2px; }
+.pr-date { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; }
+.stat-value { font-size: 30px; font-weight: 700; letter-spacing: -1px; margin-top: 2px; }
+.stat-sub { font-size: 12px; color: var(--green); font-weight: 500; margin-top: 1px; }
+/* ── Month Heatmap ── */
+.workout-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.workout-cal-title { font-size: 15px; font-weight: 600; }
+.workout-cal-nav { background: var(--bg-secondary); border: none; color: var(--accent); font-size: 16px; cursor: pointer; padding: 4px 10px; border-radius: 8px; line-height: 1; }
+.workout-cal-dows { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 4px; }
+.workout-cal-dow { font-size: 10px; color: var(--text-secondary); text-align: center; font-weight: 600; padding: 2px 0; }
+.workout-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.wcal-day { border-radius: 8px; background: var(--bg-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40px; position: relative; cursor: default; }
+.wcal-day.empty { background: transparent; }
+.wcal-day.has-workout { background: var(--accent); }
+.wcal-day.today:not(.has-workout) { outline: 1.5px solid var(--accent); outline-offset: 0; background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.wcal-day.today.has-workout { outline: 2px solid color-mix(in srgb, var(--accent) 60%, #000); outline-offset: 0; }
+.wcal-num { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.wcal-day.today .wcal-num { color: var(--accent); font-weight: 700; }
+.wcal-day.has-workout .wcal-num { color: #fff; font-weight: 700; }
+.wcal-tag { font-size: 7px; font-weight: 700; color: rgba(255,255,255,0.85); letter-spacing: 0.2px; margin-top: 1px; }
+.workout-cal-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 12px; padding-top: 10px; border-top: 0.5px solid var(--border); font-size: 12px; color: var(--text-secondary); align-items: center; }
+.wcal-legend-item { display: flex; align-items: center; gap: 5px; }
+.wcal-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+/* ── Recent List ── */
+.recent-list { overflow: hidden; }
+.recent-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 0.5px solid var(--border); gap: 12px; cursor: pointer; transition: background 0.1s; }
+.recent-item:last-child { border-bottom: none; }
+.recent-item:active { background: var(--bg-secondary); }
+.recent-dot { width: 36px; height: 36px; border-radius: 10px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.recent-dot span { font-size: 13px; font-weight: 700; color: var(--accent); }
+.recent-info { flex: 1; }
+.recent-name { font-size: 15px; font-weight: 500; }
+.recent-date { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.recent-dur { font-size: 13px; color: var(--text-secondary); }
+/* ── Rest Banner ── */
+/* ── Dynamic Island Rest Timer ── */
+#rest-banner {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%) scaleX(0.3) scaleY(0.4);
+  transform-origin: top center;
+  width: 260px;
+  background: #111;
+  color: #fff;
+  z-index: 600;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px 10px 16px;
+  border-radius: 26px;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease, width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+#rest-banner.visible {
+  transform: translateX(-50%) scaleX(1) scaleY(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+.rest-banner-inner { display: flex; align-items: center; gap: 8px; }
+.rest-icon { font-size: 18px; line-height: 1; }
+.rest-time-display { font-size: 19px; font-weight: 700; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+.rest-label-text { font-size: 11px; opacity: 0.65; margin-top: 1px; }
+.rest-skip { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 14px; padding: 5px 11px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+.rest-skip:active { background: rgba(255,255,255,0.28); }
+/* Active workout banner */
+#active-workout-banner {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(-120%);
+  width: calc(100% - 32px);
+  max-width: 398px;
+  background: rgba(0, 122, 255, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  color: #fff;
+  z-index: 500;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 10px 10px 16px;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0,122,255,0.35), 0 1px 6px rgba(0,0,0,0.15);
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+  opacity: 0;
+}
+#active-workout-banner.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+.awb-icon { font-size: 22px; line-height: 1; flex-shrink: 0; }
+.awb-left { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.awb-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.awb-elapsed { font-size: 12px; opacity: 0.8; font-variant-numeric: tabular-nums; letter-spacing: 0.3px; }
+.awb-cta { font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.22); border-radius: 13px; padding: 7px 14px; white-space: nowrap; flex-shrink: 0; }
+.awb-close { background: rgba(255,255,255,0.18); border: none; color: #fff; border-radius: 50%; width: 30px; height: 30px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* ── Workout Day Screen ── */
+#workout-screen {
+  position: fixed; inset: 0; background: var(--bg-secondary);
+  z-index: 200; transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; flex-direction: column;
+  max-width: 430px; left: 50%; margin-left: -215px;
+}
+@media (max-width: 430px) { #workout-screen { left: 0; margin-left: 0; } }
+#workout-screen.open { transform: translateX(0); }
+.ws-header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 14px 16px 12px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+.back-btn { background: var(--bg-secondary); border: none; color: var(--accent); font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 2px; padding: 7px 12px 7px 8px; border-radius: 20px; justify-self: start; transition: opacity 0.15s; }
+.back-btn:active { opacity: 0.6; }
+.back-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+.ws-title { text-align: center; }
+.ws-title h2 { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; }
+.ws-title p { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.ws-done-btn { background: var(--green); color: #fff; border: none; border-radius: 20px; padding: 7px 16px; font-size: 14px; font-weight: 700; cursor: pointer; justify-self: end; transition: opacity 0.15s; letter-spacing: 0.1px; }
+.ws-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 24px; }
+.ws-body::-webkit-scrollbar { display: none; }
+
+/* ── Exercise Card ── */
+.ex-card { background: var(--bg-primary); margin: 12px 16px 0; border-radius: var(--card-radius); overflow: hidden; box-shadow: var(--shadow); }
+.ex-card-header { padding: 14px 16px 10px; cursor: pointer; }
+.ex-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.ex-name { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; }
+.ex-actions { display: flex; gap: 8px; align-items: center; }
+.ex-graph-btn { background: var(--accent-light); border: none; color: var(--accent); font-size: 11px; font-weight: 600; cursor: pointer; padding: 5px 10px; border-radius: 20px; letter-spacing: 0.2px; }
+.ex-prev-hint { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.ex-prev-hint b { color: var(--accent); font-weight: 600; }
+.ex-sets-container { padding: 0 16px 12px; }
+.set-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; height: 38px; border-radius: 8px; transition: background 0.2s; }
+.set-row.overload { background: color-mix(in srgb, #34c759 15%, transparent); }
+.set-row.overload .kg-val, .set-row.overload .reps-val { border-color: #34c759; }
+.set-num { width: 16px; font-size: 12px; color: var(--text-secondary); font-weight: 600; text-align: center; flex-shrink: 0; }
+.kg-stepper { display: flex; align-items: center; background: var(--bg-secondary); border-radius: 9px; overflow: hidden; height: 38px; flex: 1.2; min-width: 0; }
+.stepper-btn { background: none; border: none; color: var(--accent); font-size: 18px; font-weight: 400; cursor: pointer; padding: 0 10px; height: 100%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.1s; user-select: none; }
+.stepper-btn:active { background: var(--bg-tertiary); }
+.kg-val { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; width: 0; }
+.kg-val::placeholder { color: var(--text-tertiary); font-size: 12px; font-weight: 400; text-align: center; }
+.reps-stepper { display: flex; align-items: center; background: var(--bg-secondary); border-radius: 9px; overflow: hidden; height: 38px; flex: 1; min-width: 0; }
+.bi-reps { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.bi-reps-row { display: flex; align-items: center; gap: 3px; background: var(--bg-secondary); border-radius: 7px; overflow: hidden; height: 17px; }
+.bi-label { font-size: 9px; font-weight: 700; color: var(--text-tertiary); padding: 0 5px; flex-shrink: 0; letter-spacing: 0.3px; }
+.bi-val { flex: 1; font-size: 12px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; }
+.bi-val::placeholder { color: var(--text-tertiary); font-size: 10px; font-weight: 400; }
+.bi-toggle-btn { font-size: 10px; padding: 3px 7px; border-radius: 6px; border: 1px solid var(--border); background: none; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+.bi-toggle-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.reps-val { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; -moz-appearance: textfield; }
+.reps-val::-webkit-outer-spin-button, .reps-val::-webkit-inner-spin-button { -webkit-appearance: none; }
+.reps-val::placeholder { color: var(--text-tertiary); font-size: 12px; }
+.set-done-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border-strong); background: none; color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+.set-done-btn.done { background: var(--green); border-color: var(--green); color: #fff; }
+.set-col-header { display: flex; align-items: center; gap: 8px; padding: 0 0 4px; }
+.set-col-header .set-num { width: 16px; flex-shrink: 0; display: inline-block; }
+.set-col-label { flex: 1; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-align: center; letter-spacing: 0.2px; }
+.set-count-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.set-count-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+.set-count-btn { background: var(--bg-tertiary); color: var(--text-primary); border: none; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+.set-count-btn:active { opacity: 0.6; }
+.set-count-btn.accent { background: var(--accent-light); color: var(--accent); }
+.pr-chip { background: #ff9f0a20; color: var(--orange); font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px; display: inline-block; margin-top: 4px; }
+/* Note section */
+.ex-note-section { border-top: 0.5px solid var(--border); padding: 10px 16px 14px; }
+.ex-note-prev { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-style: italic; }
+.ex-note-input { width: 100%; background: var(--bg-secondary); border: none; border-radius: 9px; padding: 9px 12px; font-size: 13px; color: var(--text-primary); resize: none; outline: none; font-family: inherit; min-height: 60px; }
+.ex-note-input::placeholder { color: var(--text-tertiary); }
+
+/* ── Workout Done Summary ── */
+#summary-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 400; display: none; align-items: flex-end; justify-content: center;
+  max-width: 430px; left: 50%; margin-left: -215px;
+}
+@media (max-width: 430px) { #summary-overlay { left: 0; margin-left: 0; } }
+#summary-overlay.open { display: flex; }
+.summary-sheet {
+  background: var(--bg-primary); border-radius: 20px 20px 0 0;
+  padding: 20px 20px 40px; width: 100%; max-height: 70vh; overflow-y: auto;
+}
+.summary-sheet h3 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.summary-sheet .sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; }
+.summary-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.ss-item { background: var(--bg-secondary); border-radius: 10px; padding: 10px 12px; text-align: center; }
+.ss-val { font-size: 20px; font-weight: 700; }
+.ss-lbl { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.btn-secondary { display: block; width: 100%; background: var(--bg-secondary); color: var(--text-primary); border: none; border-radius: 11px; padding: 13px; font-size: 15px; font-weight: 600; text-align: center; cursor: pointer; margin-top: 10px; }
+
+/* ── Progress Modal ── */
+#progress-modal, #history-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 600; display: none; align-items: flex-end; justify-content: center;
+  max-width: 430px; left: 50%; margin-left: -215px;
+}
+@media (max-width: 430px) { #progress-modal, #history-modal { left: 0; margin-left: 0; } }
+#progress-modal.open, #history-modal.open { display: flex; }
+.progress-sheet {
+  background: var(--bg-primary); border-radius: 20px 20px 0 0;
+  padding: 20px 20px 40px; width: 100%; max-height: 80vh; overflow-y: auto;
+}
+.modal-handle { width: 36px; height: 4px; background: var(--bg-tertiary); border-radius: 2px; margin: 0 auto 16px; }
+.progress-sheet h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.progress-sheet .sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+.chart-container { position: relative; height: 200px; margin-bottom: 16px; }
+.close-modal-btn { position: absolute; top: 20px; right: 20px; background: var(--bg-secondary); border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; }
+.prog-history-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+.prog-history-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.prog-history-item:last-child { border-bottom: none; }
+.prog-date { color: var(--text-secondary); }
+.prog-vals { font-weight: 500; }
+
+/* ── Measurements Screen ── */
+.meas-form { background: var(--bg-primary); border-radius: var(--card-radius); overflow: hidden; box-shadow: var(--shadow); }
+.form-row { display: flex; align-items: center; padding: 12px 16px; border-bottom: 0.5px solid var(--border); gap: 10px; }
+.form-row:last-child { border-bottom: none; }
+.meas-section-title { font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; padding: 10px 16px 4px; background: var(--bg-secondary); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); text-transform: uppercase; }
+.form-label { font-size: 15px; flex: 1; }
+.form-input { background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 10px; font-size: 15px; font-weight: 500; color: var(--text-primary); text-align: right; width: 90px; outline: none; font-family: inherit; }
+.form-input::placeholder { color: transparent; }
+.form-unit { font-size: 13px; color: var(--text-secondary); width: 30px; }
+.gender-toggle { display: flex; background: var(--bg-secondary); border-radius: 8px; padding: 2px; }
+.gender-btn { flex: 1; padding: 6px 10px; font-size: 13px; font-weight: 500; border: none; background: none; border-radius: 6px; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
+.gender-btn.active { background: var(--bg-primary); color: var(--text-primary); box-shadow: var(--shadow); }
+.result-card { background: var(--accent); border-radius: var(--card-radius); padding: 20px; color: #fff; text-align: center; margin-top: 12px; }
+.result-pct { font-size: 48px; font-weight: 700; letter-spacing: -2px; }
+.result-label { font-size: 14px; opacity: 0.88; margin-top: 4px; }
+.result-cat { font-size: 13px; font-weight: 600; margin-top: 8px; background: rgba(255,255,255,0.2); display: inline-block; padding: 4px 12px; border-radius: 20px; }
+.meas-chart-card { padding: 16px; }
+.meas-summary-card { padding: 16px; }
+.meas-sum-date { font-size: 12px; color: var(--text-secondary); font-weight: 500; margin-bottom: 10px; }
+.meas-sum-row { display: flex; align-items: center; gap: 0; }
+.meas-sum-item { flex: 1; }
+.meas-sum-val { font-size: 32px; font-weight: 800; letter-spacing: -1px; color: var(--accent); }
+.meas-sum-lbl { font-size: 12px; color: var(--text-secondary); margin-top: 2px; display: flex; align-items: center; }
+.meas-sum-divider { width: 1px; height: 48px; background: var(--border); margin: 0 16px; flex-shrink: 0; }
+.meas-sum-sub { font-size: 12px; color: var(--text-secondary); margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--border); }
+.meas-history { overflow: hidden; }
+.meas-history-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 0.5px solid var(--border); gap: 12px; }
+.meas-history-item:last-child { border-bottom: none; }
+.meas-date-badge { width: 40px; height: 40px; background: var(--accent-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.meas-date-badge span { font-size: 11px; font-weight: 700; color: var(--accent); text-align: center; line-height: 1.2; }
+.meas-pct-big { font-size: 18px; font-weight: 700; margin-left: auto; }
+.delete-btn { background: none; border: none; color: var(--red); font-size: 18px; cursor: pointer; padding: 4px; }
+
+/* ── Settings Screen ── */
+.settings-group { overflow: hidden; }
+.settings-row { display: flex; align-items: center; padding: 14px 16px; border-bottom: 0.5px solid var(--border); gap: 12px; }
+.settings-row:last-child { border-bottom: none; }
+.settings-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.settings-label { flex: 1; font-size: 16px; }
+.settings-value { font-size: 15px; color: var(--text-secondary); }
+.settings-chevron { color: var(--text-tertiary); font-size: 18px; }
+/* Toggle */
+.ios-toggle { position: relative; width: 51px; height: 31px; flex-shrink: 0; }
+.ios-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.ios-toggle-track { position: absolute; inset: 0; background: var(--bg-tertiary); border-radius: 31px; transition: background 0.2s; cursor: pointer; }
+.ios-toggle input:checked + .ios-toggle-track { background: var(--green); }
+.ios-toggle-thumb { position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.2s; pointer-events: none; }
+.ios-toggle input:checked ~ .ios-toggle-thumb { transform: translateX(20px); }
+
+/* Workout Day Editor */
+#day-editor {
+  position: fixed; inset: 0; background: var(--bg-secondary);
+  z-index: 300; transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; flex-direction: column;
+  max-width: 430px; left: 50%; margin-left: -215px;
+  overflow-y: auto;
+}
+@media (max-width: 430px) { #day-editor { left: 0; margin-left: 0; } }
+#day-editor.open { transform: translateX(0); }
+#order-editor {
+  position: fixed; inset: 0; background: var(--bg-secondary);
+  z-index: 300; transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(0.32,0.72,0,1);
+  overflow-y: auto; max-width: 430px; left: 50%; margin-left: -215px;
+}
+@media (max-width: 430px) { #order-editor { left: 0; margin-left: 0; } }
+#order-editor.open { transform: translateX(0); }
+.order-item { background: var(--bg-primary); border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; padding: 14px; gap: 12px; }
+.order-item-name { flex: 1; font-size: 15px; font-weight: 600; }
+.order-item-num { width: 24px; height: 24px; border-radius: 8px; background: var(--accent-light); color: var(--accent); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.order-arrow-btn { background: var(--bg-secondary); border: none; border-radius: 8px; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-primary); }
+.order-arrow-btn:disabled { opacity: 0.25; }
+.suppl-card { padding: 14px 16px; }
+.suppl-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--border); cursor: pointer; }
+.suppl-row:last-child { border-bottom: none; cursor: default; }
+.suppl-check { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border-strong); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.2s, border-color 0.2s; }
+.suppl-check.done { background: var(--green); border-color: var(--green); }
+.suppl-check.done::after { content: '✓'; color: #fff; font-size: 13px; font-weight: 700; }
+.suppl-label { flex: 1; font-size: 14px; font-weight: 500; }
+.suppl-label.done { text-decoration: line-through; color: var(--text-secondary); }
+.water-row { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.water-drops { display: flex; gap: 6px; flex-wrap: wrap; }
+.water-drop { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-tertiary); font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; flex-shrink: 0; }
+.water-drop.filled { background: #5ac8fa25; }
+.water-drop.filled::after { content: '💧'; }
+.water-drop:not(.filled)::after { content: '＋'; color: var(--text-tertiary); font-size: 14px; font-weight: 300; }
+.water-add-btn { display: none; }
+/* Supplement calendar */
+.suppl-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.suppl-cal-title { font-size: 15px; font-weight: 600; }
+.suppl-cal-nav { background: var(--bg-secondary); border: none; color: var(--accent); font-size: 16px; cursor: pointer; padding: 4px 10px; border-radius: 8px; line-height: 1; }
+.suppl-cal-dows { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 4px; }
+.suppl-cal-dow { font-size: 10px; color: var(--text-secondary); text-align: center; font-weight: 600; padding: 2px 0; }
+.suppl-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.suppl-cal-day { border-radius: 8px; overflow: hidden; aspect-ratio: 1; background: var(--bg-secondary); position: relative; }
+.suppl-cal-day.today { outline: 2px solid var(--text-primary); outline-offset: -1px; }
+.suppl-cal-day.empty-day { background: transparent; }
+.suppl-cal-fill { display: flex; width: 100%; height: 100%; }
+.suppl-cal-fill-seg { flex: 1; height: 100%; }
+.suppl-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 12px; padding-top: 10px; border-top: 0.5px solid var(--border); }
+.suppl-legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); }
+.suppl-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+/* Supplement settings */
+.suppl-setting-item { display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 0.5px solid var(--border); }
+.suppl-setting-item:last-child { border-bottom: none; }
+.suppl-color-swatch { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.suppl-setting-name { flex: 1; font-size: 15px; font-weight: 500; }
+.suppl-remove-btn { background: none; border: none; color: var(--red); font-size: 20px; cursor: pointer; padding: 2px 8px; line-height: 1; }
+.suppl-add-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px 12px; }
+.suppl-add-input { flex: 1; background: var(--bg-secondary); border: none; border-radius: 8px; padding: 9px 12px; font-size: 14px; color: var(--text-primary); outline: none; }
+.suppl-add-input:focus { outline: 1.5px solid var(--accent); }
+.suppl-add-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.de-header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 16px 20px 14px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+.de-header h2 { font-size: 20px; font-weight: 700; flex: 1; }
+.de-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 9px; padding: 7px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.day-item { background: var(--bg-primary); margin: 8px 16px 0; border-radius: var(--card-radius); overflow: hidden; }
+.day-item-header { display: flex; align-items: center; padding: 14px 16px; gap: 10px; cursor: pointer; border-bottom: 0.5px solid var(--border); }
+.day-item-name-input { flex: 1; background: none; border: none; font-size: 16px; font-weight: 600; color: var(--text-primary); outline: none; font-family: inherit; }
+.day-toggle-btn { background: none; border: none; color: var(--accent); font-size: 20px; cursor: pointer; padding: 4px; transition: transform 0.2s; }
+.day-toggle-btn.open { transform: rotate(180deg); }
+.day-exercises { display: none; }
+.day-exercises.open { display: block; }
+.day-ex-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 0.5px solid var(--border); gap: 8px; }
+.day-ex-row:last-child { border-bottom: none; }
+.day-ex-name-input { flex: 1; background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 10px; font-size: 14px; color: var(--text-primary); outline: none; font-family: inherit; }
+.day-ex-sets-input { width: 50px; background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 8px; font-size: 14px; color: var(--text-primary); text-align: center; outline: none; font-family: inherit; }
+.remove-ex-btn { background: none; border: none; color: var(--red); font-size: 20px; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.add-ex-btn { display: flex; align-items: center; gap: 8px; padding: 12px 16px; color: var(--accent); font-size: 14px; font-weight: 500; cursor: pointer; background: none; border: none; font-family: inherit; }
+.add-day-btn { margin: 12px 16px; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--bg-primary); border: 1.5px dashed var(--border-strong); border-radius: var(--card-radius); padding: 14px; color: var(--accent); font-size: 15px; font-weight: 500; cursor: pointer; }
+.remove-day-btn { background: none; border: none; color: var(--red); font-size: 20px; cursor: pointer; padding: 4px; }
+/* Duration display */
+.ws-timer-bar { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 0 8px; background: var(--bg-primary); border-bottom: 0.5px solid var(--border); font-size: 13px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.5px; }
+.ws-timer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Duration selector */
+.dur-selector { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.dur-selector::-webkit-scrollbar { display: none; }
+.dur-btn { padding: 6px 12px; border: 1px solid var(--border-strong); border-radius: 20px; background: none; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
+.dur-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Segment control for theme */
+.segment-control { display: flex; background: var(--bg-secondary); border-radius: 9px; padding: 2px; }
+.seg-btn { flex: 1; padding: 7px 10px; font-size: 13px; font-weight: 500; border: none; background: none; border-radius: 7px; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
+.seg-btn.active { background: var(--bg-primary); color: var(--text-primary); box-shadow: var(--shadow); }
+
+/* Toast */
+#toast {
+  position: fixed; bottom: calc(var(--tab-height) + 16px); left: 50%; transform: translateX(-50%) translateY(20px);
+  background: rgba(0,0,0,0.8); color: #fff; padding: 10px 18px;
+  border-radius: 20px; font-size: 14px; font-weight: 500;
+  opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 999; white-space: nowrap;
+  max-width: 360px; text-align: center;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Export/Import buttons */
+.data-btn { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: none; padding: 14px 16px; font-size: 16px; font-family: inherit; cursor: pointer; color: var(--text-primary); }
+.data-btn.danger { color: var(--red); }
+
+/* Workout order indicator */
+.order-badge { background: var(--bg-secondary); border-radius: 8px; padding: 3px 8px; font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+.order-badge.current { background: var(--accent-light); color: var(--accent); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Active Workout Banner -->
+  <div id="active-workout-banner">
+    <span class="awb-icon">💪</span>
+    <div class="awb-left" onclick="reopenWorkoutScreen()" style="cursor:pointer;">
+      <span class="awb-name" id="awb-name">Antrenman</span>
+      <span class="awb-elapsed" id="awb-elapsed">00:00</span>
+    </div>
+    <span class="awb-cta" onclick="reopenWorkoutScreen()" style="cursor:pointer;">Devam Et</span>
+    <button class="awb-close" onclick="confirmCloseWorkout()">✕</button>
+  </div>
+
+  <!-- Dynamic Island Rest Timer -->
+  <div id="rest-banner">
+    <div class="rest-banner-inner">
+      <div class="rest-icon">⏱</div>
+      <div>
+        <div class="rest-time-display" id="rest-display">01:30</div>
+        <div class="rest-label-text" id="rest-exercise-label">Dinlenme</div>
+      </div>
+    </div>
+    <button class="rest-skip" onclick="skipRest()">Atla ✕</button>
+  </div>
+
+  <!-- TAB: Antrenman -->
+  <div class="screen" id="tab-workout" style="display:flex;flex-direction:column;">
+    <div class="nav-header">
+      <h1>Antrenman</h1>
+      <p id="home-date"></p>
+    </div>
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Antrenman Seç</div>
+      <div id="day-select-list"></div>
+    </div>
+    <div class="section" style="margin-top:12px;">
+      <div class="stats-grid">
+        <div class="card stat-card">
+          <div class="stat-label">Bu Ay</div>
+          <div class="stat-value" id="stat-month-count">0</div>
+          <div class="stat-sub">antrenman</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Toplam</div>
+          <div class="stat-value" id="stat-total-count">0</div>
+          <div class="stat-sub">antrenman</div>
+        </div>
+      </div>
+    </div>
+    <div class="section" style="margin-top:12px;">
+      <div class="card" style="padding:14px 16px;">
+        <div class="workout-cal-header">
+          <button class="workout-cal-nav" onclick="shiftWorkoutCal(-1)">‹</button>
+          <span class="workout-cal-title" id="workout-cal-title"></span>
+          <button class="workout-cal-nav" onclick="shiftWorkoutCal(1)">›</button>
+        </div>
+        <div class="workout-cal-dows" id="workout-cal-dows"></div>
+        <div class="workout-cal-grid" id="workout-cal-grid"></div>
+        <div class="workout-cal-legend" id="workout-cal-legend"></div>
+      </div>
+    </div>
+    <div class="section" style="margin-top:12px;">
+      <div class="section-label">Haftalık Hedef</div>
+      <div class="card" style="padding:16px;" id="weekly-goal-card">
+        <div class="weekly-goal-top">
+          <span class="weekly-goal-label" id="weekly-goal-label">0 / 0 antrenman</span>
+          <div class="weekly-goal-stepper">
+            <button class="stepper-btn" onclick="changeWeeklyGoal(-1)">−</button>
+            <span id="weekly-goal-num">4</span>
+            <button class="stepper-btn" onclick="changeWeeklyGoal(1)">+</button>
+          </div>
+        </div>
+        <div class="weekly-goal-bar-bg">
+          <div class="weekly-goal-bar-fill" id="weekly-goal-bar"></div>
+        </div>
+        <div class="weekly-goal-days" id="weekly-goal-days"></div>
+      </div>
+    </div>
+    <div class="section" style="margin-top:12px;">
+      <div class="section-label">Günlük Rutin</div>
+      <div class="card suppl-card">
+        <div id="suppl-checklist"></div>
+        <div class="suppl-row" style="cursor:default;flex-direction:column;align-items:stretch;gap:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span class="suppl-label">Su</span>
+            <span id="water-total" style="font-size:13px;font-weight:600;color:#5ac8fa;"></span>
+          </div>
+          <div class="water-drops" id="water-drops"></div>
+        </div>
+      </div>
+    </div>
+    <div class="section" style="margin-top:12px;">
+      <div class="section-label">Supplement Takvimi</div>
+      <div class="card" style="padding:14px 16px;" id="suppl-cal-card">
+        <div class="suppl-cal-header">
+          <button class="suppl-cal-nav" onclick="shiftSupplCal(-1)">‹</button>
+          <span class="suppl-cal-title" id="suppl-cal-title"></span>
+          <button class="suppl-cal-nav" onclick="shiftSupplCal(1)">›</button>
+        </div>
+        <div class="suppl-cal-dows" id="suppl-cal-dows"></div>
+        <div class="suppl-cal-grid" id="suppl-cal-grid"></div>
+        <div class="suppl-legend" id="suppl-legend"></div>
+      </div>
+    </div>
+    <div class="section" style="margin-top:12px; padding-bottom:20px;">
+      <div class="section-label">Son Antrenmanlar</div>
+      <div class="card recent-list" id="recent-list">
+        <div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydedilmedi.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Ölçümler -->
+  <div class="screen" id="tab-meas" style="display:none;flex-direction:column;">
+    <div class="nav-header">
+      <h1>Ölçümler & Yağ Oranı</h1>
+      <p>US Navy formülü</p>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div id="meas-summary-card" style="display:none;"></div>
+    </div>
+
+    <div class="section" style="margin-top:12px;">
+      <div class="section-label">Profil <span id="profile-saved-badge" style="display:none;font-size:11px;font-weight:500;color:var(--green);margin-left:6px;">● Kayıtlı</span></div>
+      <div class="card meas-form" id="profile-card">
+        <div class="form-row">
+          <span class="form-label">Cinsiyet</span>
+          <div class="gender-toggle">
+            <button class="gender-btn active" onclick="setGender('male')" id="gbtn-male">Erkek</button>
+            <button class="gender-btn" onclick="setGender('female')" id="gbtn-female">Kadın</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Yaş</span>
+          <input class="form-input" type="number" id="m-birthyear" placeholder="" min="10" max="99" oninput="saveProfile()">
+          <span class="form-unit">yıl</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Boy</span>
+          <input class="form-input" type="number" id="m-height" placeholder="175" min="100" max="250" oninput="saveProfile()">
+          <span class="form-unit">cm</span>
+        </div>
+        <div style="padding: 10px 16px 12px; display:flex; justify-content:flex-end;">
+          <button class="set-count-btn accent" onclick="saveProfile(true)">Kaydet</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:12px;">
+      <div class="section-label">Yeni Ölçüm</div>
+      <div class="card meas-form">
+        <div class="form-row">
+          <span class="form-label">Vücut Ağırlığı</span>
+          <input class="form-input" type="number" id="m-weight" placeholder="80" min="30" max="300">
+          <span class="form-unit">kg</span>
+        </div>
+
+        <div class="meas-section-title">Çevre Ölçüleri</div>
+        <div class="form-row">
+          <span class="form-label">Boyun</span>
+          <input class="form-input" type="number" id="m-neck" placeholder="38" min="20" max="70">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Göğüs</span>
+          <input class="form-input" type="number" id="m-chest" placeholder="100" min="40" max="200">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Omuz</span>
+          <input class="form-input" type="number" id="m-shoulder" placeholder="115" min="40" max="200">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Bel</span>
+          <input class="form-input" type="number" id="m-waist" placeholder="85" min="40" max="200">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row" id="hip-row">
+          <span class="form-label">Kalça</span>
+          <input class="form-input" type="number" id="m-hip" placeholder="95" min="40" max="200">
+          <span class="form-unit">cm</span>
+        </div>
+
+        <div class="meas-section-title">Kol & Bacak</div>
+        <div class="form-row">
+          <span class="form-label">Sağ Kol</span>
+          <input class="form-input" type="number" id="m-arm-r" placeholder="38" min="10" max="80">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sol Kol</span>
+          <input class="form-input" type="number" id="m-arm-l" placeholder="38" min="10" max="80">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sağ Ön Kol</span>
+          <input class="form-input" type="number" id="m-forearm-r" placeholder="28" min="10" max="60">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sol Ön Kol</span>
+          <input class="form-input" type="number" id="m-forearm-l" placeholder="28" min="10" max="60">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sağ Uyluk</span>
+          <input class="form-input" type="number" id="m-thigh-r" placeholder="58" min="20" max="120">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sol Uyluk</span>
+          <input class="form-input" type="number" id="m-thigh-l" placeholder="58" min="20" max="120">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sağ Baldır</span>
+          <input class="form-input" type="number" id="m-calf-r" placeholder="38" min="10" max="80">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Sol Baldır</span>
+          <input class="form-input" type="number" id="m-calf-l" placeholder="38" min="10" max="80">
+          <span class="form-unit">cm</span>
+        </div>
+      </div>
+      <button class="btn-primary" style="margin-top:10px;" onclick="calculateFat()">Hesapla & Kaydet</button>
+    </div>
+    <div class="section" style="margin-top:12px;">
+      <div id="fat-result-card" style="display:none;"></div>
+    </div>
+    <div class="section" style="margin-top:12px;">
+      <div class="section-label">Trend</div>
+      <div class="card meas-chart-card">
+        <div class="trend-tabs" id="trend-tabs">
+          <button class="trend-tab active" onclick="switchTrend('fat',this)">Yağ %</button>
+          <button class="trend-tab" onclick="switchTrend('weight',this)">Ağırlık</button>
+          <button class="trend-tab" onclick="switchTrend('armR',this)">Kol</button>
+          <button class="trend-tab" onclick="switchTrend('chest',this)">Göğüs</button>
+          <button class="trend-tab" onclick="switchTrend('waist',this)">Bel</button>
+          <button class="trend-tab" onclick="switchTrend('thighR',this)">Uyluk</button>
+        </div>
+        <div class="chart-container" style="height:160px;margin-top:10px;">
+          <canvas id="fat-chart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="section" style="margin-top:12px; padding-bottom:20px;">
+      <div class="section-label">Geçmiş</div>
+      <div class="card meas-history" id="meas-history-list">
+        <div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz ölçüm kaydedilmedi.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PR & 1RM -->
+  <div class="screen" id="tab-stats" style="display:none;flex-direction:column;">
+    <div class="nav-header">
+      <h1>PR & 1RM</h1>
+      <p>Kişisel rekорlar ve hesaplayıcı</p>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">1RM Hesaplayıcı</div>
+      <div class="card" style="padding:16px;">
+        <div class="orm-row">
+          <div class="orm-field">
+            <div class="orm-label">Ağırlık (kg)</div>
+            <div class="kg-stepper" style="height:44px;width:100%;">
+              <button class="stepper-btn" onclick="stepOrm('kg',-2.5)" type="button">−</button>
+              <input class="kg-val" type="text" inputmode="decimal" id="orm-kg" placeholder="100">
+              <button class="stepper-btn" onclick="stepOrm('kg',2.5)" type="button">+</button>
+            </div>
+          </div>
+          <div class="orm-field">
+            <div class="orm-label">Tekrar</div>
+            <div class="reps-stepper" style="height:44px;width:100%;">
+              <button class="stepper-btn" onclick="stepOrm('reps',-1)" type="button">−</button>
+              <input class="reps-val" type="text" inputmode="numeric" id="orm-reps" placeholder="5">
+              <button class="stepper-btn" onclick="stepOrm('reps',1)" type="button">+</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" style="margin-top:12px;" onclick="calculateOrm()">Hesapla</button>
+        <div id="orm-result" style="display:none;margin-top:14px;text-align:center;">
+          <div class="orm-result-val" id="orm-result-val">—</div>
+          <div class="orm-result-lbl">Tahmini 1 Tekrar Maksimum</div>
+          <div class="orm-result-grid" id="orm-result-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px; padding-bottom:20px;">
+      <div class="section-label">Kişisel Rekорlar</div>
+      <input type="search" id="pr-search" placeholder="Hareket ara…" oninput="filterPR(this.value)" style="width:100%;box-sizing:border-box;background:var(--bg-primary);border:none;border-radius:12px;padding:10px 14px;font-size:14px;color:var(--text-primary);margin-bottom:8px;outline:none;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+      <div class="card pr-list" id="pr-list">
+        <div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydı yok.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Ayarlar -->
+  <div class="screen" id="tab-settings" style="display:none;flex-direction:column;">
+    <div class="nav-header">
+      <h1>Ayarlar</h1>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Görünüm</div>
+      <div class="card settings-group">
+        <div class="settings-row">
+          <div class="settings-icon" style="background:#ff9f0a20;">🌙</div>
+          <span class="settings-label">Tema</span>
+          <div class="segment-control">
+            <button class="seg-btn" id="theme-light-btn" onclick="setTheme('light')">Açık</button>
+            <button class="seg-btn" id="theme-dark-btn" onclick="setTheme('dark')">Koyu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Dinlenme Zamanlayıcısı</div>
+      <div class="card settings-group">
+        <div class="settings-row">
+          <div class="settings-icon" style="background:#34c75920;">⏱️</div>
+          <span class="settings-label">Aktif</span>
+          <label class="ios-toggle">
+            <input type="checkbox" id="rest-toggle" onchange="toggleRestTimer(this.checked)">
+            <div class="ios-toggle-track"></div>
+            <div class="ios-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="settings-row" id="rest-dur-row">
+          <div class="settings-icon" style="background:#007aff20;">🕐</div>
+          <span class="settings-label">Süre</span>
+          <div class="dur-selector">
+            <button class="dur-btn" onclick="setRestDuration(90)" data-dur="90">1.30 dk</button>
+            <button class="dur-btn" onclick="setRestDuration(120)" data-dur="120">2 dk</button>
+            <button class="dur-btn" onclick="setRestDuration(150)" data-dur="150">2.30 dk</button>
+            <button class="dur-btn" onclick="setRestDuration(180)" data-dur="180">3 dk</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Supplementler</div>
+      <div class="card" style="overflow:hidden;">
+        <div id="suppl-settings-list"></div>
+        <div class="suppl-add-row" style="border-top:0.5px solid var(--border);">
+          <input id="new-suppl-input" class="suppl-add-input" placeholder="Supplement adı ekle…">
+          <button class="suppl-add-btn" onclick="addSupplement()">Ekle</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Antrenman Günleri</div>
+      <div class="card settings-group">
+        <div class="settings-row" style="cursor:pointer;" onclick="openDayEditor()">
+          <div class="settings-icon" style="background:#5856d620;">📋</div>
+          <span class="settings-label">Günleri Düzenle</span>
+          <span class="settings-value" id="day-count-label">4 gün</span>
+          <span class="settings-chevron">›</span>
+        </div>
+        <div class="settings-row" style="cursor:pointer;" onclick="openOrderEditor()">
+          <div class="settings-icon" style="background:#007aff20;">🔄</div>
+          <span class="settings-label">Antrenman Sırası</span>
+          <span class="settings-value" id="order-label"></span>
+          <span class="settings-chevron">›</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="card settings-group" style="overflow:hidden;">
+        <button class="settings-row" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;color:inherit;" onclick="toggleLogHistory(this)">
+          <div class="settings-icon" style="background:#ff3b3020;">🗂️</div>
+          <span class="settings-label">Antrenman Geçmişi</span>
+          <span class="settings-chevron" id="log-history-chevron">›</span>
+        </button>
+        <div id="log-delete-list" style="display:none;border-top:0.5px solid var(--border);"></div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Veri</div>
+      <div class="card settings-group">
+        <button class="data-btn" onclick="exportData()">
+          <div class="settings-icon" style="background:#34c75920;">📤</div>
+          <span>Veriyi Dışa Aktar (JSON)</span>
+          <span id="last-backup-label" style="font-size:11px;color:var(--text-secondary);margin-left:auto;"></span>
+        </button>
+        <div style="height:0.5px;background:var(--border);"></div>
+        <label class="data-btn" style="cursor:pointer;">
+          <div class="settings-icon" style="background:#007aff20;">📥</div>
+          <span>Veriyi İçe Aktar (JSON)</span>
+          <input type="file" accept=".json" onchange="importData(event)" style="display:none;">
+        </label>
+        <div style="height:0.5px;background:var(--border);"></div>
+        <button class="data-btn danger" onclick="resetData()">
+          <div class="settings-icon" style="background:#ff3b3020;">🗑️</div>
+          <span>Tüm Verileri Sıfırla</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:24px 20px;color:var(--text-tertiary);font-size:12px;">
+      Antrenman Takip v1.0 · Tüm veriler cihazınızda saklanır
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar" role="tablist">
+    <button class="tab-item active" id="tab-btn-workout" onclick="switchTab('workout')" role="tab" aria-selected="true" aria-label="Antrenman">
+      <span class="tab-icon" aria-hidden="true">💪</span>
+      <span>Antrenman</span>
+    </button>
+    <button class="tab-item" id="tab-btn-meas" onclick="switchTab('meas')" role="tab" aria-selected="false" aria-label="Ölçümler">
+      <span class="tab-icon" aria-hidden="true">📊</span>
+      <span>Ölçümler</span>
+    </button>
+    <button class="tab-item" id="tab-btn-stats" onclick="switchTab('stats')" role="tab" aria-selected="false" aria-label="PR ve 1RM">
+      <span class="tab-icon" aria-hidden="true">🏆</span>
+      <span>PR</span>
+    </button>
+    <button class="tab-item" id="tab-btn-settings" onclick="switchTab('settings')" role="tab" aria-selected="false" aria-label="Ayarlar">
+      <span class="tab-icon" aria-hidden="true">⚙️</span>
+      <span>Ayarlar</span>
+    </button>
+  </div>
+</div>
+
+<!-- Workout Screen (slides in) -->
+<div id="workout-screen">
+  <div class="ws-header">
+    <button class="back-btn" onclick="hideWorkoutScreen()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Geri
+    </button>
+    <div class="ws-title">
+      <h2 id="ws-day-name">Antrenman</h2>
+      <p id="ws-day-sub" class="subtitle"></p>
+    </div>
+    <button class="ws-done-btn" onclick="finishWorkout()">Bitir</button>
+  </div>
+  <div class="ws-timer-bar">
+    <span class="ws-timer-dot"></span>
+    <span id="ws-elapsed">00:00</span>
+  </div>
+  <div class="ws-body" id="ws-body">
+    <!-- Exercise cards rendered here -->
+  </div>
+</div>
+
+<!-- Summary Overlay -->
+<div id="summary-overlay" onclick="closeSummary()">
+  <div class="summary-sheet" onclick="event.stopPropagation()">
+    <div class="sum-emoji">🎉</div>
+    <h3>Antrenman Tamamlandı!</h3>
+    <p class="sub" id="sum-sub">Harika iş!</p>
+    <div class="summary-stats">
+      <div class="ss-item"><div class="ss-val" id="sum-dur">0 dk</div><div class="ss-lbl">Süre</div></div>
+      <div class="ss-item"><div class="ss-val" id="sum-sets">0</div><div class="ss-lbl">Set</div></div>
+      <div class="ss-item"><div class="ss-val" id="sum-vol">0</div><div class="ss-lbl">Hacim (kg)</div></div>
+    </div>
+    <div id="sum-pr-section" style="display:none;">
+      <div class="sum-pr-banner" id="sum-pr-banner"></div>
+    </div>
+    <div id="sum-ex-list" style="margin:12px 0;text-align:left;"></div>
+    <button class="btn-primary" onclick="saveSummary()">Kaydet</button>
+    <button class="btn-secondary" onclick="closeSummary()">Vazgeç</button>
+  </div>
+</div>
+
+<!-- Workout History Detail Modal -->
+<div id="history-modal" onclick="closeHistoryModal()">
+  <div class="progress-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <h3 id="hm-day-name">Antrenman</h3>
+    <p class="sub" id="hm-meta"></p>
+    <div id="hm-body" style="margin-top:12px;overflow-y:auto;max-height:60vh;padding-right:4px;"></div>
+  </div>
+</div>
+
+<!-- Progress Modal -->
+<div id="progress-modal" onclick="closeProgressModal()">
+  <div class="progress-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <h3 id="modal-ex-name">Egzersiz</h3>
+    <p class="sub" id="modal-ex-sub">Geçmiş performans</p>
+    <div class="chart-container">
+      <canvas id="progress-chart"></canvas>
+    </div>
+    <div class="prog-history-title">Geçmiş Kayıtlar</div>
+    <div id="modal-history-list"></div>
+  </div>
+</div>
+
+<!-- Day Editor -->
+<div id="day-editor">
+  <div class="de-header">
+    <button class="back-btn" onclick="closeDayEditor()">‹ Geri</button>
+    <h2>Antrenman Günleri</h2>
+    <button class="de-save-btn" onclick="saveDays()">Kaydet</button>
+  </div>
+  <div id="day-editor-body" style="padding-bottom:24px;"></div>
+</div>
+
+<!-- Exercise name autocomplete -->
+<datalist id="ex-names-list"></datalist>
+
+<!-- Order Editor -->
+<div id="order-editor">
+  <div class="de-header">
+    <button class="back-btn" onclick="closeOrderEditor()">‹ Geri</button>
+    <h2>Antrenman Sırası</h2>
+    <button class="de-save-btn" onclick="saveOrder()">Kaydet</button>
+  </div>
+  <div style="padding:12px 16px 4px;color:var(--text-secondary);font-size:13px;">Ok tuşlarıyla sırayı değiştir.</div>
+  <div id="order-editor-body" style="padding:8px 16px 24px;"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  DATA LAYER
+// ═══════════════════════════════════════════════
+const DEFAULT_DAYS = [
+  { id: 'torso-a', name: 'Torso A', exercises: [
+    { id: 'pec-deck', name: 'Pec Deck Fly', sets: 2 },
+    { id: 'incline-press', name: 'Incline Chest Press', sets: 2 },
+    { id: 'cable-lat', name: 'Cable Lateral Raise', sets: 3 },
+    { id: 'lat-pulldown', name: 'Lat Pulldown', sets: 2 },
+    { id: 'cs-row', name: 'Chest Supported Machine Row', sets: 1 },
+    { id: 'tbar-row', name: 'Chest Supported T-Bar Row Machine', sets: 3 },
+  ]},
+  { id: 'limbs-a', name: 'Limbs A', exercises: [
+    { id: 'preacher-curl', name: 'Preacher Curl Machine', sets: 2 },
+    { id: 'tricep-push', name: 'Cable Triceps Pushdown', sets: 2 },
+    { id: 'bayesian-curl', name: 'Bayesian Curl Cable', sets: 2 },
+    { id: 'tri-overhead', name: 'Triceps Overhead Extension', sets: 2 },
+    { id: 'leg-curl', name: 'Lying Leg Curl', sets: 3 },
+    { id: 'leg-ext', name: 'Leg Extension', sets: 3 },
+    { id: 'leg-press', name: 'Leg Press', sets: 3 },
+  ]},
+  { id: 'torso-b', name: 'Torso B', exercises: [
+    { id: 'pec-deck-b', name: 'Pec Deck Fly', sets: 2 },
+    { id: 'horiz-press', name: 'Horizontal Chest Press', sets: 2 },
+    { id: 'cable-lat-b', name: 'Cable Lateral Raise', sets: 3 },
+    { id: 'lat-pulldown-b', name: 'Lat Pulldown', sets: 2 },
+    { id: 'cs-row-b', name: 'Chest Supported Machine Row', sets: 1 },
+    { id: 'tbar-row-b', name: 'Chest Supported T-Bar Row Machine', sets: 3 },
+  ]},
+  { id: 'limbs-b', name: 'Limbs B', exercises: [
+    { id: 'preacher-curl-b', name: 'Preacher Curl Machine', sets: 2 },
+    { id: 'tricep-push-b', name: 'Cable Triceps Pushdown', sets: 2 },
+    { id: 'bayesian-curl-b', name: 'Bayesian Curl Cable', sets: 2 },
+    { id: 'tri-overhead-b', name: 'Triceps Overhead Extension', sets: 2 },
+    { id: 'leg-curl-b', name: 'Lying Leg Curl', sets: 3 },
+    { id: 'leg-ext-b', name: 'Leg Extension', sets: 3 },
+    { id: 'hack-squat', name: 'Hack Squat', sets: 3 },
+  ]},
+];
+
+function lsGet(key) { try { return localStorage.getItem(key); } catch(e) { return null; } }
+function lsSet(key, val) { try { localStorage.setItem(key, val); } catch(e) {} }
+function escapeHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+const DB_VERSION = 1;
+
+function loadData() {
+  return {
+    version: parseInt(lsGet('dbVersion') || '0'),
+    workoutDays: JSON.parse(lsGet('workoutDays') || 'null') || DEFAULT_DAYS,
+    workoutLogs: JSON.parse(lsGet('workoutLogs') || '[]'),
+    measurements: JSON.parse(lsGet('measurements') || '[]'),
+    settings: JSON.parse(lsGet('settings') || '{"theme":"light","restTimerEnabled":true,"restDuration":90}'),
+    workoutOrder: JSON.parse(lsGet('workoutOrder') || 'null'),
+  };
+}
+function migrateDB() {
+  if (DB.version < DB_VERSION) {
+    DB.version = DB_VERSION;
+    lsSet('dbVersion', DB_VERSION);
+  }
+}
+function saveData(key, value) {
+  lsSet(key, JSON.stringify(value));
+}
+
+let DB = loadData();
+if (!DB.workoutOrder) {
+  DB.workoutOrder = DB.workoutDays.map(d => d.id);
+  saveData('workoutOrder', DB.workoutOrder);
+}
+migrateDB();
+
+// ═══════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════
+function today() {
+  const d = new Date();
+  if (d.getHours() < 4) d.setDate(d.getDate() - 1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric' });
+}
+function fmtDateShort(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('tr-TR', { day:'numeric', month:'short' });
+}
+function fmtDuration(secs) {
+  const m = Math.floor(secs/60), s = secs%60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function getDayById(id) { return DB.workoutDays.find(d => d.id === id); }
+function getNextDayId() {
+  const logs = DB.workoutLogs;
+  if (!logs.length) return DB.workoutOrder[0];
+  const last = logs[logs.length - 1];
+  const idx = DB.workoutOrder.indexOf(last.dayId);
+  return DB.workoutOrder[(idx + 1) % DB.workoutOrder.length];
+}
+// Verilen egzersiz adına ait tüm kayıtları döndürür (tüm günler dahil)
+function getLogsByExName(exName) {
+  const norm = exName.trim().toLowerCase();
+  const results = [];
+  DB.workoutLogs.forEach(log => {
+    const day = getDayById(log.dayId);
+    // exName alanı olan yeni kayıtlar: doğrudan isim eşleştirme
+    const setsByName = log.sets.filter(s => s.exName && s.exName.trim().toLowerCase() === norm);
+    if (setsByName.length) {
+      results.push({ log, sets: setsByName, dayName: day ? day.name : log.dayId });
+      return;
+    }
+    // Eski kayıtlar: gün tanımından ID bul, ID ile eşleştir
+    if (!day) return;
+    const ex = day.exercises.find(e => e.name.trim().toLowerCase() === norm);
+    if (!ex) return;
+    const setsById = log.sets.filter(s => s.exId === ex.id);
+    if (setsById.length) results.push({ log, sets: setsById, dayName: day.name });
+  });
+  return results;
+}
+
+// Verilen egzersiz adı için en son önceki antrenman setlerini döndürür
+function getPrevSetsForExName(exName) {
+  const all = getLogsByExName(exName);
+  if (!all.length) return null;
+  return all[all.length - 1];
+}
+
+function getPrevLog(dayId) {
+  const logs = DB.workoutLogs.filter(l => l.dayId === dayId);
+  return logs.length ? logs[logs.length - 1] : null;
+}
+function calcEpley(kg, reps) {
+  if (!kg || !reps || reps < 1) return 0;
+  return Math.round(kg * (1 + reps / 30) * 10) / 10;
+}
+function isPR(exName, volume) {
+  const all = getLogsByExName(exName);
+  if (!all.length) return false;
+  const maxVol = Math.max(...all.flatMap(r => r.sets.map(s => (s.kg||0)*(s.reps||0))));
+  return volume > maxVol;
+}
+function toast(msg, dur = 2200) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), dur);
+}
+
+// ═══════════════════════════════════════════════
+//  TAB NAVIGATION
+// ═══════════════════════════════════════════════
+let currentTab = 'workout';
+function switchTab(tab) {
+  ['workout','meas','stats','settings'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = 'none';
+    const btn = document.getElementById('tab-btn-' + t);
+    btn.classList.remove('active');
+    btn.setAttribute('aria-selected', 'false');
+  });
+  document.getElementById('tab-' + tab).style.display = 'flex';
+  const activeBtn = document.getElementById('tab-btn-' + tab);
+  activeBtn.classList.add('active');
+  activeBtn.setAttribute('aria-selected', 'true');
+  currentTab = tab;
+  if (tab === 'workout') renderHome();
+  if (tab === 'meas') renderMeasurements();
+  if (tab === 'stats') renderStats();
+  if (tab === 'settings') renderSettings();
+}
+
+// ═══════════════════════════════════════════════
+//  HOME SCREEN
+// ═══════════════════════════════════════════════
+function renderHome() {
+  const now = new Date();
+  document.getElementById('home-date').textContent = now.toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  renderDaySelectList();
+
+  // Month stats
+  const monthStr = today().slice(0,7);
+  const monthLogs = DB.workoutLogs.filter(l => l.date.startsWith(monthStr));
+  document.getElementById('stat-month-count').textContent = monthLogs.length;
+  document.getElementById('stat-total-count').textContent = DB.workoutLogs.length;
+
+  renderHeatmap();
+  renderRecentList();
+  renderWeeklyGoal();
+  renderSuppl();
+  renderSupplCalendar();
+}
+
+function renderDaySelectList() {
+  const nextId = getNextDayId();
+  const container = document.getElementById('day-select-list');
+  if (!container) return;
+
+  // Son antrenman tarihini her gün için bul
+  const lastLogByDay = {};
+  DB.workoutLogs.forEach(log => {
+    if (!lastLogByDay[log.dayId] || log.date > lastLogByDay[log.dayId].date) {
+      lastLogByDay[log.dayId] = log;
+    }
+  });
+
+  container.innerHTML = DB.workoutDays.map(day => {
+    const isNext = day.id === nextId;
+    const exCount = day.exercises.length;
+    const setCount = day.exercises.reduce((a, e) => a + e.sets, 0);
+    const lastLog = lastLogByDay[day.id];
+    const lastDateStr = lastLog ? fmtDate(lastLog.date) : null;
+
+    return `<div class="card day-select-card ${isNext ? 'day-select-next' : ''}" onclick="openWorkoutScreen('${day.id}')">
+      <div class="day-select-left">
+        <div class="day-select-badge">${day.name.slice(0,1)}</div>
+        <div>
+          <div class="day-select-name">${escapeHtml(day.name)}${isNext ? ' <span class="next-tag">Sıradaki</span>' : ''}</div>
+          <div class="day-select-meta">${exCount} hareket · ${setCount} set${lastDateStr ? ` · Son: ${lastDateStr}` : ''}</div>
+        </div>
+      </div>
+      <div class="day-select-arrow">›</div>
+    </div>`;
+  }).join('');
+}
+
+let workoutCalOffset = 0;
+function shiftWorkoutCal(d) { workoutCalOffset += d; renderHeatmap(); }
+
+function renderHeatmap() {
+  const base = new Date();
+  base.setDate(1);
+  base.setMonth(base.getMonth() + workoutCalOffset);
+  const year = base.getFullYear();
+  const month = base.getMonth();
+
+  const titleEl = document.getElementById('workout-cal-title');
+  const dowsEl = document.getElementById('workout-cal-dows');
+  const gridEl = document.getElementById('workout-cal-grid');
+  const legendEl = document.getElementById('workout-cal-legend');
+  if (!gridEl) return;
+
+  titleEl.textContent = base.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+  dowsEl.innerHTML = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'].map(d => `<div class="workout-cal-dow">${d}</div>`).join('');
+
+  const monthStr = `${year}-${String(month+1).padStart(2,'0')}`;
+  const monthLogs = DB.workoutLogs.filter(l => l.date.startsWith(monthStr));
+  const logByDate = {};
+  monthLogs.forEach(l => { logByDate[l.date] = l; });
+
+  // Collect unique day names for legend colors
+  const dayColors = {};
+  const palette = ['#007aff','#34c759','#ff9f0a','#af52de','#ff3b30','#5ac8fa'];
+  DB.workoutDays.forEach((d, i) => { dayColors[d.id] = palette[i % palette.length]; });
+
+  const firstDow = (new Date(year, month, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayStr = today();
+
+  let html = '';
+  for (let i = 0; i < firstDow; i++) html += `<div class="wcal-day empty"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${monthStr}-${String(d).padStart(2,'0')}`;
+    const log = logByDate[dateStr];
+    const isToday = dateStr === todayStr ? ' today' : '';
+    if (log) {
+      const color = dayColors[log.dayId] || '#007aff';
+      const day = getDayById(log.dayId);
+      const tag = day ? day.name.slice(0,6) : '';
+      html += `<div class="wcal-day has-workout${isToday}" style="background:${color}${isToday ? ';outline-color:'+color : ''};">
+        <span class="wcal-num">${d}</span>
+      </div>`;
+    } else {
+      html += `<div class="wcal-day${isToday}"><span class="wcal-num">${d}</span></div>`;
+    }
+  }
+  gridEl.innerHTML = html;
+
+  // Legend: only days that appear this month
+  const seenDayIds = [...new Set(monthLogs.map(l => l.dayId))];
+  if (seenDayIds.length) {
+    legendEl.innerHTML = seenDayIds.map(id => {
+      const day = getDayById(id);
+      return `<div class="wcal-legend-item"><div class="wcal-legend-dot" style="background:${dayColors[id]||'#007aff'};"></div>${escapeHtml(day ? day.name : id)}</div>`;
+    }).join('');
+  } else {
+    legendEl.innerHTML = `<span style="color:var(--text-secondary);font-size:12px;">Bu ay antrenman yok</span>`;
+  }
+}
+
+function renderRecentList() {
+  const list = document.getElementById('recent-list');
+  const logs = [...DB.workoutLogs].reverse().slice(0, 7);
+  if (!logs.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydedilmedi.</div>';
+    return;
+  }
+  list.innerHTML = logs.map(log => {
+    const day = getDayById(log.dayId);
+    const name = day ? day.name : log.dayId;
+    const initial = name.slice(0,2).toUpperCase();
+    const dur = log.duration ? `${Math.round(log.duration/60)} dk` : '';
+    const vol = log.sets ? Math.round(log.sets.reduce((a,s) => a+(s.kg||0)*(s.reps||0),0)) : 0;
+    return `<div class="recent-item" onclick="openHistoryModal('${log.date}','${log.dayId}')">
+      <div class="recent-dot"><span>${initial}</span></div>
+      <div class="recent-info">
+        <div class="recent-name">${escapeHtml(name)}</div>
+        <div class="recent-date">${fmtDate(log.date)}${vol ? ' · ' + vol + ' kg hacim' : ''}</div>
+      </div>
+      ${dur ? `<div class="recent-dur">${dur}</div>` : ''}
+      <span style="color:var(--text-secondary);font-size:18px;margin-left:2px;">›</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Workout History Detail ──
+function openHistoryModal(date, dayId) {
+  const log = DB.workoutLogs.find(l => l.date === date && l.dayId === dayId);
+  if (!log) return;
+  const day = getDayById(dayId);
+  const name = day ? day.name : dayId;
+  document.getElementById('hm-day-name').textContent = name;
+  const dur = log.duration ? `${Math.round(log.duration/60)} dk · ` : '';
+  const vol = log.sets ? Math.round(log.sets.reduce((a,s) => a+(s.kg||0)*(s.reps||0),0)) : 0;
+  document.getElementById('hm-meta').textContent = `${fmtDate(date)} · ${dur}${vol} kg hacim`;
+
+  // Group sets by exercise
+  const byEx = {};
+  (log.sets||[]).forEach(s => {
+    const key = s.exName || s.exId;
+    if (!byEx[key]) byEx[key] = [];
+    byEx[key].push(s);
+  });
+
+  const body = document.getElementById('hm-body');
+  body.innerHTML = Object.entries(byEx).map(([exName, sets]) => {
+    const rows = sets.map((s, i) => {
+      const vol = s.kg && s.reps ? Math.round(s.kg * s.reps) : 0;
+      return `<div class="hm-set-row">
+        <span class="hm-set-num">${i+1}</span>
+        <span class="hm-set-val">${s.kg||0} kg × ${s.reps||0} tk</span>
+        ${vol ? `<span class="hm-set-vol">${vol} kg</span>` : ''}
+      </div>`;
+    }).join('');
+    return `<div class="hm-ex-block">
+      <div class="hm-ex-name">${escapeHtml(exName)}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  document.getElementById('history-modal').classList.add('open');
+  history.pushState({ screen: 'historyModal' }, '');
+}
+function closeHistoryModal() {
+  document.getElementById('history-modal').classList.remove('open');
+}
+
+// ── Weekly Goal ──
+function getWeeklyGoal() {
+  return DB.settings.weeklyGoal || 4;
+}
+function changeWeeklyGoal(delta) {
+  const cur = getWeeklyGoal();
+  const next = Math.max(1, Math.min(7, cur + delta));
+  DB.settings.weeklyGoal = next;
+  saveData('settings', DB.settings);
+  renderWeeklyGoal();
+}
+function renderWeeklyGoal() {
+  const goal = getWeeklyGoal();
+  document.getElementById('weekly-goal-num').textContent = goal;
+
+  // Bu haftanın Pazartesi - Pazar
+  const now = new Date();
+  const dow = (now.getDay() + 6) % 7; // Mon=0
+  const weekDays = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - dow + i);
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    weekDays.push({ str, label: ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'][i], isPast: i <= dow });
+  }
+
+  const loggedDates = new Set(DB.workoutLogs.map(l => l.date));
+  const doneThisWeek = weekDays.filter(d => loggedDates.has(d.str)).length;
+  const todayStr = today();
+
+  document.getElementById('weekly-goal-label').textContent = `${doneThisWeek} / ${goal} antrenman`;
+  const pct = Math.min(100, Math.round(doneThisWeek / goal * 100));
+  document.getElementById('weekly-goal-bar').style.width = pct + '%';
+
+  document.getElementById('weekly-goal-days').innerHTML = weekDays.map(d => {
+    const done = loggedDates.has(d.str);
+    const isToday = d.str === todayStr;
+    const cls = done ? 'done' : isToday ? 'today' : 'empty';
+    return `<div class="wg-day ${cls}">${d.label}</div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  WORKOUT SCREEN
+// ═══════════════════════════════════════════════
+let currentDayId = null;
+let workoutStartTime = null;
+let elapsedInterval = null;
+let pendingSets = {}; // exId -> [{kg, reps}]
+let pendingNotes = {}; // exId -> string
+
+let awbInterval = null;
+
+function openWorkoutScreen(dayId) {
+  // Eğer aynı gün zaten aktifse sadece ekranı aç, verileri sıfırlama
+  const isSameDay = currentDayId === dayId && workoutStartTime && pendingSets;
+  currentDayId = dayId || getNextDayId();
+  const day = getDayById(currentDayId);
+  if (!day) return;
+  document.getElementById('ws-day-name').textContent = day.name;
+  const setCount = day.exercises.reduce((a, e) => a + e.sets, 0);
+  document.getElementById('ws-day-sub').textContent = `${day.exercises.length} hareket · ${setCount} set`;
+
+  if (!isSameDay) {
+    pendingSets = {};
+    pendingNotes = {};
+    workoutStartTime = Date.now();
+  }
+
+  clearInterval(elapsedInterval);
+  elapsedInterval = setInterval(() => {
+    const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
+    document.getElementById('ws-elapsed').textContent = fmtDuration(secs);
+  }, 1000);
+
+  if (!isSameDay) renderExerciseCards(day);
+  document.getElementById('workout-screen').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  hideActiveWorkoutBanner();
+  history.pushState({ screen: 'workout' }, '');
+}
+
+function reopenWorkoutScreen() {
+  const day = getDayById(currentDayId);
+  if (!day) return;
+  document.getElementById('ws-day-name').textContent = day.name;
+  clearInterval(elapsedInterval);
+  elapsedInterval = setInterval(() => {
+    const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
+    document.getElementById('ws-elapsed').textContent = fmtDuration(secs);
+  }, 1000);
+  document.getElementById('workout-screen').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  hideActiveWorkoutBanner();
+  history.pushState({ screen: 'workout' }, '');
+}
+
+function hideWorkoutScreen() {
+  // Antrenmanı kapatmaz, sadece ekranı gizler ve banner gösterir
+  document.getElementById('workout-screen').classList.remove('open');
+  document.body.style.overflow = '';
+  clearInterval(elapsedInterval);
+  showActiveWorkoutBanner();
+}
+
+function confirmCloseWorkout() {
+  if (!confirm('Antrenman iptal edilecek ve girilen tüm veriler silinecek. Emin misin?')) return;
+  closeWorkoutScreen();
+}
+
+function closeWorkoutScreen() {
+  document.getElementById('workout-screen').classList.remove('open');
+  document.body.style.overflow = '';
+  clearInterval(elapsedInterval);
+  stopRest();
+  hideActiveWorkoutBanner();
+  workoutStartTime = null;
+  pendingSets = {};
+}
+
+function showActiveWorkoutBanner() {
+  const day = getDayById(currentDayId);
+  if (!day || !workoutStartTime) return;
+  document.getElementById('awb-name').textContent = day.name;
+  const banner = document.getElementById('active-workout-banner');
+  banner.classList.add('visible');
+  clearInterval(awbInterval);
+  awbInterval = setInterval(() => {
+    const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
+    document.getElementById('awb-elapsed').textContent = fmtDuration(secs);
+  }, 1000);
+  const secs = Math.floor((Date.now() - workoutStartTime) / 1000);
+  document.getElementById('awb-elapsed').textContent = fmtDuration(secs);
+}
+
+function hideActiveWorkoutBanner() {
+  document.getElementById('active-workout-banner').classList.remove('visible');
+  clearInterval(awbInterval);
+}
+
+function renderExerciseCards(day) {
+  const body = document.getElementById('ws-body');
+  body.innerHTML = day.exercises.map((ex) => {
+    // İsim bazlı önceki antrenman verisi
+    const prevEntry = getPrevSetsForExName(ex.name);
+    const prevSets = prevEntry ? prevEntry.sets : [];
+    const prevLog  = prevEntry ? prevEntry.log  : null;
+
+    // Previous hint
+    let prevHint = '';
+    if (prevSets.length && prevLog) {
+      const validSets = prevSets.filter(s => s.kg || s.reps);
+      if (validSets.length) {
+        const dateLabel = fmtDateShort(prevLog.date);
+        const dayLabel = prevEntry.dayName ? ` · ${prevEntry.dayName}` : '';
+        const rows = validSets.map((s, i) =>
+          s.repsR != null || s.repsL != null
+            ? `<div>Set ${i+1}: <b>${s.kg||'?'} kg</b> — Sağ: <b>${s.repsR||'?'}</b> / Sol: <b>${s.repsL||'?'}</b> tekrar</div>`
+            : `<div>Set ${i+1}: <b>${s.kg||'?'} kg × ${s.reps||'?'} tekrar</b></div>`
+        ).join('');
+        prevHint = `<div class="ex-prev-hint">${dateLabel}${dayLabel}${rows}</div>`;
+      }
+    }
+    // Previous note (isim bazlı arama)
+    let prevNote = '';
+    if (prevLog && prevLog.notes) {
+      const prevDay = getDayById(prevLog.dayId);
+      const matchedExId = prevDay
+        ? (prevDay.exercises.find(e => e.name.trim().toLowerCase() === ex.name.trim().toLowerCase()) || {}).id
+        : null;
+      const noteVal = prevLog.notes[ex.id] || (matchedExId ? prevLog.notes[matchedExId] : null);
+      if (noteVal) prevNote = `<div class="ex-note-prev">📝 Önceki not: "${escapeHtml(noteVal)}"</div>`;
+    }
+    // Per-set previous values
+    const prevSetsAll = prevSets;
+    // Set rows
+    let setRows = '';
+    for (let s = 0; s < ex.sets; s++) {
+      const ps = prevSetsAll[s];
+      const prevKg   = ps && ps.kg    ? ps.kg    : '';
+      const prevRep  = ps && ps.reps  ? ps.reps  : '';
+      const prevRepR = ps && ps.repsR ? ps.repsR : '';
+      const prevRepL = ps && ps.repsL ? ps.repsL : '';
+      const repsHtml = ex.bilateral
+        ? `<div class="bi-reps">
+            <div class="bi-reps-row">
+              <span class="bi-label">SAĞ</span>
+              <input class="bi-val" type="text" inputmode="numeric" placeholder="${prevRepR || 'tk'}" data-prev="${prevRepR}" id="repsR-${ex.id}-${s}" onkeydown="handleSetNav(event,'repsR','${ex.id}',${s})">
+            </div>
+            <div class="bi-reps-row">
+              <span class="bi-label">SOL</span>
+              <input class="bi-val" type="text" inputmode="numeric" placeholder="${prevRepL || 'tk'}" data-prev="${prevRepL}" id="repsL-${ex.id}-${s}" onkeydown="handleSetNav(event,'repsL','${ex.id}',${s})">
+            </div>
+          </div>`
+        : `<div class="reps-stepper">
+            <button class="stepper-btn" onclick="stepReps('${ex.id}',${s},-1)" type="button">−</button>
+            <input class="reps-val" type="text" inputmode="numeric" placeholder="${prevRep || 'tk'}" data-prev="${prevRep}" id="reps-${ex.id}-${s}" oninput="checkOverload('${ex.id}',${s})" onkeydown="handleSetNav(event,'reps','${ex.id}',${s})">
+            <button class="stepper-btn" onclick="stepReps('${ex.id}',${s},1)" type="button">+</button>
+          </div>`;
+      setRows += `<div class="set-row" id="set-row-${ex.id}-${s}">
+        <span class="set-num">${s+1}</span>
+        <div class="kg-stepper">
+          <button class="stepper-btn" onclick="stepKg('${ex.id}',${s},-2.5)" type="button">−</button>
+          <input class="kg-val" type="text" inputmode="decimal" placeholder="${prevKg || 'kg'}" data-prev="${prevKg}" id="kg-${ex.id}-${s}" oninput="checkOverload('${ex.id}',${s})" onkeydown="handleSetNav(event,'kg','${ex.id}',${s})">
+          <button class="stepper-btn" onclick="stepKg('${ex.id}',${s},2.5)" type="button">+</button>
+        </div>
+        ${repsHtml}
+        <button class="set-done-btn" onclick="completeSet('${ex.id}',${s},'${day.id}')" id="set-done-${ex.id}-${s}">✓</button>
+      </div>`;
+    }
+    return `<div class="ex-card" id="ex-card-${ex.id}">
+      <div class="ex-card-header">
+        <div class="ex-card-top">
+          <span class="ex-name">${escapeHtml(ex.name)}</span>
+          <div class="ex-actions">
+            <button class="ex-graph-btn" data-ex-id="${ex.id}" data-day-id="${day.id}" data-ex-name="${escapeHtml(ex.name)}" onclick="openProgressModal(this.dataset.exId,this.dataset.dayId,this.dataset.exName)">Grafik</button>
+          </div>
+        </div>
+        ${prevHint}
+      </div>
+      <div class="ex-sets-container">
+        <div class="set-col-header">
+          <span class="set-num"></span>
+          <span class="set-col-label" style="flex:1.2;">Kilogram</span>
+          <span class="set-col-label" style="flex:1;">Tekrar</span>
+          <span style="width:34px;flex-shrink:0;"></span>
+        </div>
+        <div id="sets-list-${ex.id}">${setRows}</div>
+        <div class="set-count-row">
+          <button class="set-count-btn" onclick="removeSet('${ex.id}','${day.id}')">− Set</button>
+          <span class="set-count-label" id="set-count-${ex.id}">${ex.sets} set</span>
+          <button class="set-count-btn accent" onclick="addSet('${ex.id}','${day.id}')">+ Set</button>
+        </div>
+      </div>
+      <div class="ex-note-section">
+        ${prevNote}
+        <textarea class="ex-note-input" placeholder="Not ekle..." id="note-${ex.id}" oninput="pendingNotes['${ex.id}']=this.value" onblur="if(this.value.trim())toast('📝 Not eklendi.')" rows="2"></textarea>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function checkOverload(exId, setIdx) {
+  const kgEl   = document.getElementById(`kg-${exId}-${setIdx}`);
+  const repsEl = document.getElementById(`reps-${exId}-${setIdx}`);
+  const rowEl  = document.getElementById(`set-row-${exId}-${setIdx}`);
+  if (!kgEl || !repsEl || !rowEl) return;
+  const kg   = parseFloat(kgEl.value);
+  const reps = parseInt(repsEl.value);
+  const prevKg   = parseFloat(kgEl.dataset.prev)   || 0;
+  const prevReps = parseInt(repsEl.dataset.prev)    || 0;
+  const isOverload = !isNaN(kg) && !isNaN(reps) && prevKg > 0 && prevReps > 0
+    && (kg > prevKg || (kg >= prevKg && reps > prevReps));
+  rowEl.classList.toggle('overload', isOverload);
+}
+
+function handleSetNav(e, type, exId, setIdx) {
+  if (e.key !== 'Enter' && e.key !== 'Tab') return;
+  e.preventDefault();
+  let next = null;
+  if (type === 'kg') {
+    next = document.getElementById(`repsR-${exId}-${setIdx}`) || document.getElementById(`reps-${exId}-${setIdx}`);
+  } else if (type === 'repsR') {
+    next = document.getElementById(`repsL-${exId}-${setIdx}`);
+  } else {
+    next = document.getElementById(`kg-${exId}-${setIdx + 1}`);
+  }
+  if (next) next.focus();
+}
+
+function stepKg(exId, setIdx, delta) {
+  const input = document.getElementById(`kg-${exId}-${setIdx}`);
+  if (!input) return;
+  if (input.value === '' && delta > 0) {
+    const prev = parseFloat(input.dataset.prev);
+    if (prev) { input.value = prev; return; }
+  }
+  const base = parseFloat(input.value) || 0;
+  const next = Math.max(0, Math.round((base + delta) * 10) / 10);
+  input.value = next > 0 ? next : '';
+}
+
+function stepReps(exId, setIdx, delta) {
+  const input = document.getElementById(`reps-${exId}-${setIdx}`);
+  if (!input) return;
+  if (input.value === '' && delta > 0) {
+    const prev = parseInt(input.dataset.prev);
+    if (prev) { input.value = prev; return; }
+  }
+  const base = parseInt(input.value) || 0;
+  const next = Math.max(0, base + delta);
+  input.value = next > 0 ? next : '';
+}
+
+// runtime set counts per exercise (overrides day definition during workout)
+const runtimeSets = {};
+
+function getSetCount(exId, dayId) {
+  if (runtimeSets[exId] !== undefined) return runtimeSets[exId];
+  const day = getDayById(dayId);
+  const ex = day ? day.exercises.find(e => e.id === exId) : null;
+  return ex ? ex.sets : 0;
+}
+
+function buildSetRow(exId, dayId, s, prevSetsAll) {
+  const ps = prevSetsAll[s];
+  const prevKg  = ps && ps.kg   ? ps.kg   : '';
+  const prevRep = ps && ps.reps ? ps.reps : '';
+  return `<div class="set-row" id="set-row-${exId}-${s}">
+    <span class="set-num">${s+1}</span>
+    <div class="kg-stepper">
+      <button class="stepper-btn" onclick="stepKg('${exId}',${s},-2.5)" type="button">−</button>
+      <input class="kg-val" type="text" inputmode="decimal" placeholder="${prevKg || 'kg'}" data-prev="${prevKg}" id="kg-${exId}-${s}" oninput="checkOverload('${exId}',${s})" onkeydown="handleSetNav(event,'kg','${exId}',${s})">
+      <button class="stepper-btn" onclick="stepKg('${exId}',${s},2.5)" type="button">+</button>
+    </div>
+    <div class="reps-stepper">
+      <button class="stepper-btn" onclick="stepReps('${exId}',${s},-1)" type="button">−</button>
+      <input class="reps-val" type="text" inputmode="numeric" placeholder="${prevRep || 'tk'}" data-prev="${prevRep}" id="reps-${exId}-${s}" oninput="checkOverload('${exId}',${s})" onkeydown="handleSetNav(event,'reps','${exId}',${s})">
+      <button class="stepper-btn" onclick="stepReps('${exId}',${s},1)" type="button">+</button>
+    </div>
+    <button class="set-done-btn" onclick="completeSet('${exId}',${s},'${dayId}')" id="set-done-${exId}-${s}">✓</button>
+  </div>`;
+}
+
+function addSet(exId, dayId) {
+  const day = getDayById(dayId);
+  const ex = day ? day.exercises.find(e => e.id === exId) : null;
+  if (!ex) return;
+  const prevEntry = getPrevSetsForExName(ex.name);
+  const prevSetsAll = prevEntry ? prevEntry.sets : [];
+  const current = getSetCount(exId, dayId);
+  runtimeSets[exId] = current + 1;
+  const container = document.getElementById(`sets-list-${exId}`);
+  if (container) {
+    const div = document.createElement('div');
+    div.innerHTML = buildSetRow(exId, dayId, current, prevSetsAll);
+    container.appendChild(div.firstElementChild);
+  }
+  const label = document.getElementById(`set-count-${exId}`);
+  if (label) label.textContent = `${runtimeSets[exId]} set`;
+}
+
+function removeSet(exId, dayId) {
+  const current = getSetCount(exId, dayId);
+  if (current <= 1) return;
+  runtimeSets[exId] = current - 1;
+  const container = document.getElementById(`sets-list-${exId}`);
+  if (container && container.lastElementChild) {
+    container.lastElementChild.remove();
+  }
+  if (pendingSets[exId]) pendingSets[exId].splice(current - 1, 1);
+  const label = document.getElementById(`set-count-${exId}`);
+  if (label) label.textContent = `${runtimeSets[exId]} set`;
+}
+
+function completeSet(exId, setIdx, dayId) {
+  const kg    = parseFloat(document.getElementById(`kg-${exId}-${setIdx}`)?.value);
+  const reps  = parseInt(document.getElementById(`reps-${exId}-${setIdx}`)?.value);
+  const repsR = parseInt(document.getElementById(`repsR-${exId}-${setIdx}`)?.value);
+  const repsL = parseInt(document.getElementById(`repsL-${exId}-${setIdx}`)?.value);
+  const btn = document.getElementById(`set-done-${exId}-${setIdx}`);
+  if (!btn) return;
+  if (btn.classList.contains('done')) { btn.classList.remove('done'); return; }
+  btn.classList.add('done');
+  if (!pendingSets[exId]) pendingSets[exId] = [];
+  const isBi = !isNaN(repsR) || !isNaN(repsL);
+  pendingSets[exId][setIdx] = isBi
+    ? { exId, setIdx, kg: kg||0, repsR: repsR||0, repsL: repsL||0, reps: Math.max(repsR||0, repsL||0) }
+    : { exId, setIdx, kg: kg||0, reps: reps||0 };
+  if (kg && reps) {
+    const day = getDayById(dayId);
+    const ex = day ? day.exercises.find(e => e.id === exId) : null;
+    if (ex && isPR(ex.name, kg * reps)) toast('🏆 Yeni kişisel rekor!');
+  }
+  if (DB.settings.restTimerEnabled) startRest(exId, dayId);
+}
+
+// ═══════════════════════════════════════════════
+//  REST TIMER
+// ═══════════════════════════════════════════════
+let restInterval = null;
+let restEndTime = 0;
+
+function startRest(exId, dayId) {
+  stopRest();
+  const day = getDayById(dayId);
+  const ex = day ? day.exercises.find(e => e.id === exId) : null;
+  document.getElementById('rest-exercise-label').textContent = ex ? ex.name + ' sonrası' : 'Dinlenme';
+  const dur = (DB.settings.restDuration || 90);
+  restEndTime = Date.now() + dur * 1000;
+  updateRestDisplay();
+  document.getElementById('rest-banner').classList.add('visible');
+  restInterval = setInterval(() => {
+    if (Date.now() >= restEndTime) {
+      stopRest();
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+      playBeep();
+      return;
+    }
+    updateRestDisplay();
+  }, 500);
+}
+function updateRestDisplay() {
+  const remaining = Math.max(0, Math.ceil((restEndTime - Date.now()) / 1000));
+  document.getElementById('rest-display').textContent = fmtDuration(remaining);
+}
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const beeps = [
+      { freq: 880, start: 0,   dur: 0.12 },
+      { freq: 880, start: 0.18, dur: 0.12 },
+      { freq: 1320, start: 0.36, dur: 0.28 },
+    ];
+    beeps.forEach(({ freq, start, dur }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime + start);
+      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + start + 0.01);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur + 0.05);
+    });
+  } catch(e) {}
+}
+
+function stopRest() {
+  clearInterval(restInterval);
+  restInterval = null;
+  document.getElementById('rest-banner').classList.remove('visible');
+}
+function skipRest() { stopRest(); }
+
+// ═══════════════════════════════════════════════
+//  FINISH WORKOUT
+// ═══════════════════════════════════════════════
+let pendingWorkoutData = null;
+
+function finishWorkout() {
+  const duration = Math.floor((Date.now() - workoutStartTime) / 1000);
+  const day = getDayById(currentDayId);
+  // Collect all sets
+  const allSets = [];
+  day.exercises.forEach(ex => {
+    const exSets = pendingSets[ex.id] || [];
+    for (let s = 0; s < getSetCount(ex.id, currentDayId); s++) {
+      const row = exSets[s];
+      const kg    = parseFloat(document.getElementById(`kg-${ex.id}-${s}`)?.value) || 0;
+      const reps  = parseInt(document.getElementById(`reps-${ex.id}-${s}`)?.value) || 0;
+      const repsR = parseInt(document.getElementById(`repsR-${ex.id}-${s}`)?.value) || 0;
+      const repsL = parseInt(document.getElementById(`repsL-${ex.id}-${s}`)?.value) || 0;
+      if (ex.bilateral) {
+        allSets.push({ exId: ex.id, exName: ex.name, setIdx: s, kg: row ? row.kg : kg, repsR: row ? row.repsR : repsR, repsL: row ? row.repsL : repsL, reps: row ? row.reps : Math.max(repsR, repsL) });
+      } else {
+        allSets.push({ exId: ex.id, exName: ex.name, setIdx: s, kg: row ? row.kg : kg, reps: row ? row.reps : reps });
+      }
+    }
+  });
+  // Collect notes
+  const notes = {};
+  day.exercises.forEach(ex => {
+    const val = document.getElementById(`note-${ex.id}`)?.value?.trim();
+    if (val) notes[ex.id] = val;
+  });
+  const totalSets = allSets.filter(s => s.kg || s.reps).length;
+  const totalVol = Math.round(allSets.reduce((a, s) => a + (s.kg||0)*(s.reps||0), 0));
+  const durMins = Math.round(duration / 60);
+  pendingWorkoutData = { date: today(), dayId: currentDayId, sets: allSets, notes, duration };
+  document.getElementById('sum-sub').textContent = `${day.name} · ${fmtDate(today())}`;
+  document.getElementById('sum-dur').textContent = durMins + ' dk';
+  document.getElementById('sum-sets').textContent = totalSets;
+  document.getElementById('sum-vol').textContent = totalVol;
+
+  // PR'lar
+  const prList = [];
+  day.exercises.forEach(ex => {
+    const exSets = allSets.filter(s => s.exId === ex.id && s.kg && s.reps);
+    exSets.forEach(s => {
+      if (isPR(ex.name, s.kg * s.reps)) prList.push(ex.name);
+    });
+  });
+  const prSection = document.getElementById('sum-pr-section');
+  const prBanner = document.getElementById('sum-pr-banner');
+  if (prList.length) {
+    prSection.style.display = 'block';
+    prBanner.textContent = '🏆 ' + [...new Set(prList)].join(', ') + ' — Yeni kişisel rekor!';
+  } else {
+    prSection.style.display = 'none';
+  }
+
+  // Egzersiz özeti
+  const exList = document.getElementById('sum-ex-list');
+  exList.innerHTML = day.exercises.map(ex => {
+    const exSets = allSets.filter(s => s.exId === ex.id && (s.kg || s.reps));
+    if (!exSets.length) return '';
+    const vol = Math.round(exSets.reduce((a,s) => a+(s.kg||0)*(s.reps||0),0));
+    const detail = exSets.map(s => `${s.kg}×${s.reps}`).join(', ');
+    return `<div class="sum-ex-item">
+      <div class="sum-ex-name">${escapeHtml(ex.name)}</div>
+      <div class="sum-ex-detail">${detail} · ${vol} kg</div>
+    </div>`;
+  }).filter(Boolean).join('');
+
+  document.getElementById('summary-overlay').classList.add('open');
+}
+
+function saveSummary() {
+  if (!pendingWorkoutData) return;
+  DB.workoutLogs.push(pendingWorkoutData);
+  saveData('workoutLogs', DB.workoutLogs);
+  pendingWorkoutData = null;
+  closeSummary();
+  closeWorkoutScreen();
+  toast('✅ Antrenman kaydedildi!');
+  renderHome();
+}
+function closeSummary() {
+  document.getElementById('summary-overlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════
+//  PROGRESS MODAL
+// ═══════════════════════════════════════════════
+let progressChart = null;
+
+function openProgressModal(exId, dayId, exName) {
+  document.getElementById('modal-ex-name').textContent = exName;
+
+  // İsim bazlı tüm kayıtları al
+  const entries = getLogsByExName(exName);
+  document.getElementById('modal-ex-sub').textContent =
+    entries.length ? `${entries.length} antrenman kaydı (tüm günler)` : 'Henüz kayıt yok';
+
+  const labels = [], oneRMs = [];
+  entries.forEach(({ log, sets }) => {
+    const valid = sets.filter(s => s.kg && s.reps);
+    if (!valid.length) return;
+    const maxOneRM = Math.max(...valid.map(s => calcEpley(s.kg, s.reps)));
+    labels.push(fmtDateShort(log.date));
+    oneRMs.push(Math.round(maxOneRM * 10) / 10);
+  });
+
+  const canvas = document.getElementById('progress-chart');
+  if (progressChart) { progressChart.destroy(); progressChart = null; }
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+  const textColor = '#8e8e93';
+  if (labels.length) {
+    progressChart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Tahmini 1RM (kg)',
+          data: oneRMs,
+          borderColor: '#007AFF',
+          backgroundColor: 'rgba(0,122,255,0.1)',
+          fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#007AFF',
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+          y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+        }
+      }
+    });
+  } else {
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  const histEl = document.getElementById('modal-history-list');
+  if (!entries.length) {
+    histEl.innerHTML = '<div style="padding:12px 0;color:var(--text-secondary);font-size:14px;text-align:center;">Henüz kayıt yok</div>';
+  } else {
+    histEl.innerHTML = [...entries].reverse().slice(0, 8).map(({ log, sets, dayName }) => {
+      const valid = sets.filter(s => s.kg || s.reps);
+      const summary = valid.map(s => `${s.kg}kg×${s.reps}`).join(', ');
+      const maxORM = valid.length ? Math.round(Math.max(...valid.map(s => calcEpley(s.kg, s.reps))) * 10) / 10 : 0;
+      return `<div class="prog-history-item">
+        <div>
+          <span class="prog-date">${fmtDateShort(log.date)}</span>
+          <span style="font-size:10px;color:var(--text-tertiary);margin-left:6px;">${dayName}</span>
+        </div>
+        <span class="prog-vals">${summary || '—'} ${maxORM ? `<span style="color:var(--accent);font-size:11px;">(~${maxORM})</span>` : ''}</span>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('progress-modal').classList.add('open');
+  history.pushState({ screen: 'progressModal' }, '');
+}
+function closeProgressModal() {
+  document.getElementById('progress-modal').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════
+//  MEASUREMENTS
+// ═══════════════════════════════════════════════
+let selectedGender = 'male';
+let fatChart = null;
+
+function setGender(g, silent) {
+  selectedGender = g;
+  document.getElementById('gbtn-male').classList.toggle('active', g === 'male');
+  document.getElementById('gbtn-female').classList.toggle('active', g === 'female');
+  document.getElementById('hip-row').style.display = g === 'female' ? 'flex' : 'none';
+  if (!silent) saveProfile();
+}
+
+function saveProfile(showToast) {
+  const age = parseInt(document.getElementById('m-birthyear').value);
+  const height = parseFloat(document.getElementById('m-height').value);
+  DB.settings.profile = { gender: selectedGender, age: age || null, height: height || null };
+  saveData('settings', DB.settings);
+  const badge = document.getElementById('profile-saved-badge');
+  if (badge) badge.style.display = (age || height) ? 'inline' : 'none';
+  if (showToast) toast('✅ Profil kaydedildi.');
+}
+
+function loadProfile() {
+  const p = DB.settings.profile;
+  const badge = document.getElementById('profile-saved-badge');
+  if (!p) { if (badge) badge.style.display = 'none'; return; }
+  setGender(p.gender || 'male', true);
+  if (p.age) document.getElementById('m-birthyear').value = p.age;
+  if (p.height) document.getElementById('m-height').value = p.height;
+  if (badge) badge.style.display = (p.age || p.height) ? 'inline' : 'none';
+}
+
+function getProfileAge() {
+  const p = DB.settings.profile;
+  return p && p.age ? p.age : null;
+}
+
+function calculateFat() {
+  const profile = DB.settings.profile || {};
+  const height = profile.height || parseFloat(document.getElementById('m-height').value);
+  const neck = parseFloat(document.getElementById('m-neck').value);
+  const waist = parseFloat(document.getElementById('m-waist').value);
+  const hip = parseFloat(document.getElementById('m-hip').value);
+  const age = getProfileAge();
+  const weight = parseFloat(document.getElementById('m-weight').value);
+  if (!height || !neck || !waist) { toast('Boy, boyun ve bel ölçümü gerekli.'); return; }
+  let fat;
+  if (selectedGender === 'male') {
+    fat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+  } else {
+    if (!hip) { toast('Kalça ölçümü gerekli.'); return; }
+    fat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+  }
+  fat = Math.round(fat * 10) / 10;
+  if (isNaN(fat) || fat < 1 || fat > 70) { toast('Geçersiz değerler, lütfen kontrol edin.'); return; }
+  // Category
+  let cat = '';
+  if (selectedGender === 'male') {
+    if (fat < 6) cat = 'Temel Yağ';
+    else if (fat < 14) cat = 'Sporcu';
+    else if (fat < 18) cat = 'Fit';
+    else if (fat < 25) cat = 'Ortalama';
+    else cat = 'Obez';
+  } else {
+    if (fat < 14) cat = 'Temel Yağ';
+    else if (fat < 21) cat = 'Sporcu';
+    else if (fat < 25) cat = 'Fit';
+    else if (fat < 32) cat = 'Ortalama';
+    else cat = 'Obez';
+  }
+  // Save
+  const entry = {
+    date: today(), gender: selectedGender, fat,
+    weight: weight||null, age: age,
+    neck: neck||null, waist: waist||null, hip: hip||null,
+    chest: parseFloat(document.getElementById('m-chest').value)||null,
+    shoulder: parseFloat(document.getElementById('m-shoulder').value)||null,
+    armR: parseFloat(document.getElementById('m-arm-r').value)||null,
+    armL: parseFloat(document.getElementById('m-arm-l').value)||null,
+    forearmR: parseFloat(document.getElementById('m-forearm-r').value)||null,
+    forearmL: parseFloat(document.getElementById('m-forearm-l').value)||null,
+    thighR: parseFloat(document.getElementById('m-thigh-r').value)||null,
+    thighL: parseFloat(document.getElementById('m-thigh-l').value)||null,
+    calfR: parseFloat(document.getElementById('m-calf-r').value)||null,
+    calfL: parseFloat(document.getElementById('m-calf-l').value)||null,
+  };
+  DB.measurements = DB.measurements.filter(m => m.date !== today()); // one per day
+  DB.measurements.push(entry);
+  DB.measurements.sort((a,b) => a.date.localeCompare(b.date));
+  saveData('measurements', DB.measurements);
+  // Show result
+  const rc = document.getElementById('fat-result-card');
+  rc.style.display = 'block';
+  rc.innerHTML = `<div class="result-card">
+    <div class="result-pct">%${fat}</div>
+    <div class="result-label">Vücut Yağ Oranı</div>
+    <div class="result-cat">${cat}</div>
+    ${weight ? `<div style="margin-top:8px;font-size:13px;opacity:0.88;">Yağ: ~${Math.round(fat/100*weight)} kg · Yağsız Kütle: ~${Math.round((1-fat/100)*weight)} kg</div>` : ''}
+  </div>`;
+  toast('✅ Ölçüm kaydedildi!');
+  renderMeasurements();
+}
+
+function renderMeasurements() {
+  loadProfile();
+  renderMeasSummaryCard();
+  renderFatChart();
+  renderMeasHistory();
+}
+
+function renderMeasSummaryCard() {
+  const card = document.getElementById('meas-summary-card');
+  if (!card) return;
+  const data = DB.measurements;
+  if (!data.length) { card.style.display = 'none'; return; }
+
+  const last = data[data.length - 1];
+  const prev = data.length > 1 ? data[data.length - 2] : null;
+
+  const fatDiff = prev && prev.fat ? (last.fat - prev.fat) : null;
+  const wDiff   = prev && prev.weight && last.weight ? (last.weight - prev.weight) : null;
+
+  const diffBadge = (diff, unit, reverse) => {
+    if (diff === null) return '';
+    const better = reverse ? diff < 0 : diff > 0;
+    const color = diff === 0 ? 'var(--text-secondary)' : better ? 'var(--green)' : '#ff3b30';
+    const sign = diff > 0 ? '+' : '';
+    return `<span style="font-size:12px;font-weight:600;color:${color};margin-left:6px;">${sign}${Math.round(diff*10)/10}${unit}</span>`;
+  };
+
+  card.style.display = 'block';
+  card.innerHTML = `<div class="card meas-summary-card">
+    <div class="meas-sum-date">${fmtDate(last.date)} · Son ölçüm</div>
+    <div class="meas-sum-row">
+      <div class="meas-sum-item">
+        <div class="meas-sum-val">%${last.fat}</div>
+        <div class="meas-sum-lbl">Yağ Oranı ${diffBadge(fatDiff, '%', false)}</div>
+      </div>
+      ${last.weight ? `<div class="meas-sum-divider"></div>
+      <div class="meas-sum-item">
+        <div class="meas-sum-val">${last.weight} kg</div>
+        <div class="meas-sum-lbl">Vücut Ağırlığı ${diffBadge(wDiff, ' kg', false)}</div>
+      </div>` : ''}
+    </div>
+    ${last.fat && last.weight ? `<div class="meas-sum-sub">
+      Yağ kütlesi: ~${Math.round(last.fat/100*last.weight)} kg &nbsp;·&nbsp; Yağsız kütle: ~${Math.round((1-last.fat/100)*last.weight)} kg
+    </div>` : ''}
+  </div>`;
+}
+
+let currentTrendKey = 'fat';
+function switchTrend(key, btn) {
+  currentTrendKey = key;
+  document.querySelectorAll('.trend-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFatChart();
+}
+
+const trendMeta = {
+  fat:    { label: 'Yağ Oranı', unit: '%', color: '#007AFF', suffix: v => '%' + v },
+  weight: { label: 'Ağırlık',   unit: 'kg', color: '#34c759', suffix: v => v + ' kg' },
+  armR:   { label: 'Kol',       unit: 'cm', color: '#ff9f0a', suffix: v => v + ' cm' },
+  chest:  { label: 'Göğüs',     unit: 'cm', color: '#ff3b30', suffix: v => v + ' cm' },
+  waist:  { label: 'Bel',       unit: 'cm', color: '#af52de', suffix: v => v + ' cm' },
+  thighR: { label: 'Uyluk',     unit: 'cm', color: '#5ac8fa', suffix: v => v + ' cm' },
+};
+
+function renderFatChart() {
+  const canvas = document.getElementById('fat-chart');
+  if (fatChart) { fatChart.destroy(); fatChart = null; }
+  const key = currentTrendKey;
+  const meta = trendMeta[key] || trendMeta.fat;
+  const data = DB.measurements.filter(m => m[key] != null);
+  if (data.length < 2) return;
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+  const textColor = '#8e8e93';
+  fatChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: data.map(m => fmtDateShort(m.date)),
+      datasets: [{
+        label: meta.label,
+        data: data.map(m => m[key]),
+        borderColor: meta.color,
+        backgroundColor: meta.color + '18',
+        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: meta.color,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: meta.suffix }, min: 0 }
+      }
+    }
+  });
+}
+
+function renderMeasHistory() {
+  const list = document.getElementById('meas-history-list');
+  const data = [...DB.measurements].reverse();
+  if (!data.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz ölçüm kaydedilmedi.</div>';
+    return;
+  }
+  list.innerHTML = data.map((m) => {
+    const d = new Date(m.date + 'T00:00:00');
+    const day = d.getDate();
+    const mo = d.toLocaleDateString('tr-TR', { month:'short' });
+    const extras = [
+      m.chest    ? `Göğüs ${m.chest} cm` : null,
+      m.shoulder ? `Omuz ${m.shoulder} cm` : null,
+      m.armR     ? `Kol ${m.armR} cm` : null,
+      m.thighR   ? `Uyluk ${m.thighR} cm` : null,
+      m.calfR    ? `Baldır ${m.calfR} cm` : null,
+    ].filter(Boolean).join(' · ');
+    return `<div class="meas-history-item" style="flex-direction:column;align-items:stretch;gap:6px;padding:14px 16px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="meas-date-badge"><span>${day}<br>${mo}</span></div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:600;">%${m.fat} yağ oranı</div>
+          <div style="font-size:12px;color:var(--text-secondary);">${m.weight ? m.weight + ' kg · ' : ''}${m.gender === 'male' ? 'Erkek' : 'Kadın'}</div>
+        </div>
+        <button class="delete-btn" onclick="deleteMeasurement('${m.date}')">✕</button>
+      </div>
+      ${extras ? `<div style="font-size:12px;color:var(--text-secondary);padding-left:2px;">${extras}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function deleteMeasurement(date) {
+  if (!confirm('Bu ölçümü silmek istiyor musunuz?')) return;
+  DB.measurements = DB.measurements.filter(m => m.date !== date);
+  saveData('measurements', DB.measurements);
+  renderMeasurements();
+  toast('Ölçüm silindi.');
+}
+
+// ═══════════════════════════════════════════════
+//  PR & 1RM
+// ═══════════════════════════════════════════════
+function epley(kg, reps) {
+  if (reps === 1) return kg;
+  return Math.round(kg * (1 + reps / 30) * 10) / 10;
+}
+
+function stepOrm(field, delta) {
+  const input = document.getElementById(`orm-${field}`);
+  const base = parseFloat(input.value) || 0;
+  if (field === 'kg') input.value = Math.max(0, Math.round((base + delta) * 10) / 10) || '';
+  else input.value = Math.max(1, Math.round(base + delta)) || '';
+}
+
+function calculateOrm() {
+  const kg = parseFloat(document.getElementById('orm-kg').value);
+  const reps = parseInt(document.getElementById('orm-reps').value);
+  if (!kg || !reps) { toast('Ağırlık ve tekrar girin.'); return; }
+  const orm = epley(kg, reps);
+  document.getElementById('orm-result').style.display = 'block';
+  document.getElementById('orm-result-val').textContent = orm + ' kg';
+  const pcts = [100,95,90,85,80,75,70];
+  document.getElementById('orm-result-grid').innerHTML = pcts.map(p => {
+    const w = Math.round(orm * p / 100 * 10) / 10;
+    const r = p === 100 ? 1 : p >= 95 ? 2 : p >= 90 ? 3 : p >= 85 ? 4 : p >= 80 ? 5 : p >= 75 ? 7 : 10;
+    return `<div class="orm-pct-row"><span class="orm-pct-label">%${p} · ~${r} tk</span><span class="orm-pct-val">${w} kg</span></div>`;
+  }).join('');
+}
+
+function filterPR(query) {
+  const q = query.trim().toLocaleLowerCase('tr');
+  document.querySelectorAll('#pr-list .pr-item').forEach(el => {
+    el.style.display = el.dataset.name.toLocaleLowerCase('tr').includes(q) ? '' : 'none';
+  });
+}
+
+function renderStats() {
+  renderPrList();
+  const search = document.getElementById('pr-search');
+  if (search) search.value = '';
+}
+
+function renderPrList() {
+  const list = document.getElementById('pr-list');
+  if (!DB.workoutLogs.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydı yok.</div>';
+    return;
+  }
+
+  // Her egzersiz için en iyi kg, en iyi 1RM, en iyi hacim bul
+  const prMap = {}; // exName -> { bestKg, best1RM, bestVol, bestKgDate, best1RMDate }
+  DB.workoutLogs.forEach(log => {
+    (log.sets || []).forEach(s => {
+      if (!s.exName || (!s.kg && !s.reps)) return;
+      const name = s.exName.trim();
+      if (!prMap[name]) prMap[name] = { bestKg: 0, bestKgReps: 0, best1RM: 0, bestVol: 0, bestKgDate: '', best1RMDate: '' };
+      const pr = prMap[name];
+      if (s.kg > pr.bestKg) { pr.bestKg = s.kg; pr.bestKgReps = s.reps || 0; pr.bestKgDate = log.date; }
+      const orm = epley(s.kg || 0, s.reps || 0);
+      if (orm > pr.best1RM) { pr.best1RM = orm; pr.best1RMDate = log.date; }
+      const vol = (s.kg || 0) * (s.reps || 0);
+      if (vol > pr.bestVol) pr.bestVol = vol;
+    });
+  });
+
+  const entries = Object.entries(prMap).sort((a,b) => a[0].localeCompare(b[0], 'tr'));
+  if (!entries.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Kayıtlı set bulunamadı.</div>';
+    return;
+  }
+
+  list.innerHTML = entries.map(([name, pr]) => `
+    <div class="pr-item" data-name="${escapeHtml(name)}">
+      <div class="pr-name">${escapeHtml(name)}</div>
+      <div class="pr-stats">
+        <div class="pr-stat"><span class="pr-stat-val">${pr.bestKg} kg</span><span class="pr-stat-sub">${pr.bestKgReps} tekrar</span><span class="pr-stat-lbl">Max ağırlık</span></div>
+        <div class="pr-stat"><span class="pr-stat-val">${pr.best1RM} kg</span><span class="pr-stat-sub">&nbsp;</span><span class="pr-stat-lbl">Tahmini 1RM</span></div>
+        <div class="pr-stat"><span class="pr-stat-val">${pr.bestVol} kg</span><span class="pr-stat-sub">&nbsp;</span><span class="pr-stat-lbl">Max hacim/set</span></div>
+      </div>
+      <div class="pr-date">Son güncelleme: ${fmtDate(pr.best1RMDate)}</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════
+function toggleLogHistory(btn) {
+  const list = document.getElementById('log-delete-list');
+  const chevron = document.getElementById('log-history-chevron');
+  const isOpen = list.style.display !== 'none';
+  list.style.display = isOpen ? 'none' : 'block';
+  chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
+  chevron.style.transition = 'transform 0.2s';
+  if (!isOpen) renderLogDeleteList();
+}
+
+function renderLogDeleteList() {
+  const el = document.getElementById('log-delete-list');
+  if (!el) return;
+  const logs = [...DB.workoutLogs].reverse();
+  if (!logs.length) {
+    el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-secondary);font-size:14px;">Kayıtlı antrenman yok.</div>';
+    return;
+  }
+  el.innerHTML = logs.map((log, i) => {
+    const day = getDayById(log.dayId);
+    const name = day ? day.name : log.dayId;
+    const dur = log.duration ? ` · ${Math.round(log.duration/60)} dk` : '';
+    const setCount = (log.sets || []).length;
+    return `<div class="suppl-setting-item">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:600;">${escapeHtml(name)}</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${fmtDate(log.date)}${dur} · ${setCount} set</div>
+      </div>
+      <button class="suppl-remove-btn" onclick="deleteWorkoutLog('${log.date}','${log.dayId}')" aria-label="Sil">−</button>
+    </div>`;
+  }).join('');
+}
+
+function deleteWorkoutLog(date, dayId) {
+  const idx = DB.workoutLogs.findIndex(l => l.date === date && l.dayId === dayId);
+  if (idx === -1) return;
+  const day = getDayById(dayId);
+  const name = day ? day.name : dayId;
+  if (!confirm(`"${name}" – ${fmtDate(date)} tarihli antrenman silinsin mi?`)) return;
+  DB.workoutLogs.splice(idx, 1);
+  saveData('workoutLogs', DB.workoutLogs);
+  renderLogDeleteList();
+  renderHome();
+  renderStats();
+  toast('Antrenman silindi.');
+}
+
+function renderSettings() {
+  const s = DB.settings;
+  // Theme
+  document.getElementById('theme-light-btn').classList.toggle('active', s.theme !== 'dark');
+  document.getElementById('theme-dark-btn').classList.toggle('active', s.theme === 'dark');
+  // Rest timer toggle
+  document.getElementById('rest-toggle').checked = !!s.restTimerEnabled;
+  // Duration buttons
+  document.querySelectorAll('.dur-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.dur) === s.restDuration);
+  });
+  // Day count
+  document.getElementById('day-count-label').textContent = DB.workoutDays.length + ' gün';
+  // Order label
+  const orderNames = DB.workoutOrder.map(id => { const d = getDayById(id); return d ? d.name : id; });
+  document.getElementById('order-label').textContent = orderNames.length ? orderNames.slice(0,2).join(' → ') + (orderNames.length > 2 ? ' → ...' : '') : '—';
+  // Backup reminder
+  const lastBackup = lsGet('lastBackup');
+  const backupLabel = document.getElementById('last-backup-label');
+  if (backupLabel) {
+    if (!lastBackup) {
+      backupLabel.textContent = 'Hiç yedek alınmadı';
+      backupLabel.style.color = 'var(--red)';
+    } else {
+      const daysSince = Math.floor((new Date(today()) - new Date(lastBackup)) / 86400000);
+      backupLabel.textContent = daysSince === 0 ? 'Bugün' : `${daysSince} gün önce`;
+      backupLabel.style.color = daysSince > 14 ? 'var(--orange)' : 'var(--text-secondary)';
+    }
+  }
+  renderSupplSettings();
+  renderLogDeleteList();
+}
+
+function setTheme(t) {
+  DB.settings.theme = t;
+  saveData('settings', DB.settings);
+  applyTheme();
+  renderSettings();
+  if (fatChart) renderFatChart();
+}
+function applyTheme() {
+  const isDark = DB.settings.theme === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+  document.getElementById('theme-color-meta').setAttribute('content', isDark ? '#1c1c1e' : '#ffffff');
+}
+function toggleRestTimer(val) {
+  DB.settings.restTimerEnabled = val;
+  saveData('settings', DB.settings);
+}
+function setRestDuration(dur) {
+  DB.settings.restDuration = dur;
+  saveData('settings', DB.settings);
+  renderSettings();
+}
+
+// ═══════════════════════════════════════════════
+//  DAY EDITOR
+// ═══════════════════════════════════════════════
+let editorDays = [];
+
+function openDayEditor() {
+  editorDays = JSON.parse(JSON.stringify(DB.workoutDays));
+  renderDayEditor();
+  document.getElementById('day-editor').classList.add('open');
+  history.pushState({ screen: 'dayEditor' }, '');
+}
+function closeDayEditor() {
+  document.getElementById('day-editor').classList.remove('open');
+}
+function renderDayEditor() {
+  // Datalist: tüm geçmiş ve mevcut egzersiz adları
+  const nameSet = new Set();
+  DB.workoutDays.forEach(d => d.exercises.forEach(e => e.name && nameSet.add(e.name)));
+  DB.workoutLogs.forEach(l => (l.sets||[]).forEach(s => s.exName && nameSet.add(s.exName)));
+  document.getElementById('ex-names-list').innerHTML = [...nameSet].sort((a,b) => a.localeCompare(b,'tr')).map(n => `<option value="${escapeHtml(n)}">`).join('');
+
+  const body = document.getElementById('day-editor-body');
+  body.innerHTML = editorDays.map((day, di) => `
+    <div class="day-item">
+      <div class="day-item-header">
+        <input class="day-item-name-input" value="${escapeHtml(day.name)}" onchange="editorDays[${di}].name=this.value" placeholder="Gün adı">
+        <button class="remove-day-btn" onclick="removeDay(${di})">−</button>
+        <button class="day-toggle-btn" onclick="toggleDayExercises(${di})" id="day-toggle-${di}">▾</button>
+      </div>
+      <div class="day-exercises open" id="day-exs-${di}">
+        ${day.exercises.map((ex, ei) => `
+          <div class="day-ex-row">
+            <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">
+              <button class="order-arrow-btn" style="width:24px;height:22px;font-size:12px;" onclick="moveEx(${di},${ei},-1)" ${ei === 0 ? 'disabled' : ''}>↑</button>
+              <button class="order-arrow-btn" style="width:24px;height:22px;font-size:12px;" onclick="moveEx(${di},${ei},1)" ${ei === day.exercises.length - 1 ? 'disabled' : ''}>↓</button>
+            </div>
+            <input class="day-ex-name-input" list="ex-names-list" value="${escapeHtml(ex.name)}" onchange="editorDays[${di}].exercises[${ei}].name=this.value" placeholder="Hareket adı">
+            <input class="day-ex-sets-input" type="number" value="${ex.sets}" min="1" max="10" onchange="editorDays[${di}].exercises[${ei}].sets=parseInt(this.value)||1" title="Set sayısı">
+            <button class="bi-toggle-btn${ex.bilateral ? ' active' : ''}" onclick="toggleBilateral(${di},${ei})" title="Sağ/Sol ayrı tekrar">S/L</button>
+            <button class="remove-ex-btn" onclick="removeEx(${di},${ei})">−</button>
+          </div>
+        `).join('')}
+        <button class="add-ex-btn" onclick="addEx(${di})">＋ Hareket Ekle</button>
+      </div>
+    </div>
+  `).join('') + `<button class="add-day-btn" onclick="addDay()">＋ Yeni Antrenman Günü</button>`;
+}
+function toggleBilateral(di, ei) {
+  const ex = editorDays[di].exercises[ei];
+  const newVal = !ex.bilateral;
+  const name = ex.name.trim().toLowerCase();
+  // Aynı isimli tüm egzersizlere uygula
+  editorDays.forEach(day => {
+    day.exercises.forEach(e => {
+      if (e.name.trim().toLowerCase() === name) e.bilateral = newVal;
+    });
+  });
+  renderDayEditor();
+}
+
+function toggleDayExercises(di) {
+  const el = document.getElementById(`day-exs-${di}`);
+  const btn = document.getElementById(`day-toggle-${di}`);
+  el.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+function removeDay(di) {
+  if (!confirm('Bu günü silmek istiyor musunuz?')) return;
+  editorDays.splice(di, 1);
+  renderDayEditor();
+}
+function removeEx(di, ei) {
+  editorDays[di].exercises.splice(ei, 1);
+  renderDayEditor();
+}
+function moveEx(di, ei, dir) {
+  const exs = editorDays[di].exercises;
+  const j = ei + dir;
+  if (j < 0 || j >= exs.length) return;
+  [exs[ei], exs[j]] = [exs[j], exs[ei]];
+  renderDayEditor();
+}
+
+function uid() { return crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2); }
+function addEx(di) {
+  editorDays[di].exercises.push({ id: uid(), name: '', sets: 3 });
+  renderDayEditor();
+}
+function addDay() {
+  editorDays.push({ id: uid(), name: 'Yeni Gün', exercises: [] });
+  renderDayEditor();
+}
+// ═══════════════════════════════════════════════
+//  ORDER EDITOR
+// ═══════════════════════════════════════════════
+let editorOrder = [];
+function openOrderEditor() {
+  editorOrder = [...DB.workoutOrder];
+  renderOrderEditor();
+  document.getElementById('order-editor').classList.add('open');
+  history.pushState({ screen: 'orderEditor' }, '');
+}
+function closeOrderEditor() {
+  document.getElementById('order-editor').classList.remove('open');
+}
+function renderOrderEditor() {
+  document.getElementById('order-editor-body').innerHTML = editorOrder.map((id, i) => {
+    const day = getDayById(id);
+    const name = escapeHtml(day ? day.name : id);
+    return `<div class="order-item">
+      <div class="order-item-num">${i + 1}</div>
+      <div class="order-item-name">${name}</div>
+      <button class="order-arrow-btn" onclick="moveOrder(${i},-1)" ${i === 0 ? 'disabled' : ''}>↑</button>
+      <button class="order-arrow-btn" onclick="moveOrder(${i},1)" ${i === editorOrder.length - 1 ? 'disabled' : ''}>↓</button>
+    </div>`;
+  }).join('');
+}
+function moveOrder(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= editorOrder.length) return;
+  [editorOrder[i], editorOrder[j]] = [editorOrder[j], editorOrder[i]];
+  renderOrderEditor();
+}
+function saveOrder() {
+  DB.workoutOrder = editorOrder;
+  saveData('workoutOrder', DB.workoutOrder);
+  closeOrderEditor();
+  toast('✅ Sıra kaydedildi!');
+  renderHome();
+  renderSettings();
+}
+
+// ═══════════════════════════════════════════════
+//  SUPPLEMENT / DAILY ROUTINE
+// ═══════════════════════════════════════════════
+const SUPPL_COLORS = ['#5ac8fa','#34c759','#ff9f0a','#af52de','#ff3b30','#007aff','#ff6b6b','#ffd93d'];
+
+function getDefaultSupplements() {
+  return [
+    { id: 'kreatin', name: 'Kreatin', color: '#5ac8fa' },
+    { id: 'protein', name: 'Protein', color: '#34c759' },
+  ];
+}
+
+function getSupplements() {
+  if (!DB.settings.supplements) DB.settings.supplements = getDefaultSupplements();
+  return DB.settings.supplements;
+}
+
+function getSupplHistory() {
+  const raw = lsGet('supplHistory');
+  return raw ? JSON.parse(raw) : {};
+}
+function saveSupplHistory(h) { lsSet('supplHistory', JSON.stringify(h)); }
+
+function getSuppl(date) {
+  const d = date || today();
+  const h = getSupplHistory();
+  // Migrate old format
+  if (!h[d] && !date) {
+    const old = lsGet('suppl');
+    if (old) {
+      const o = JSON.parse(old);
+      if (o.date === d) {
+        const items = {};
+        getSupplements().forEach(s => { items[s.id] = !!o[s.id]; });
+        return { items, water: o.water || 0 };
+      }
+    }
+  }
+  return h[d] || { items: {}, water: 0 };
+}
+function saveTodaySuppl(data) {
+  const h = getSupplHistory();
+  h[today()] = data;
+  saveSupplHistory(h);
+}
+
+function toggleSuppl(id) {
+  const data = getSuppl();
+  data.items = data.items || {};
+  data.items[id] = !data.items[id];
+  saveTodaySuppl(data);
+  renderSuppl();
+  renderSupplCalendar();
+}
+function addWater() {
+  const data = getSuppl();
+  data.water = (data.water || 0) + 1;
+  saveTodaySuppl(data);
+  renderSuppl();
+  renderSupplCalendar();
+}
+function removeWater(i) {
+  const data = getSuppl();
+  data.water = i;
+  saveTodaySuppl(data);
+  renderSuppl();
+  renderSupplCalendar();
+}
+
+function renderSuppl() {
+  const data = getSuppl();
+  const supps = getSupplements();
+  const list = document.getElementById('suppl-checklist');
+  if (list) {
+    list.innerHTML = supps.map(s => {
+      const done = !!(data.items && data.items[s.id]);
+      return `<div class="suppl-row" onclick="toggleSuppl('${s.id}')">
+        <div class="suppl-check ${done ? 'done' : ''}" style="${done ? `background:${s.color};border-color:${s.color};` : ''}"></div>
+        <span class="suppl-label ${done ? 'done' : ''}">${escapeHtml(s.name)}</span>
+        <span style="width:10px;height:10px;border-radius:50%;background:${s.color};display:inline-block;flex-shrink:0;"></span>
+      </div>`;
+    }).join('');
+  }
+  const drops = document.getElementById('water-drops');
+  if (!drops) return;
+  const filled = data.water || 0;
+  drops.innerHTML = Array.from({length: filled + 1}, (_, i) =>
+    `<button class="water-drop ${i < filled ? 'filled' : ''}" onclick="${i < filled ? `removeWater(${i})` : 'addWater()'}"></button>`
+  ).join('');
+  const totalEl = document.getElementById('water-total');
+  if (totalEl) totalEl.textContent = filled > 0 ? `${filled * 250} ml` : '';
+}
+
+let supplCalOffset = 0;
+function shiftSupplCal(d) { supplCalOffset += d; renderSupplCalendar(); }
+
+function renderSupplCalendar() {
+  const titleEl = document.getElementById('suppl-cal-title');
+  const dowsEl = document.getElementById('suppl-cal-dows');
+  const gridEl = document.getElementById('suppl-cal-grid');
+  const legendEl = document.getElementById('suppl-legend');
+  if (!gridEl) return;
+
+  const supps = getSupplements();
+  const history = getSupplHistory();
+  const now = new Date();
+  now.setMonth(now.getMonth() + supplCalOffset);
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  titleEl.textContent = new Date(year, month, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+  dowsEl.innerHTML = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'].map(d => `<div class="suppl-cal-dow">${d}</div>`).join('');
+
+  const firstDow = (new Date(year, month, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayStr = today();
+
+  let html = '';
+  for (let i = 0; i < firstDow; i++) html += `<div class="suppl-cal-day empty-day"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const entry = history[dateStr];
+    const taken = entry ? supps.filter(s => entry.items && entry.items[s.id]) : [];
+    const isToday = dateStr === todayStr ? ' today' : '';
+    let inner = '';
+    if (taken.length) {
+      const segs = taken.map(s => `<div class="suppl-cal-fill-seg" style="background:${s.color};"></div>`).join('');
+      inner = `<div class="suppl-cal-fill">${segs}</div>`;
+    }
+    html += `<div class="suppl-cal-day${isToday}">${inner}</div>`;
+  }
+  gridEl.innerHTML = html;
+
+  legendEl.innerHTML = supps.map(s =>
+    `<div class="suppl-legend-item"><div class="suppl-legend-dot" style="background:${s.color};"></div>${escapeHtml(s.name)}</div>`
+  ).join('');
+}
+
+function renderSupplSettings() {
+  const supps = getSupplements();
+  const el = document.getElementById('suppl-settings-list');
+  if (!el) return;
+  if (!supps.length) {
+    el.innerHTML = '<div style="padding:14px 16px;color:var(--text-secondary);font-size:14px;">Supplement eklenmedi.</div>';
+    return;
+  }
+  el.innerHTML = supps.map((s, i) => `
+    <div class="suppl-setting-item">
+      <div class="suppl-color-swatch" style="background:${s.color};width:12px;height:12px;border-radius:50%;flex-shrink:0;"></div>
+      <span class="suppl-setting-name">${escapeHtml(s.name)}</span>
+      <button class="suppl-remove-btn" onclick="removeSupplement('${s.id}')">−</button>
+    </div>`).join('');
+}
+
+function addSupplement() {
+  const input = document.getElementById('new-suppl-input');
+  const name = input.value.trim();
+  if (!name) { toast('Supplement adı girin.'); return; }
+  const supps = getSupplements();
+  if (supps.find(s => s.name.toLowerCase() === name.toLowerCase())) { toast('Bu supplement zaten var.'); return; }
+  const color = SUPPL_COLORS[supps.length % SUPPL_COLORS.length];
+  supps.push({ id: uid(), name, color });
+  DB.settings.supplements = supps;
+  saveData('settings', DB.settings);
+  input.value = '';
+  renderSupplSettings();
+  renderSuppl();
+  renderSupplCalendar();
+  toast('✅ Supplement eklendi.');
+}
+
+function removeSupplement(id) {
+  if (!confirm('Bu supplementi silmek istiyor musunuz?')) return;
+  DB.settings.supplements = getSupplements().filter(s => s.id !== id);
+  saveData('settings', DB.settings);
+  renderSupplSettings();
+  renderSuppl();
+  renderSupplCalendar();
+  toast('Supplement silindi.');
+}
+
+function saveDays() {
+  // Sync IDs for new exercises
+  editorDays.forEach(day => {
+    day.exercises.forEach(ex => {
+      if (!ex.id) ex.id = uid();
+    });
+  });
+  DB.workoutDays = editorDays;
+  saveData('workoutDays', DB.workoutDays);
+  // Update order: add new days, remove deleted
+  const ids = DB.workoutDays.map(d => d.id);
+  DB.workoutOrder = DB.workoutOrder.filter(id => ids.includes(id));
+  ids.forEach(id => { if (!DB.workoutOrder.includes(id)) DB.workoutOrder.push(id); });
+  saveData('workoutOrder', DB.workoutOrder);
+  closeDayEditor();
+  toast('✅ Günler kaydedildi!');
+  renderHome();
+  renderSettings();
+}
+
+// ═══════════════════════════════════════════════
+//  DATA EXPORT / IMPORT / RESET
+// ═══════════════════════════════════════════════
+function exportData() {
+  const data = {
+    workoutDays: DB.workoutDays,
+    workoutLogs: DB.workoutLogs,
+    measurements: DB.measurements,
+    settings: DB.settings,
+    workoutOrder: DB.workoutOrder,
+    supplHistory: getSupplHistory(),
+    exportDate: new Date().toISOString(),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `antrenman-yedek-${today()}.json`; a.click();
+  URL.revokeObjectURL(url);
+  lsSet('lastBackup', today());
+  renderSettings();
+  toast('📤 Veri dışa aktarıldı.');
+}
+
+function validateImport(data) {
+  if (!Array.isArray(data.workoutDays) || !Array.isArray(data.workoutLogs)) return 'workoutDays ve workoutLogs dizisi gerekli.';
+  for (const d of data.workoutDays) {
+    if (!d.id || !d.name || !Array.isArray(d.exercises)) return `Geçersiz gün: id/name/exercises eksik.`;
+    for (const ex of d.exercises) {
+      if (!ex.id || !ex.name || typeof ex.sets !== 'number') return `Geçersiz egzersiz: ${d.name} içinde.`;
+    }
+  }
+  for (const log of data.workoutLogs) {
+    if (!log.date || !log.dayId || !Array.isArray(log.sets)) return `Geçersiz antrenman logu: date/dayId/sets eksik.`;
+  }
+  return null;
+}
+
+function importData(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const err = validateImport(data);
+      if (err) { toast('❌ ' + err); return; }
+      if (!confirm('Mevcut tüm veriler bu yedekle değiştirilecek. Emin misiniz?')) return;
+      DB.workoutDays = data.workoutDays;
+      DB.workoutLogs = data.workoutLogs;
+      DB.measurements = data.measurements || [];
+      DB.settings = data.settings || DB.settings;
+      DB.workoutOrder = data.workoutOrder || data.workoutDays.map(d => d.id);
+      ['workoutDays','workoutLogs','measurements','settings','workoutOrder'].forEach(k => saveData(k, DB[k]));
+      if (data.supplHistory) saveSupplHistory(data.supplHistory);
+      applyTheme(); renderHome(); renderSettings();
+      toast('✅ Veri içe aktarıldı!');
+    } catch { toast('❌ Geçersiz dosya formatı.'); }
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
+}
+function resetData() {
+  if (!confirm('Tüm veriler silinecek! Bu işlem geri alınamaz. Emin misiniz?')) return;
+  if (!confirm('Son onay: Gerçekten tüm verileri silmek istiyor musunuz?')) return;
+  localStorage.clear();
+  DB = loadData();
+  DB.workoutOrder = DB.workoutDays.map(d => d.id);
+  saveData('workoutOrder', DB.workoutOrder);
+  renderHome(); renderSettings();
+  toast('🗑️ Tüm veriler sıfırlandı.');
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+applyTheme();
+setGender('male', true);
+renderHome();
+renderSettings();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+window.addEventListener('popstate', () => {
+  if (document.getElementById('progress-modal').classList.contains('open')) {
+    closeProgressModal();
+  } else if (document.getElementById('history-modal').classList.contains('open')) {
+    closeHistoryModal();
+  } else if (document.getElementById('order-editor').classList.contains('open')) {
+    closeOrderEditor();
+  } else if (document.getElementById('day-editor').classList.contains('open')) {
+    closeDayEditor();
+  } else if (document.getElementById('workout-screen').classList.contains('open')) {
+    hideWorkoutScreen();
+  }
+});
+</script>
+</body>
+</html>
