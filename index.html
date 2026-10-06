@@ -1192,11 +1192,20 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
     </div>
 
     <div class="section" style="margin-top:14px;">
-      <div class="section-label">Dinlenme Zamanlayıcısı</div>
+      <div class="section-label">Antrenman Ekranı</div>
       <div class="card settings-group">
         <div class="settings-row">
+          <div class="settings-icon" style="background:#ff9f0a20;color:#ff9f0a;"><i data-icon="sun"></i></div>
+          <span class="settings-label">Ekran açık kalsın</span>
+          <label class="ios-toggle">
+            <input type="checkbox" id="keep-awake-toggle" onchange="toggleKeepAwake(this.checked)">
+            <div class="ios-toggle-track"></div>
+            <div class="ios-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="settings-row">
           <div class="settings-icon" style="background:#34c75920;color:#34c759;"><i data-icon="timer"></i></div>
-          <span class="settings-label">Aktif</span>
+          <span class="settings-label">Dinlenme sayacı</span>
           <label class="ios-toggle">
             <input type="checkbox" id="rest-toggle" onchange="toggleRestTimer(this.checked)">
             <div class="ios-toggle-track"></div>
@@ -1436,6 +1445,7 @@ const ICONS = {
   'chevron-up': '<path d="m18 15-6-6-6 6"/>',
   'chevron-down': '<path d="m6 9 6 6 6-6"/>',
   'chevron-left': '<path d="m15 18-6-6 6-6"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>',
   sparkle: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>',
 };
 function icon(name, cls) {
@@ -2219,6 +2229,7 @@ function showWorkoutScreen() {
   hideActiveWorkoutBanner();
   startActiveTicker();
   updateProgress();
+  acquireWakeLock();
   active.screenOpen = true;
   saveActive();
   pushLayer('workout');
@@ -2229,6 +2240,7 @@ function reopenWorkoutScreen() { showWorkoutScreen(); }
 function hideWorkoutScreen() { closeLayer('workout'); }
 function hideWorkoutScreenUI() {
   document.body.classList.remove('ws-open');
+  releaseWakeLock();
   document.getElementById('workout-screen').classList.remove('open');
   document.body.style.overflow = '';
   if (active) {
@@ -2254,6 +2266,7 @@ function discardActive() {
   stopRest();
   hideActiveWorkoutBanner();
   document.body.classList.remove('ws-open');
+  releaseWakeLock();
   document.getElementById('workout-screen').classList.remove('open');
   document.body.style.overflow = '';
   document.getElementById('ws-body').innerHTML = '';
@@ -3384,6 +3397,7 @@ function renderSettings() {
   document.getElementById('theme-light-btn').classList.toggle('active', s.theme !== 'dark');
   document.getElementById('theme-dark-btn').classList.toggle('active', s.theme === 'dark');
   document.getElementById('rest-toggle').checked = !!s.restTimerEnabled;
+  document.getElementById('keep-awake-toggle').checked = s.keepAwake !== false;
   document.getElementById('rest-dur-label').textContent = fmtRest(s.restDuration || 90);
   document.getElementById('day-count-label').textContent = DB.workoutDays.length + ' gün';
   const orderNames = DB.workoutOrder.map(id => { const d = getDayById(id); return d ? d.name : id; });
@@ -3437,6 +3451,30 @@ function chartColor(fallback) {
   if (!isLime()) return fallback;
   return isDarkMode() ? '#C8F169' : '#7FAE1F';
 }
+// ── Ekran açık kalsın (Screen Wake Lock) ──
+// Antrenman ekranı açıkken telefonun kendiliğinden kilitlenmesini engeller.
+// Tarayıcı, uygulama arka plana geçince kilidi bırakır; dönünce yeniden alınır.
+let wakeLock = null;
+async function acquireWakeLock() {
+  if (DB.settings.keepAwake === false || !('wakeLock' in navigator)) return;
+  if (!active || !document.body.classList.contains('ws-open') || document.visibilityState !== 'visible') return;
+  if (wakeLock) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch(e) { wakeLock = null; }
+}
+function releaseWakeLock() {
+  const wl = wakeLock;
+  wakeLock = null;
+  if (wl) wl.release().catch(() => {});
+}
+function toggleKeepAwake(val) {
+  DB.settings.keepAwake = !!val;
+  saveData('settings', DB.settings);
+  if (val) acquireWakeLock(); else releaseWakeLock();
+}
+
 function toggleRestTimer(val) {
   DB.settings.restTimerEnabled = val;
   saveData('settings', DB.settings);
@@ -3997,6 +4035,7 @@ ensurePersistentStorage();
 // Uygulama arka plana alınırken son durumu kaydet
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') captureActive();
+  else acquireWakeLock();
 });
 window.addEventListener('pagehide', () => captureActive());
 
