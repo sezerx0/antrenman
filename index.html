@@ -782,6 +782,11 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .recent-dot span { font-size: 12px; letter-spacing: 0.3px; }
 .de-header h2 { font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; text-align: center; }
 .de-header .back-btn, .de-header .de-save-btn { flex-shrink: 0; }
+.app-footer { text-align: center; padding: 24px 20px; color: var(--text-tertiary); font-size: 12px; line-height: 1.6; }
+#storage-status { display: inline-flex; align-items: center; gap: 4px; }
+#storage-status .ic { width: 12px; height: 12px; }
+#storage-status.ok { color: var(--text-secondary); }
+#storage-status.warn { color: var(--orange); }
 </style>
 </head>
 <body>
@@ -1256,8 +1261,9 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
       </div>
     </div>
 
-    <div style="text-align:center;padding:24px 20px;color:var(--text-tertiary);font-size:12px;">
-      Antrenman Takip v1.0 · Tüm veriler cihazınızda saklanır
+    <div class="app-footer">
+      Antrenman Takip · Tüm veriler cihazında saklanır
+      <div id="storage-status"></div>
     </div>
   </div>
 
@@ -2694,6 +2700,7 @@ function saveSummary() {
     return;
   }
   pendingWorkoutData = null;
+  if (storagePersisted === false) ensurePersistentStorage();
   discardActive();
   document.getElementById('summary-overlay').classList.remove('open');
   closeAllLayers();
@@ -3785,6 +3792,34 @@ function removeSupplement(id) {
 // ═══════════════════════════════════════════════
 //  DATA EXPORT / IMPORT / RESET
 // ═══════════════════════════════════════════════
+// ── Kalıcı depolama ──
+// Tarayıcıdan, yer darlığında bu sitenin verisini silmemesini ister.
+// Ana ekrana eklenmiş uygulamalarda genelde hemen verilir; tarayıcıda
+// kullanım arttıkça verilebilir, bu yüzden antrenman kaydında tekrar denenir.
+let storagePersisted = null;
+async function ensurePersistentStorage() {
+  try {
+    if (!navigator.storage || !navigator.storage.persist) { storagePersisted = null; renderStorageStatus(); return; }
+    storagePersisted = await navigator.storage.persisted();
+    if (!storagePersisted) storagePersisted = await navigator.storage.persist();
+  } catch(e) { storagePersisted = null; }
+  renderStorageStatus();
+}
+function renderStorageStatus() {
+  const el = document.getElementById('storage-status');
+  if (!el) return;
+  if (storagePersisted === true) {
+    el.className = 'ok';
+    el.innerHTML = icon('check-circle') + 'Kalıcı depolama açık';
+  } else if (storagePersisted === false) {
+    el.className = 'warn';
+    el.innerHTML = icon('alert') + 'Tarayıcı kalıcı depolamaya izin vermedi, düzenli yedek al';
+  } else {
+    el.className = '';
+    el.textContent = '';
+  }
+}
+
 function markBackup() {
   lsSet('lastBackup', today());
   renderSettings();
@@ -3902,6 +3937,7 @@ loadProfile();
 renderHome();
 renderSettings();
 restoreActiveWorkout();
+ensurePersistentStorage();
 
 // Uygulama arka plana alınırken son durumu kaydet
 document.addEventListener('visibilitychange', () => {
