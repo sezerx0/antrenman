@@ -472,15 +472,13 @@ body {
 .suppl-row:last-child { border-bottom: none; cursor: default; }
 .suppl-check { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border-strong); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.2s, border-color 0.2s; }
 .suppl-check.done { background: var(--green); border-color: var(--green); }
-.suppl-check.done::after { content: '✓'; color: #fff; font-size: 13px; font-weight: 700; }
+.suppl-check.done::after { content: ''; width: 5px; height: 10px; border: solid #fff; border-width: 0 2.2px 2.2px 0; transform: rotate(45deg) translate(-1px, -1px); }
 .suppl-label { flex: 1; font-size: 14px; font-weight: 500; }
 .suppl-label.done { text-decoration: line-through; color: var(--text-secondary); }
 .water-row { display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .water-drops { display: flex; gap: 6px; flex-wrap: wrap; }
 .water-drop { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-tertiary); font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; flex-shrink: 0; }
 .water-drop.filled { background: #5ac8fa25; }
-.water-drop.filled::after { content: '💧'; }
-.water-drop:not(.filled)::after { content: '＋'; color: var(--text-tertiary); font-size: 14px; font-weight: 300; }
 .water-add-btn { display: none; }
 /* Supplement calendar */
 .suppl-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -547,7 +545,8 @@ body {
   background: rgba(0,0,0,0.8); color: #fff; padding: 10px 18px;
   border-radius: 20px; font-size: 14px; font-weight: 500;
   opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 999; white-space: nowrap;
-  max-width: 360px; text-align: center;
+  max-width: min(360px, calc(100% - 32px)); text-align: left;
+  display: flex; align-items: center; gap: 8px; white-space: normal; width: max-content; line-height: 1.3;
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -703,6 +702,55 @@ body {
 [data-palette="lime"][data-theme="dark"] #weekly-goal-card { box-shadow: inset 0 0 0 1px rgba(200,241,105,0.14); }
 [data-palette="lime"] .ws-progress { height: 4px; }
 [data-palette="lime"]:not([data-theme="dark"]) .ws-progress-fill { background: #8FBF3A; }
+
+/* ══════════ İKONLAR ══════════ */
+.ic { width: 1em; height: 1em; display: inline-block; vertical-align: -0.14em; flex-shrink: 0; }
+.tab-icon { font-size: 22px; display: flex; align-items: center; justify-content: center; height: 24px; }
+.tab-icon .ic { width: 23px; height: 23px; }
+.settings-icon { font-size: 16px; }
+.settings-icon .ic { width: 17px; height: 17px; }
+[data-palette="lime"] .settings-icon { background: var(--bg-secondary) !important; color: var(--text-primary) !important; }
+[data-palette="lime"] .settings-icon.danger { background: #ff3b3014 !important; color: var(--red) !important; }
+.awb-icon { display: flex; }
+.awb-icon .ic { width: 22px; height: 22px; }
+.awb-close .ic { width: 15px; height: 15px; }
+.rest-icon { display: flex; }
+.rest-icon .ic { width: 18px; height: 18px; opacity: 0.8; }
+.set-done-btn .ic { width: 16px; height: 16px; }
+.set-done-btn .ic path { stroke-width: 2.6; }
+.ex-chip { display: inline-flex; align-items: center; gap: 4px; }
+.ex-chip .ic { width: 13px; height: 13px; }
+.ex-prev-note .ic, .hm-note .ic { width: 12px; height: 12px; margin-right: 3px; }
+.water-drop { color: var(--text-tertiary); }
+.water-drop .ic { width: 16px; height: 16px; }
+.water-drop.filled { color: #32ade6; }
+.water-drop.filled .ic path { fill: currentColor; fill-opacity: 0.25; }
+.sum-icon { width: 52px; height: 52px; border-radius: 50%; background: var(--done); color: var(--on-done); display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+.sum-icon .ic { width: 28px; height: 28px; }
+.sum-icon .ic path { stroke-width: 2.6; }
+.sum-pr-banner { display: flex; align-items: center; gap: 8px; }
+.sum-pr-banner .ic { width: 18px; height: 18px; flex-shrink: 0; }
+.btn-with-icon { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-with-icon .ic { width: 17px; height: 17px; }
+.back-ic { width: 18px !important; height: 18px !important; }
+.delete-btn { display: flex; align-items: center; justify-content: center; }
+.delete-btn .ic { width: 16px; height: 16px; }
+.order-arrow-btn .ic { width: 16px; height: 16px; }
+.day-toggle-btn { display: flex; align-items: center; }
+.day-toggle-btn .ic { width: 20px; height: 20px; }
+.add-ex-btn .ic, .add-day-btn .ic { width: 17px; height: 17px; }
+.remove-ex-btn, .remove-day-btn { display: flex; align-items: center; }
+.remove-ex-btn .ic, .remove-day-btn .ic { width: 18px; height: 18px; }
+.ws-title .ic { width: 15px; height: 15px; margin-right: 4px; vertical-align: -0.1em; }
+.awb-name .ic { width: 13px; height: 13px; margin-right: 3px; }
+#toast .toast-ic { width: 17px; height: 17px; }
+#toast .toast-ic.ok { color: #7fe08f; }
+#toast .toast-ic.err { color: #ff8a80; }
+#toast .toast-ic.warn { color: #ffd166; }
+#toast .toast-ic.pr { color: #ffc94d; }
+[data-palette="lime"] #toast { background: rgba(28,36,32,0.94); }
+[data-palette="lime"] #toast .toast-ic.ok { color: var(--lime); }
+.hero-title .ic { width: 22px; height: 22px; margin-left: 6px; color: var(--lime); vertical-align: -0.12em; }
 </style>
 </head>
 <body>
@@ -710,19 +758,19 @@ body {
 
   <!-- Active Workout Banner -->
   <div id="active-workout-banner">
-    <span class="awb-icon">💪</span>
+    <span class="awb-icon"><i data-icon="dumbbell"></i></span>
     <div class="awb-left" onclick="reopenWorkoutScreen()" style="cursor:pointer;">
       <span class="awb-name" id="awb-name">Antrenman</span>
       <span class="awb-elapsed" id="awb-elapsed">00:00</span>
     </div>
     <span class="awb-cta" onclick="reopenWorkoutScreen()" style="cursor:pointer;">Devam Et</span>
-    <button class="awb-close" onclick="confirmCloseWorkout()">✕</button>
+    <button class="awb-close" onclick="confirmCloseWorkout()" aria-label="Antrenmanı iptal et"><i data-icon="x"></i></button>
   </div>
 
   <!-- Dynamic Island Rest Timer -->
   <div id="rest-banner">
     <div class="rest-banner-inner">
-      <div class="rest-icon">⏱</div>
+      <div class="rest-icon"><i data-icon="timer"></i></div>
       <div>
         <div class="rest-time-display" id="rest-display">01:30</div>
         <div class="rest-label-text" id="rest-exercise-label">Dinlenme</div>
@@ -1073,7 +1121,7 @@ body {
       <div class="section-label">Görünüm</div>
       <div class="card settings-group">
         <div class="settings-row">
-          <div class="settings-icon" style="background:#c8f16940;">🎨</div>
+          <div class="settings-icon" style="background:#c8f16940;color:#7FAE1F;"><i data-icon="palette"></i></div>
           <span class="settings-label">Renk</span>
           <div class="segment-control">
             <button class="seg-btn" id="palette-classic-btn" onclick="setPalette('classic')">Klasik</button>
@@ -1081,7 +1129,7 @@ body {
           </div>
         </div>
         <div class="settings-row">
-          <div class="settings-icon" style="background:#ff9f0a20;">🌙</div>
+          <div class="settings-icon" style="background:#ff9f0a20;color:#ff9f0a;"><i data-icon="moon"></i></div>
           <span class="settings-label">Mod</span>
           <div class="segment-control">
             <button class="seg-btn" id="theme-light-btn" onclick="setTheme('light')">Açık</button>
@@ -1095,7 +1143,7 @@ body {
       <div class="section-label">Dinlenme Zamanlayıcısı</div>
       <div class="card settings-group">
         <div class="settings-row">
-          <div class="settings-icon" style="background:#34c75920;">⏱️</div>
+          <div class="settings-icon" style="background:#34c75920;color:#34c759;"><i data-icon="timer"></i></div>
           <span class="settings-label">Aktif</span>
           <label class="ios-toggle">
             <input type="checkbox" id="rest-toggle" onchange="toggleRestTimer(this.checked)">
@@ -1104,7 +1152,7 @@ body {
           </label>
         </div>
         <div class="settings-row" id="rest-dur-row">
-          <div class="settings-icon" style="background:#007aff20;">🕐</div>
+          <div class="settings-icon" style="background:#007aff20;color:#007aff;"><i data-icon="clock"></i></div>
           <span class="settings-label">Süre</span>
           <div class="dur-selector">
             <button class="dur-btn" onclick="setRestDuration(90)" data-dur="90">1.30 dk</button>
@@ -1131,13 +1179,13 @@ body {
       <div class="section-label">Antrenman Günleri</div>
       <div class="card settings-group">
         <div class="settings-row" style="cursor:pointer;" onclick="openDayEditor()">
-          <div class="settings-icon" style="background:#5856d620;">📋</div>
+          <div class="settings-icon" style="background:#5856d620;color:#5856d6;"><i data-icon="list"></i></div>
           <span class="settings-label">Günleri Düzenle</span>
           <span class="settings-value" id="day-count-label">4 gün</span>
           <span class="settings-chevron">›</span>
         </div>
         <div class="settings-row" style="cursor:pointer;" onclick="openOrderEditor()">
-          <div class="settings-icon" style="background:#007aff20;">🔄</div>
+          <div class="settings-icon" style="background:#007aff20;color:#007aff;"><i data-icon="order"></i></div>
           <span class="settings-label">Antrenman Sırası</span>
           <span class="settings-value" id="order-label"></span>
           <span class="settings-chevron">›</span>
@@ -1148,7 +1196,7 @@ body {
     <div class="section" style="margin-top:14px;">
       <div class="card settings-group" style="overflow:hidden;">
         <button class="settings-row" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;color:inherit;" onclick="toggleLogHistory()">
-          <div class="settings-icon" style="background:#ff3b3020;">🗂️</div>
+          <div class="settings-icon" style="background:#ff3b3020;color:#ff3b30;"><i data-icon="history"></i></div>
           <span class="settings-label">Antrenman Geçmişi</span>
           <span class="settings-chevron" id="log-history-chevron">›</span>
         </button>
@@ -1160,19 +1208,19 @@ body {
       <div class="section-label">Veri</div>
       <div class="card settings-group">
         <button class="data-btn" onclick="exportData()">
-          <div class="settings-icon" style="background:#34c75920;">📤</div>
+          <div class="settings-icon" style="background:#34c75920;color:#34c759;"><i data-icon="upload"></i></div>
           <span>Veriyi Dışa Aktar (JSON)</span>
           <span id="last-backup-label" style="font-size:11px;color:var(--text-secondary);margin-left:auto;"></span>
         </button>
         <div style="height:0.5px;background:var(--border);"></div>
         <label class="data-btn" style="cursor:pointer;">
-          <div class="settings-icon" style="background:#007aff20;">📥</div>
+          <div class="settings-icon" style="background:#007aff20;color:#007aff;"><i data-icon="download"></i></div>
           <span>Veriyi İçe Aktar (JSON)</span>
           <input type="file" accept=".json" onchange="importData(event)" style="display:none;">
         </label>
         <div style="height:0.5px;background:var(--border);"></div>
         <button class="data-btn danger" onclick="resetData()">
-          <div class="settings-icon" style="background:#ff3b3020;">🗑️</div>
+          <div class="settings-icon danger" style="background:#ff3b3020;color:#ff3b30;"><i data-icon="trash"></i></div>
           <span>Tüm Verileri Sıfırla</span>
         </button>
       </div>
@@ -1186,23 +1234,23 @@ body {
   <!-- Tab Bar -->
   <div class="tab-bar" role="tablist">
     <button class="tab-item active" id="tab-btn-workout" onclick="switchTab('workout')" role="tab" aria-selected="true" aria-label="Antrenman">
-      <span class="tab-icon" aria-hidden="true">💪</span>
+      <span class="tab-icon" aria-hidden="true"><i data-icon="dumbbell"></i></span>
       <span>Antrenman</span>
     </button>
     <button class="tab-item" id="tab-btn-routine" onclick="switchTab('routine')" role="tab" aria-selected="false" aria-label="Rutin">
-      <span class="tab-icon" aria-hidden="true">💊</span>
+      <span class="tab-icon" aria-hidden="true"><i data-icon="pill"></i></span>
       <span>Rutin</span>
     </button>
     <button class="tab-item" id="tab-btn-meas" onclick="switchTab('meas')" role="tab" aria-selected="false" aria-label="Ölçümler">
-      <span class="tab-icon" aria-hidden="true">📊</span>
+      <span class="tab-icon" aria-hidden="true"><i data-icon="ruler"></i></span>
       <span>Ölçümler</span>
     </button>
     <button class="tab-item" id="tab-btn-stats" onclick="switchTab('stats')" role="tab" aria-selected="false" aria-label="PR ve 1RM">
-      <span class="tab-icon" aria-hidden="true">🏆</span>
+      <span class="tab-icon" aria-hidden="true"><i data-icon="trophy"></i></span>
       <span>PR</span>
     </button>
     <button class="tab-item" id="tab-btn-settings" onclick="switchTab('settings')" role="tab" aria-selected="false" aria-label="Ayarlar">
-      <span class="tab-icon" aria-hidden="true">⚙️</span>
+      <span class="tab-icon" aria-hidden="true"><i data-icon="sliders"></i></span>
       <span>Ayarlar</span>
     </button>
   </div>
@@ -1234,7 +1282,7 @@ body {
 <!-- Summary Overlay -->
 <div id="summary-overlay" onclick="closeSummary()">
   <div class="summary-sheet" onclick="event.stopPropagation()">
-    <div class="sum-emoji">🎉</div>
+    <div class="sum-icon"><i data-icon="check"></i></div>
     <h3>Antrenman Tamamlandı!</h3>
     <p class="sub" id="sum-sub">Harika iş!</p>
     <div class="summary-stats">
@@ -1258,7 +1306,7 @@ body {
     <h3 id="hm-day-name">Antrenman</h3>
     <p class="sub" id="hm-meta"></p>
     <div id="hm-body" style="margin-top:12px;overflow-y:auto;max-height:52vh;padding-right:4px;"></div>
-    <button class="btn-primary" onclick="editHistoryLog()">✏️ Düzenle</button>
+    <button class="btn-primary btn-with-icon" onclick="editHistoryLog()"><i data-icon="pencil"></i> Düzenle</button>
     <button class="btn-secondary danger-text" onclick="deleteHistoryLog()">Sil</button>
   </div>
 </div>
@@ -1280,7 +1328,7 @@ body {
 <!-- Day Editor -->
 <div id="day-editor">
   <div class="de-header">
-    <button class="back-btn" onclick="closeDayEditor()">‹ Geri</button>
+    <button class="back-btn" onclick="closeDayEditor()"><i data-icon="chevron-left" class="back-ic"></i>Geri</button>
     <h2>Antrenman Günleri</h2>
     <button class="de-save-btn" onclick="saveDays()">Kaydet</button>
   </div>
@@ -1293,7 +1341,7 @@ body {
 <!-- Order Editor -->
 <div id="order-editor">
   <div class="de-header">
-    <button class="back-btn" onclick="closeOrderEditor()">‹ Geri</button>
+    <button class="back-btn" onclick="closeOrderEditor()"><i data-icon="chevron-left" class="back-ic"></i>Geri</button>
     <h2>Antrenman Sırası</h2>
     <button class="de-save-btn" onclick="saveOrder()">Kaydet</button>
   </div>
@@ -1305,6 +1353,53 @@ body {
 <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
+// ═══════════════════════════════════════════════
+//  İKONLAR (24×24 çizgi ikonlar, renk currentColor)
+// ═══════════════════════════════════════════════
+const ICONS = {
+  dumbbell: '<path d="M7.5 12h9"/><rect x="4" y="7" width="3.5" height="10" rx="1.2"/><rect x="16.5" y="7" width="3.5" height="10" rx="1.2"/><path d="M2 10v4M22 10v4"/>',
+  pill: '<rect x="2.5" y="8" width="19" height="8" rx="4" transform="rotate(-45 12 12)"/><path d="m8.5 8.5 7 7"/>',
+  ruler: '<rect x="2" y="7" width="20" height="10" rx="2.5"/><path d="M6.5 7v3M10.5 7v4.5M14.5 7v3M18.5 7v4.5"/>',
+  trophy: '<path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a3 3 0 0 0 2.6 4M17 6h2.5a3 3 0 0 1-2.6 4"/>',
+  sliders: '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  minus: '<path d="M5 12h14"/>',
+  'minus-circle': '<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/>',
+  droplet: '<path d="M12 2.8c3.4 3.7 6 7 6 10.2a6 6 0 0 1-12 0c0-3.2 2.6-6.5 6-10.2z"/>',
+  pencil: '<path d="M13 20h8"/><path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7.5 18.5 3 20l1.5-4.5z"/>',
+  note: '<path d="M14.5 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5z"/><path d="M14.5 3v5.5H20M8 13h8M8 17h5"/>',
+  timer: '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.2 1.6M10 2.5h4M18.5 6.5l1.3-1.3"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/>',
+  palette: '<path d="M12 3a9 9 0 0 0 0 18c1.4 0 2-1 2-2 0-.6-.3-1-.6-1.4-.3-.4-.6-.8-.6-1.4 0-1 .8-1.7 1.8-1.7H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.1" fill="currentColor"/><circle cx="10" cy="7" r="1.1" fill="currentColor"/><circle cx="15" cy="7.5" r="1.1" fill="currentColor"/>',
+  moon: '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5z"/>',
+  list: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.1" fill="currentColor"/><circle cx="4.5" cy="12" r="1.1" fill="currentColor"/><circle cx="4.5" cy="18" r="1.1" fill="currentColor"/>',
+  order: '<path d="M8 20V4M4 8l4-4 4 4M16 4v16M12 16l4 4 4-4"/>',
+  history: '<path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5"/><path d="M3.5 3.5v5h5M12 7.5V12l3 2"/>',
+  upload: '<path d="M12 15V3.5M7 8.5l5-5 5 5"/><path d="M4 15v3.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V15"/>',
+  download: '<path d="M12 3.5V15M7 10l5 5 5-5"/><path d="M4 15v3.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V15"/>',
+  trash: '<path d="M3.5 6h17M9 6V4h6v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14M10 11v6M14 11v6"/>',
+  alert: '<path d="M12 3.5 2.5 20h19z"/><path d="M12 10v4.5M12 17.5h.01"/>',
+  'check-circle': '<circle cx="12" cy="12" r="9"/><path d="m8 12.2 2.8 2.8L16 9.5"/>',
+  'x-circle': '<circle cx="12" cy="12" r="9"/><path d="m15 9-6 6M9 9l6 6"/>',
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  'chevron-up': '<path d="m18 15-6-6-6 6"/>',
+  'chevron-down': '<path d="m6 9 6 6 6-6"/>',
+  'chevron-left': '<path d="m15 18-6-6 6-6"/>',
+  sparkle: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>',
+};
+function icon(name, cls) {
+  return `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+}
+function hydrateIcons(root) {
+  (root || document).querySelectorAll('i[data-icon]').forEach(el => { el.outerHTML = icon(el.dataset.icon, el.className); });
+}
+const TOAST_ICONS = [
+  ['✅', 'check-circle', 'ok'], ['❌', 'x-circle', 'err'], ['⚠️', 'alert', 'warn'], ['🏆', 'trophy', 'pr'],
+  ['📤', 'upload', ''], ['🗑️', 'trash', ''], ['↩️', 'undo', ''], ['📝', 'note', ''], ['⏱', 'timer', ''],
+];
+
 // ═══════════════════════════════════════════════
 //  DATA LAYER
 // ═══════════════════════════════════════════════
@@ -1593,7 +1688,12 @@ let toastTimer = null;
 function toast(msg, dur = 2200) {
   const el = document.getElementById('toast');
   if (!el) return;
-  el.textContent = msg;
+  msg = String(msg);
+  let ic = '';
+  for (const [emo, name, kind] of TOAST_ICONS) {
+    if (msg.startsWith(emo)) { ic = icon(name, 'toast-ic ' + kind); msg = msg.slice(emo.length).trim(); break; }
+  }
+  el.innerHTML = ic + `<span>${escapeHtml(msg)}</span>`;
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), dur);
@@ -1856,7 +1956,7 @@ function openHistoryModal(idx) {
     return `<div class="hm-ex-block">
       <div class="hm-ex-name">${escapeHtml(exName)}</div>
       ${rows}
-      ${note ? `<div class="ex-note-prev">📝 ${escapeHtml(note)}</div>` : ''}
+      ${note ? `<div class="ex-note-prev hm-note">${icon('note')}${escapeHtml(note)}</div>` : ''}
     </div>`;
   }).join('') : '<div style="padding:12px 0;color:var(--text-secondary);font-size:14px;text-align:center;">Bu antrenmanda set kaydı yok.</div>';
 
@@ -1913,11 +2013,11 @@ function renderWeeklyGoal() {
   document.getElementById('hero-goal-num').textContent = `Hedef ${goal}`;
   const left = goal - doneThisWeek;
   let title, sub;
-  if (doneThisWeek >= goal) { title = 'Hedef tamam! 🎉'; sub = `Bu hafta ${doneThisWeek} antrenman yaptın.`; }
+  if (doneThisWeek >= goal) { title = 'Hedef tamam!'; sub = `Bu hafta ${doneThisWeek} antrenman yaptın.`; }
   else if (doneThisWeek === 0) { title = 'Yeni hafta, temiz sayfa'; sub = `Bu haftaki hedefin ${goal} antrenman.`; }
   else if (left === 1) { title = 'Son bir antrenman!'; sub = 'Hedefe sadece 1 antrenman kaldı.'; }
   else { title = 'İyi gidiyorsun'; sub = `Hedefe ${left} antrenman kaldı.`; }
-  document.getElementById('hero-title').textContent = title;
+  document.getElementById('hero-title').innerHTML = escapeHtml(title) + (doneThisWeek >= goal ? icon('sparkle') : '');
   document.getElementById('hero-sub').textContent = sub;
   const weekSet = new Set(weekDays.map(d => d.str));
   const weekVol = DB.workoutLogs.filter(l => weekSet.has(l.date)).reduce((a, l) => a + logVolume(l), 0);
@@ -1962,7 +2062,7 @@ function startActiveTicker() {
   const tick = () => {
     if (!active) return;
     const t = active.mode === 'edit'
-      ? '✏️ ' + fmtDateShort(active.editDate)
+      ? 'Düzenleme · ' + fmtDateShort(active.editDate)
       : fmtDuration((Date.now() - active.startTime) / 1000);
     document.getElementById('ws-elapsed').textContent = t;
     document.getElementById('awb-elapsed').textContent = t;
@@ -2002,7 +2102,7 @@ function openWorkoutScreen(dayId) {
 function showWorkoutScreen() {
   if (!active) return;
   const isEdit = active.mode === 'edit';
-  document.getElementById('ws-day-name').textContent = (isEdit ? '✏️ ' : '') + active.day.name;
+  document.getElementById('ws-day-name').innerHTML = (isEdit ? icon('pencil') : '') + escapeHtml(active.day.name);
   document.getElementById('ws-done-btn').textContent = isEdit ? 'Kaydet' : 'Bitir';
   document.getElementById('workout-screen').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -2049,7 +2149,7 @@ function discardActive() {
 
 function showActiveWorkoutBanner() {
   if (!active) return;
-  document.getElementById('awb-name').textContent = (active.mode === 'edit' ? '✏️ ' : '') + active.day.name;
+  document.getElementById('awb-name').innerHTML = (active.mode === 'edit' ? icon('pencil') : '') + escapeHtml(active.day.name);
   document.getElementById('active-workout-banner').classList.add('visible');
   startActiveTicker();
 }
@@ -2110,7 +2210,7 @@ function buildSetRow(ei, s, ex, ps) {
       <button class="stepper-btn" onclick="stepKg(${ei},${s},2.5)" type="button">+</button>
     </div>
     ${repsHtml}
-    <button class="set-done-btn" onclick="completeSet(${ei},${s})" id="set-done-${id}">✓</button>
+    <button class="set-done-btn" onclick="completeSet(${ei},${s})" id="set-done-${id}" aria-label="Seti tamamla">${icon('check')}</button>
   </div>`;
 }
 
@@ -2143,10 +2243,10 @@ function renderExerciseCards() {
       prevHint = `<div class="ex-prev-hint">Son: ${fmtDateShort(entry.log.date)}${dayLabel} — <b>${escapeHtml(entry.sets.map(fmtSetShort).join(', '))}</b></div>`;
     }
     const noteVal = entry ? noteForExName(entry.log, ex.name) : '';
-    const prevNote = noteVal ? `<div class="ex-prev-note">📝 ${escapeHtml(noteVal)}</div>` : '';
+    const prevNote = noteVal ? `<div class="ex-prev-note">${icon('note')}${escapeHtml(noteVal)}</div>` : '';
     const rest = restFor(ex.name);
     const restChip = restOn
-      ? `<button class="ex-chip${restMap[normName(ex.name)] ? ' custom' : ''}" id="rest-chip-${ei}" onclick="cycleRest(${ei})" aria-label="Dinlenme süresi">⏱ ${fmtRest(rest)}</button>`
+      ? `<button class="ex-chip${restMap[normName(ex.name)] ? ' custom' : ''}" id="rest-chip-${ei}" onclick="cycleRest(${ei})" aria-label="Dinlenme süresi">${icon('timer')}${fmtRest(rest)}</button>`
       : '';
 
     let setRows = '';
@@ -2158,7 +2258,7 @@ function renderExerciseCards() {
           <span class="ex-name">${escapeHtml(ex.name)}</span>
           <div class="ex-actions">
             ${restChip}
-            <button class="ex-chip" id="note-chip-${ei}" onclick="toggleNote(${ei})" aria-label="Not">📝</button>
+            <button class="ex-chip" id="note-chip-${ei}" onclick="toggleNote(${ei})" aria-label="Not">${icon('note')}</button>
             <button class="ex-graph-btn" data-ex-name="${escapeHtml(ex.name)}" onclick="openProgressModal(this.dataset.exName)">Grafik</button>
           </div>
         </div>
@@ -2215,7 +2315,7 @@ function cycleRest(ei) {
     if (normName(e.name) !== normName(ex.name)) return;
     const chip = document.getElementById(`rest-chip-${i}`);
     if (!chip) return;
-    chip.textContent = '⏱ ' + fmtRest(next);
+    chip.innerHTML = icon('timer') + fmtRest(next);
     chip.classList.toggle('custom', !!DB.settings.restByEx[normName(ex.name)]);
   });
   toast(`⏱ ${ex.name}: ${fmtRest(next)} dinlenme`, 1500);
@@ -2510,7 +2610,7 @@ function finishWorkout() {
   const prSection = document.getElementById('sum-pr-section');
   if (prList.length) {
     prSection.style.display = 'block';
-    document.getElementById('sum-pr-banner').textContent = '🏆 ' + prList.join(', ') + ' — Yeni kişisel rekor!';
+    document.getElementById('sum-pr-banner').innerHTML = icon('trophy') + `<span>${escapeHtml(prList.join(', '))} — Yeni kişisel rekor!</span>`;
   } else {
     prSection.style.display = 'none';
   }
@@ -2999,7 +3099,7 @@ function renderMeasHistory() {
           <div style="font-size:14px;font-weight:600;">${m.fat != null ? `%${escapeHtml(m.fat)} yağ oranı` : m.weight ? `${escapeHtml(m.weight)} kg` : 'Ölçüm'}</div>
           <div style="font-size:12px;color:var(--text-secondary);">${m.fat != null ? (m.weight ? escapeHtml(m.weight) + ' kg · ' : '') + (m.gender === 'female' ? 'Kadın' : 'Erkek') : (m.weight ? 'Tartı' : '')}</div>
         </div>
-        <button class="delete-btn" onclick="deleteMeasurement(${idx})">✕</button>
+        <button class="delete-btn" onclick="deleteMeasurement(${idx})" aria-label="Ölçümü sil">${icon('x')}</button>
       </div>
       ${extras ? `<div style="font-size:12px;color:var(--text-secondary);padding-left:2px;">${escapeHtml(extras)}</div>` : ''}
     </div>`;
@@ -3242,26 +3342,26 @@ function renderDayEditor() {
     <div class="day-item">
       <div class="day-item-header">
         <input class="day-item-name-input" value="${escapeHtml(day.name)}" oninput="editorDays[${di}].name=this.value" placeholder="Gün adı">
-        <button class="remove-day-btn" onclick="removeDay(${di})">−</button>
-        <button class="day-toggle-btn" onclick="toggleDayExercises(${di})" id="day-toggle-${di}">▾</button>
+        <button class="remove-day-btn" onclick="removeDay(${di})" aria-label="Günü sil">${icon('minus-circle')}</button>
+        <button class="day-toggle-btn" onclick="toggleDayExercises(${di})" id="day-toggle-${di}" aria-label="Aç/kapat">${icon('chevron-down')}</button>
       </div>
       <div class="day-exercises open" id="day-exs-${di}">
         ${day.exercises.map((ex, ei) => `
           <div class="day-ex-row">
             <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">
-              <button class="order-arrow-btn" style="width:24px;height:22px;font-size:12px;" onclick="moveEx(${di},${ei},-1)" ${ei === 0 ? 'disabled' : ''}>↑</button>
-              <button class="order-arrow-btn" style="width:24px;height:22px;font-size:12px;" onclick="moveEx(${di},${ei},1)" ${ei === day.exercises.length - 1 ? 'disabled' : ''}>↓</button>
+              <button class="order-arrow-btn" style="width:24px;height:22px;font-size:12px;" onclick="moveEx(${di},${ei},-1)" ${ei === 0 ? 'disabled' : ''} aria-label="Yukarı">${icon('chevron-up')}</button>
+              <button class="order-arrow-btn" style="width:24px;height:22px;font-size:12px;" onclick="moveEx(${di},${ei},1)" ${ei === day.exercises.length - 1 ? 'disabled' : ''} aria-label="Aşağı">${icon('chevron-down')}</button>
             </div>
             <input class="day-ex-name-input" list="ex-names-list" value="${escapeHtml(ex.name)}" oninput="editorDays[${di}].exercises[${ei}].name=this.value" placeholder="Hareket adı">
             <input class="day-ex-sets-input" type="number" value="${ex.sets}" min="1" max="10" oninput="editorDays[${di}].exercises[${ei}].sets=Math.min(10,Math.max(1,parseInt(this.value)||1))" title="Set sayısı">
             <button class="bi-toggle-btn${ex.bilateral ? ' active' : ''}" onclick="toggleBilateral(${di},${ei})" title="Sağ/Sol ayrı tekrar">S/L</button>
-            <button class="remove-ex-btn" onclick="removeEx(${di},${ei})">−</button>
+            <button class="remove-ex-btn" onclick="removeEx(${di},${ei})" aria-label="Hareketi sil">${icon('minus-circle')}</button>
           </div>
         `).join('')}
-        <button class="add-ex-btn" onclick="addEx(${di})">＋ Hareket Ekle</button>
+        <button class="add-ex-btn" onclick="addEx(${di})">${icon('plus')}Hareket Ekle</button>
       </div>
     </div>
-  `).join('') + `<button class="add-day-btn" onclick="addDay()">＋ Yeni Antrenman Günü</button>`;
+  `).join('') + `<button class="add-day-btn" onclick="addDay()">${icon('plus')}Yeni Antrenman Günü</button>`;
 }
 function toggleBilateral(di, ei) {
   const ex = editorDays[di].exercises[ei];
@@ -3387,8 +3487,8 @@ function renderOrderEditor() {
     return `<div class="order-item">
       <div class="order-item-num">${i + 1}</div>
       <div class="order-item-name">${escapeHtml(day ? day.name : id)}</div>
-      <button class="order-arrow-btn" onclick="moveOrder(${i},-1)" ${i === 0 ? 'disabled' : ''}>↑</button>
-      <button class="order-arrow-btn" onclick="moveOrder(${i},1)" ${i === editorOrder.length - 1 ? 'disabled' : ''}>↓</button>
+      <button class="order-arrow-btn" onclick="moveOrder(${i},-1)" ${i === 0 ? 'disabled' : ''} aria-label="Yukarı">${icon('chevron-up')}</button>
+      <button class="order-arrow-btn" onclick="moveOrder(${i},1)" ${i === editorOrder.length - 1 ? 'disabled' : ''} aria-label="Aşağı">${icon('chevron-down')}</button>
     </div>`;
   }).join('');
 }
@@ -3492,7 +3592,7 @@ function renderSuppl() {
   if (!drops) return;
   const filled = Math.max(0, parseInt(data.water) || 0);
   drops.innerHTML = Array.from({length: filled + 1}, (_, i) =>
-    `<button class="water-drop ${i < filled ? 'filled' : ''}" onclick="${i < filled ? `removeWater(${i})` : 'addWater()'}"></button>`
+    `<button class="water-drop ${i < filled ? 'filled' : ''}" onclick="${i < filled ? `removeWater(${i})` : 'addWater()'}" aria-label="${i < filled ? 'Bardağı kaldır' : 'Bir bardak su ekle'}">${icon(i < filled ? 'droplet' : 'plus')}</button>`
   ).join('');
   const totalEl = document.getElementById('water-total');
   if (totalEl) totalEl.textContent = filled > 0 ? `${filled * 250} ml` : '';
@@ -3699,6 +3799,7 @@ function resetData() {
 // ═══════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════
+hydrateIcons();
 applyTheme();
 setGender('male', true);
 loadProfile();
