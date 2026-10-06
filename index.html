@@ -799,6 +799,16 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .nudge-actions button { border: none; border-radius: 10px; padding: 8px 14px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
 .nudge-primary { background: var(--accent-fill); color: var(--on-accent); }
 .nudge-secondary { background: var(--bg-tertiary); color: var(--text-primary); }
+.ex-sug { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+.ex-sug > .ic { width: 13px; height: 13px; color: var(--green); flex-shrink: 0; }
+.ex-sug b { color: var(--text-primary); font-weight: 700; white-space: nowrap; }
+.ex-sug .ic.up { width: 11px; height: 11px; color: var(--green); vertical-align: -0.05em; margin-left: 1px; }
+[data-palette="lime"] .ex-sug > .ic, [data-palette="lime"] .ex-sug .ic.up { color: #7FAE1F; }
+[data-palette="lime"][data-theme="dark"] .ex-sug > .ic, [data-palette="lime"][data-theme="dark"] .ex-sug .ic.up { color: var(--lime); }
+.set-row.sug-up .kg-val::placeholder { color: var(--green); font-weight: 600; }
+[data-palette="lime"] .set-row.sug-up .kg-val::placeholder { color: #7FAE1F; }
+.ex-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 2px; }
+.ex-chips:empty { display: none; }
 </style>
 </head>
 <body>
@@ -1445,6 +1455,9 @@ const ICONS = {
   'chevron-up': '<path d="m18 15-6-6-6 6"/>',
   'chevron-down': '<path d="m6 9 6 6 6-6"/>',
   'chevron-left': '<path d="m15 18-6-6 6-6"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/>',
+  'arrow-up': '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  'trend-up': '<path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>',
   sparkle: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>',
 };
@@ -1456,7 +1469,7 @@ function hydrateIcons(root) {
 }
 const TOAST_ICONS = [
   ['✅', 'check-circle', 'ok'], ['❌', 'x-circle', 'err'], ['⚠️', 'alert', 'warn'], ['🏆', 'trophy', 'pr'],
-  ['📤', 'upload', ''], ['🗑️', 'trash', ''], ['↩️', 'undo', ''], ['📝', 'note', ''], ['⏱', 'timer', ''],
+  ['📤', 'upload', ''], ['🗑️', 'trash', ''], ['↩️', 'undo', ''], ['📝', 'note', ''], ['⏱', 'timer', ''], ['🎯', 'target', ''],
 ];
 
 // ═══════════════════════════════════════════════
@@ -2309,36 +2322,90 @@ function noteForExName(log, exName) {
   return (ex && log.notes[ex.id]) || '';
 }
 
-function buildSetRow(ei, s, ex, ps) {
+function buildSetRow(ei, s, ex, ps, sug) {
   ps = ps || {};
   const id = `${ei}-${s}`;
   const prevKg = ps.kg || '';
+  // Placeholder: öneri varsa öneri, yoksa geçen seferki değer
+  const phKg = sug ? sug.kg : prevKg;
+  const phReps = sug ? sug.reps : ps.reps;
+  const phR = sug ? sug.reps : ps.repsR;
+  const phL = sug ? sug.reps : ps.repsL;
+  const sugAttr = v => sug ? ` data-sug="${escapeHtml(v)}"` : '';
   const repsHtml = ex.bilateral
     ? `<div class="bi-reps">
         <div class="bi-reps-row">
           <span class="bi-label">SAĞ</span>
-          <input class="bi-val" type="text" inputmode="numeric" placeholder="${escapeHtml(ps.repsR || 'tk')}" data-prev="${escapeHtml(ps.repsR || '')}" id="repsR-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsR',${ei},${s})">
+          <input class="bi-val" type="text" inputmode="numeric" placeholder="${escapeHtml(phR || 'tk')}" data-prev="${escapeHtml(ps.repsR || '')}"${sugAttr(sug && sug.reps)} id="repsR-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsR',${ei},${s})">
         </div>
         <div class="bi-reps-row">
           <span class="bi-label">SOL</span>
-          <input class="bi-val" type="text" inputmode="numeric" placeholder="${escapeHtml(ps.repsL || 'tk')}" data-prev="${escapeHtml(ps.repsL || '')}" id="repsL-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsL',${ei},${s})">
+          <input class="bi-val" type="text" inputmode="numeric" placeholder="${escapeHtml(phL || 'tk')}" data-prev="${escapeHtml(ps.repsL || '')}"${sugAttr(sug && sug.reps)} id="repsL-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsL',${ei},${s})">
         </div>
       </div>`
     : `<div class="reps-stepper">
         <button class="stepper-btn" onclick="stepReps(${ei},${s},-1)" type="button">−</button>
-        <input class="reps-val" type="text" inputmode="numeric" placeholder="${escapeHtml(ps.reps || 'tk')}" data-prev="${escapeHtml(ps.reps || '')}" id="reps-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'reps',${ei},${s})">
+        <input class="reps-val" type="text" inputmode="numeric" placeholder="${escapeHtml(phReps || 'tk')}" data-prev="${escapeHtml(ps.reps || '')}"${sugAttr(sug && sug.reps)} id="reps-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'reps',${ei},${s})">
         <button class="stepper-btn" onclick="stepReps(${ei},${s},1)" type="button">+</button>
       </div>`;
-  return `<div class="set-row" id="set-row-${id}">
+  return `<div class="set-row${sug && sug.up ? ' sug-up' : ''}" id="set-row-${id}">
     <span class="set-num">${s+1}</span>
     <div class="kg-stepper">
       <button class="stepper-btn" onclick="stepKg(${ei},${s},-2.5)" type="button">−</button>
-      <input class="kg-val" type="text" inputmode="decimal" placeholder="${escapeHtml(prevKg || 'kg')}" data-prev="${escapeHtml(prevKg)}" id="kg-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'kg',${ei},${s})">
+      <input class="kg-val" type="text" inputmode="decimal" placeholder="${escapeHtml(phKg || 'kg')}" data-prev="${escapeHtml(prevKg)}"${sugAttr(sug && sug.kg)} id="kg-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'kg',${ei},${s})">
       <button class="stepper-btn" onclick="stepKg(${ei},${s},2.5)" type="button">+</button>
     </div>
     ${repsHtml}
     <button class="set-done-btn" onclick="completeSet(${ei},${s})" id="set-done-${id}" aria-label="Seti tamamla">${icon('check')}</button>
   </div>`;
+}
+
+// ── İlerleme önerisi (çift ilerleme) ──
+// Hareket başına hedef tekrar aralığı. Geçen seferki her set için:
+//  üst sınıra ulaşıldıysa → kilo + artış, tekrar = alt sınır
+//  aralıktaysa           → aynı kilo, tekrar + 1
+//  alt sınırın altındaysa → aynı kilo, tekrar = alt sınır
+const REP_RANGES = [null, [6, 8], [8, 10], [8, 12], [10, 15], [12, 20]];
+function repRangeFor(exName) {
+  const r = (DB.settings.repRangeByEx || {})[normName(exName)];
+  return Array.isArray(r) && r.length === 2 ? r : null;
+}
+function kgStep() { return DB.settings.kgStep || 2.5; }
+function suggestSet(ex, ps, range) {
+  if (!range || !ps || !hasValue(ps)) return null;
+  const [lo, hi] = range;
+  // Sağ/sol ayrı tekrarda zayıf taraf belirleyici
+  const sides = [ps.repsR, ps.repsL].filter(v => v > 0);
+  const reps = sides.length ? Math.min(...sides) : (ps.reps || 0);
+  const kg = ps.kg || 0;
+  if (!reps) return null;
+  if (reps >= hi) {
+    if (!kg) return { kg: 0, reps: hi, up: false };          // vücut ağırlığı: tekrarı koru
+    return { kg: round2(kg + kgStep()), reps: lo, up: true };
+  }
+  if (reps < lo) return { kg, reps: lo, up: false };
+  return { kg, reps: reps + 1, up: false };
+}
+function suggestionFor(ei, s) {
+  if (!active || active.mode === 'edit') return null;
+  const ex = active.day.exercises[ei];
+  const pc = prevCache[ei];
+  return pc ? suggestSet(ex, pc.bySet[s], repRangeFor(ex.name)) : null;
+}
+function cycleRepRange(ei) {
+  if (!active) return;
+  const ex = active.day.exercises[ei];
+  const cur = repRangeFor(ex.name);
+  const idx = REP_RANGES.findIndex(r => (r && cur) ? r[0] === cur[0] && r[1] === cur[1] : r === cur);
+  const next = REP_RANGES[(idx + 1) % REP_RANGES.length];
+  DB.settings.repRangeByEx = DB.settings.repRangeByEx || {};
+  if (next) DB.settings.repRangeByEx[normName(ex.name)] = next;
+  else delete DB.settings.repRangeByEx[normName(ex.name)];
+  saveData('settings', DB.settings);
+  captureActive();
+  renderExerciseCards();
+  applyActiveValues();
+  toast(next ? `🎯 ${ex.name}: ${next[0]}–${next[1]} tekrar hedefi` : `🎯 ${ex.name}: hedef kapalı`, 1800);
 }
 
 const REST_OPTIONS = [60, 90, 120, 150, 180, 240];
@@ -2376,20 +2443,35 @@ function renderExerciseCards() {
       ? `<button class="ex-chip${restMap[normName(ex.name)] ? ' custom' : ''}" id="rest-chip-${ei}" onclick="cycleRest(${ei})" aria-label="Dinlenme süresi">${icon('timer')}${fmtRest(rest)}</button>`
       : '';
 
+    const range = repRangeFor(ex.name);
+    const sugs = [];
     let setRows = '';
-    for (let s = 0; s < active.sets[ei]; s++) setRows += buildSetRow(ei, s, ex, bySet[s]);
+    for (let s = 0; s < active.sets[ei]; s++) {
+      const sug = isEdit ? null : suggestSet(ex, bySet[s], range);
+      sugs.push(sug);
+      setRows += buildSetRow(ei, s, ex, bySet[s], sug);
+    }
+    const sugList = sugs.filter(Boolean);
+    const sugLine = sugList.length
+      ? `<div class="ex-sug">${icon('trend-up')}<span>Bugün: ${sugList.map(g => `<b>${escapeHtml(g.kg ? g.kg + '×' + g.reps : g.reps + ' tk')}${g.up ? icon('arrow-up', 'up') : ''}</b>`).join(', ')}</span></div>`
+      : '';
+    const rangeChip = isEdit ? '' : `<button class="ex-chip${range ? ' custom' : ''}" id="range-chip-${ei}" onclick="cycleRepRange(${ei})" aria-label="Hedef tekrar aralığı">${icon('target')}${range ? `${range[0]}–${range[1]}` : 'Hedef'}</button>`;
 
     return `<div class="ex-card" id="ex-card-${ei}">
       <div class="ex-card-header">
         <div class="ex-card-top">
           <span class="ex-name">${escapeHtml(ex.name)}</span>
           <div class="ex-actions">
-            ${restChip}
-            <button class="ex-chip" id="note-chip-${ei}" onclick="toggleNote(${ei})" aria-label="Not">${icon('note')}</button>
             <button class="ex-graph-btn" data-ex-name="${escapeHtml(ex.name)}" onclick="openProgressModal(this.dataset.exName)">Grafik</button>
           </div>
         </div>
+        <div class="ex-chips">
+          ${rangeChip}
+          ${restChip}
+          <button class="ex-chip" id="note-chip-${ei}" onclick="toggleNote(${ei})" aria-label="Not">${icon('note')}Not</button>
+        </div>
         ${prevHint}
+        ${sugLine}
         ${prevNote}
       </div>
       <div class="ex-sets-container">
@@ -2531,7 +2613,7 @@ function stepKg(ei, s, delta) {
   const input = document.getElementById(`kg-${ei}-${s}`);
   if (!input) return;
   if (input.value === '' && delta > 0) {
-    const prev = num(input.dataset.prev);
+    const prev = num(input.dataset.sug || input.dataset.prev);
     if (prev) { input.value = prev; onSetInput(ei, s); return; }
   }
   const base = num(input.value) || 0;
@@ -2544,7 +2626,7 @@ function stepReps(ei, s, delta) {
   const input = document.getElementById(`reps-${ei}-${s}`);
   if (!input) return;
   if (input.value === '' && delta > 0) {
-    const prev = int(input.dataset.prev);
+    const prev = int(input.dataset.sug || input.dataset.prev);
     if (prev) { input.value = prev; onSetInput(ei, s); return; }
   }
   const next = Math.max(0, (int(input.value) || 0) + delta);
@@ -2561,7 +2643,7 @@ function addSet(ei) {
   active.sets[ei] = s + 1;
   const container = document.getElementById(`sets-list-${ei}`);
   const div = document.createElement('div');
-  div.innerHTML = buildSetRow(ei, s, ex, (prevCache[ei] || { bySet: [] }).bySet[s]);
+  div.innerHTML = buildSetRow(ei, s, ex, (prevCache[ei] || { bySet: [] }).bySet[s], suggestionFor(ei, s));
   container.appendChild(div.firstElementChild);
   document.getElementById(`set-count-${ei}`).textContent = `${active.sets[ei]} set`;
   updateWsSub();
@@ -2595,7 +2677,8 @@ function completeSet(ei, s) {
   // Boş alanları önceki antrenmanın değerleriyle doldur (gri görünen değerler)
   const row = document.getElementById(`set-row-${ei}-${s}`);
   row.querySelectorAll('input').forEach(inp => {
-    if (inp.value === '' && inp.dataset.prev) inp.value = inp.dataset.prev;
+    const fill = inp.dataset.sug || inp.dataset.prev;
+    if (inp.value === '' && fill) inp.value = fill;
   });
   const ex = active.day.exercises[ei];
   const cur = readSet(ei, s);
