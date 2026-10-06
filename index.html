@@ -809,6 +809,27 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 [data-palette="lime"] .set-row.sug-up .kg-val::placeholder { color: #7FAE1F; }
 .ex-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 2px; }
 .ex-chips:empty { display: none; }
+#ex-sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 600; display: none; align-items: flex-end; justify-content: center; max-width: 430px; left: 50%; margin-left: -215px; }
+@media (max-width: 430px) { #ex-sheet { left: 0; margin-left: 0; } }
+#ex-sheet.open { display: flex; }
+.sheet-list { display: flex; flex-direction: column; background: var(--bg-secondary); border-radius: 14px; overflow: hidden; }
+.sheet-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: none; border: none; font-size: 16px; font-family: inherit; color: var(--text-primary); text-align: left; cursor: pointer; width: 100%; }
+.sheet-row + .sheet-row { border-top: 0.5px solid var(--border); }
+.sheet-row .ic { width: 19px; height: 19px; color: var(--text-secondary); }
+.sheet-row:active { background: var(--bg-tertiary); }
+.sheet-row .sheet-meta { margin-left: auto; font-size: 14px; color: var(--text-secondary); }
+.sheet-row select { margin-left: auto; font-size: 15px; font-family: inherit; color: var(--text-primary); background: var(--bg-primary); border: 0.5px solid var(--border-strong); border-radius: 8px; padding: 6px 8px; }
+.sheet-input { width: 100%; font-size: 16px; padding: 12px 14px; border-radius: 12px; border: none; background: var(--bg-secondary); color: var(--text-primary); font-family: inherit; outline: none; }
+.sheet-hint { font-size: 12px; color: var(--text-secondary); margin: 8px 2px 0; }
+.ex-more-btn { width: 32px; height: 28px; border-radius: 14px; border: none; background: var(--bg-secondary); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ex-more-btn .ic { width: 18px; height: 18px; }
+.ex-swapped { font-size: 12px; color: var(--orange); margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+.ex-swapped .ic { width: 12px; height: 12px; }
+.ex-card.skipped .ex-sets-container, .ex-card.skipped .ex-chips, .ex-card.skipped .ex-sug, .ex-card.skipped .ex-prev-note, .ex-card.skipped .ex-note-section { display: none !important; }
+.ex-card.skipped .ex-name { color: var(--text-tertiary); text-decoration: line-through; }
+.ex-skip-bar { display: none; align-items: center; justify-content: space-between; padding: 0 16px 14px; font-size: 13px; color: var(--text-secondary); }
+.ex-card.skipped .ex-skip-bar { display: flex; }
+.ex-skip-bar button { border: none; background: var(--accent-light); color: var(--accent); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -1393,6 +1414,16 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
   </div>
 </div>
 
+<!-- Hareket menüsü -->
+<div id="ex-sheet" onclick="closeExSheet()">
+  <div class="progress-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <h3 id="ex-sheet-title">Hareket</h3>
+    <p class="sub" id="ex-sheet-sub"></p>
+    <div id="ex-sheet-body"></div>
+  </div>
+</div>
+
 <!-- Day Editor -->
 <div id="day-editor">
   <div class="de-header">
@@ -1458,6 +1489,9 @@ const ICONS = {
   target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/>',
   'arrow-up': '<path d="M12 19V5M6 11l6-6 6 6"/>',
   'trend-up': '<path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  more: '<circle cx="5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="19" cy="12" r="1.4" fill="currentColor"/>',
+  swap: '<path d="M7 7h13M16 3l4 4-4 4M17 17H4M8 13l-4 4 4 4"/>',
+  skip: '<path d="m5 4.5 10 7.5-10 7.5z"/><path d="M19 5v14"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>',
   sparkle: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>',
 };
@@ -1803,6 +1837,7 @@ const LAYER_CLOSERS = {
   progressModal: () => document.getElementById('progress-modal').classList.remove('open'),
   dayEditor:     () => document.getElementById('day-editor').classList.remove('open'),
   orderEditor:   () => document.getElementById('order-editor').classList.remove('open'),
+  exSheet:       () => document.getElementById('ex-sheet').classList.remove('open'),
 };
 function pushLayer(name) {
   if (layers[layers.length - 1] === name) return;
@@ -2457,12 +2492,13 @@ function renderExerciseCards() {
       : '';
     const rangeChip = isEdit ? '' : `<button class="ex-chip${range ? ' custom' : ''}" id="range-chip-${ei}" onclick="cycleRepRange(${ei})" aria-label="Hedef tekrar aralığı">${icon('target')}${range ? `${range[0]}–${range[1]}` : 'Hedef'}</button>`;
 
-    return `<div class="ex-card" id="ex-card-${ei}">
+    const skipped = (active.skipped || []).includes(ei);
+    return `<div class="ex-card${skipped ? ' skipped' : ''}" id="ex-card-${ei}">
       <div class="ex-card-header">
         <div class="ex-card-top">
           <span class="ex-name">${escapeHtml(ex.name)}</span>
           <div class="ex-actions">
-            <button class="ex-graph-btn" data-ex-name="${escapeHtml(ex.name)}" onclick="openProgressModal(this.dataset.exName)">Grafik</button>
+            <button class="ex-more-btn" onclick="openExSheet(${ei})" aria-label="Hareket menüsü">${icon('more')}</button>
           </div>
         </div>
         <div class="ex-chips">
@@ -2470,6 +2506,7 @@ function renderExerciseCards() {
           ${restChip}
           <button class="ex-chip" id="note-chip-${ei}" onclick="toggleNote(${ei})" aria-label="Not">${icon('note')}Not</button>
         </div>
+        ${ex.swappedFrom ? `<div class="ex-swapped">${icon('swap')}Bugün ${escapeHtml(ex.swappedFrom)} yerine</div>` : ''}
         ${prevHint}
         ${sugLine}
         ${prevNote}
@@ -2488,6 +2525,7 @@ function renderExerciseCards() {
           <button class="set-count-btn accent" onclick="addSet(${ei})">+ Set</button>
         </div>
       </div>
+      <div class="ex-skip-bar"><span>Bu antrenmanda atlandı</span><button onclick="toggleSkipEx(${ei})">Geri al</button></div>
       <div class="ex-note-section" id="note-sec-${ei}" style="display:none;">
         <textarea class="ex-note-input" placeholder="Bu hareket için not…" id="note-${ei}" oninput="onNoteInput(${ei})" rows="2"></textarea>
       </div>
@@ -2531,10 +2569,106 @@ function cycleRest(ei) {
 }
 function updateProgress() {
   if (!active) return;
-  const total = active.sets.reduce((a, n) => a + n, 0);
-  const done = document.querySelectorAll('#ws-body .set-done-btn.done').length;
+  const skipped = active.skipped || [];
+  const total = active.sets.reduce((a, n, i) => a + (skipped.includes(i) ? 0 : n), 0);
+  const done = [...document.querySelectorAll('#ws-body .ex-card:not(.skipped) .set-done-btn.done')].length;
   document.getElementById('ws-day-sub').textContent = `${done} / ${total} set`;
   document.getElementById('ws-progress-fill').style.width = (total ? Math.round(done / total * 100) : 0) + '%';
+}
+// ── Hareket menüsü: grafik / bugünlük değiştir / atla ──
+let exSheetIdx = -1;
+function openExSheet(ei) {
+  if (!active) return;
+  exSheetIdx = ei;
+  renderExSheet('menu');
+  document.getElementById('ex-sheet').classList.add('open');
+  pushLayer('exSheet');
+}
+function closeExSheet() { closeLayer('exSheet'); }
+function renderExSheet(view) {
+  const ei = exSheetIdx;
+  const ex = active.day.exercises[ei];
+  const isEdit = active.mode === 'edit';
+  const skipped = (active.skipped || []).includes(ei);
+  document.getElementById('ex-sheet-title').textContent = ex.name;
+  const body = document.getElementById('ex-sheet-body');
+  if (view === 'swap') {
+    document.getElementById('ex-sheet-sub').textContent = 'Sadece bu antrenman için. Programın değişmez.';
+    fillExNameList();
+    body.innerHTML = `<input class="sheet-input" id="swap-input" list="ex-names-list" placeholder="Yeni hareket adı" onkeydown="if(event.key==='Enter')confirmSwapEx()">
+      <div class="sheet-hint">Bu hareketin geçmişi ve önerileri yeni isme göre gösterilir.</div>
+      <button class="btn-primary" onclick="confirmSwapEx()">Değiştir</button>
+      <button class="btn-secondary" onclick="renderExSheet('menu')">Vazgeç</button>`;
+    setTimeout(() => document.getElementById('swap-input')?.focus(), 50);
+    return;
+  }
+  document.getElementById('ex-sheet-sub').textContent = `${active.sets[ei]} set`;
+  const rows = [
+    `<button class="sheet-row" onclick="exSheetGraph()">${icon('trend-up')}Grafik ve geçmiş</button>`,
+  ];
+  if (!isEdit) {
+    rows.push(ex.swappedFrom
+      ? `<button class="sheet-row" onclick="undoSwapEx()">${icon('undo')}${escapeHtml(ex.swappedFrom)} hareketine geri dön</button>`
+      : `<button class="sheet-row" onclick="renderExSheet('swap')">${icon('swap')}Bu antrenmanda değiştir</button>`);
+    rows.push(`<button class="sheet-row" onclick="toggleSkipEx(${ei}); closeExSheet();">${icon(skipped ? 'undo' : 'skip')}${skipped ? 'Atlamayı geri al' : 'Bu antrenmanda atla'}</button>`);
+  }
+  body.innerHTML = `<div class="sheet-list">${rows.join('')}</div>`;
+}
+function exSheetGraph() {
+  const name = active.day.exercises[exSheetIdx].name;
+  if (!swapTopLayer('exSheet', 'progressModal')) LAYER_CLOSERS.exSheet();
+  openProgressModal(name);
+}
+function fillExNameList() {
+  const nameSet = new Set();
+  DB.workoutDays.forEach(d => d.exercises.forEach(e => e.name && nameSet.add(e.name)));
+  DB.workoutLogs.forEach(l => (l.sets || []).forEach(s => s.exName && nameSet.add(s.exName)));
+  document.getElementById('ex-names-list').innerHTML = [...nameSet].sort((a, b) => a.localeCompare(b, 'tr')).map(n => `<option value="${escapeHtml(n)}">`).join('');
+}
+// Bir hareketin ekrandaki girişlerini aktif durumdan siler
+function clearExValues(ei) {
+  const re = new RegExp(`^(kg|reps|repsR|repsL|set-done)-${ei}-\\d+$`);
+  Object.keys(active.values).forEach(k => { if (re.test(k)) delete active.values[k]; });
+  active.done = (active.done || []).filter(id => !re.test(id));
+}
+function knownBilateral(name) {
+  const n = normName(name);
+  return DB.workoutDays.some(d => d.exercises.some(e => normName(e.name) === n && e.bilateral));
+}
+function replaceExercise(ei, newName, swappedFrom) {
+  captureActive();
+  clearExValues(ei);
+  const old = active.day.exercises[ei];
+  active.day.exercises[ei] = { id: uid(), name: newName, sets: old.sets, bilateral: knownBilateral(newName), ...(swappedFrom ? { swappedFrom, originalId: old.originalId || old.id, originalBilateral: old.originalBilateral ?? !!old.bilateral } : {}) };
+  if (!swappedFrom && old.originalId) { active.day.exercises[ei].id = old.originalId; active.day.exercises[ei].bilateral = !!old.originalBilateral; }
+  renderExerciseCards();
+  applyActiveValues();
+  saveActive();
+}
+function confirmSwapEx() {
+  const name = (document.getElementById('swap-input').value || '').trim();
+  const ex = active.day.exercises[exSheetIdx];
+  if (!name) { toast('Hareket adı gir.'); return; }
+  if (normName(name) === normName(ex.name)) { closeExSheet(); return; }
+  replaceExercise(exSheetIdx, name, ex.swappedFrom || ex.name);
+  closeExSheet();
+  toast(`${ex.name} → ${name}`, 1800);
+}
+function undoSwapEx() {
+  const ex = active.day.exercises[exSheetIdx];
+  if (!ex.swappedFrom) return;
+  replaceExercise(exSheetIdx, ex.swappedFrom, null);
+  closeExSheet();
+}
+function toggleSkipEx(ei) {
+  if (!active) return;
+  captureActive();
+  const list = active.skipped || (active.skipped = []);
+  const i = list.indexOf(ei);
+  if (i === -1) list.push(ei); else list.splice(i, 1);
+  document.getElementById(`ex-card-${ei}`).classList.toggle('skipped', i === -1);
+  updateProgress();
+  saveActive();
 }
 
 // Kaydedilmiş değerleri ekrana geri yükler
@@ -2779,7 +2913,9 @@ let pendingWorkoutData = null;
 // Ekrandaki güncel değerleri okur; boş setler kaydedilmez
 function collectWorkoutSets() {
   const sets = [];
+  const skipped = active.skipped || [];
   active.day.exercises.forEach((ex, ei) => {
+    if (skipped.includes(ei)) return;
     for (let s = 0; s < active.sets[ei]; s++) {
       const cur = readSet(ei, s);
       const set = ex.bilateral
