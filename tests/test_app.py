@@ -597,6 +597,26 @@ with sync_playwright() as p:
     page.evaluate("switchTrend('fat', document.querySelectorAll('.trend-tab')[0])")
 
     check('sayfa hatası yok', not errors, errors)
+
+    # ── 33. Çevrimdışı çalışma (service worker önbelleği) ──
+    ctx2 = browser.new_context(service_workers='allow', viewport={'width': 390, 'height': 844})
+    pg2 = ctx2.new_page()
+    errs2 = []
+    pg2.on('pageerror', lambda e: errs2.append(str(e)))
+    pg2.goto(BASE + '/antrenman/index.html')
+    pg2.wait_for_function("navigator.serviceWorker && navigator.serviceWorker.controller !== null", timeout=15000)
+    pg2.wait_for_timeout(500)
+    cached = pg2.evaluate("""async () => { const out = []; for (const k of await caches.keys()) { const c = await caches.open(k); for (const r of await c.keys()) out.push(new URL(r.url).pathname); } return out; }""")
+    check('Chart.js ve sayfa önbellekte', '/antrenman/vendor/chart.umd.js' in cached and '/antrenman/index.html' in cached, cached)
+    ctx2.set_offline(True)
+    pg2.reload()
+    pg2.wait_for_timeout(500)
+    check('internet yokken uygulama açılıyor', pg2.evaluate("typeof switchTab") == 'function' and pg2.evaluate("typeof Chart") == 'function')
+    pg2.evaluate("""() => { DB.measurements = [{date:'2026-09-01', weight:80}, {date:'2026-09-08', weight:79}]; switchTab('meas'); switchTrend('weight', document.querySelectorAll('.trend-tab')[1]); }""")
+    check('internet yokken grafik çiziliyor', pg2.evaluate("!!fatChart"))
+    check('çevrimdışı sayfa hatası yok', not errs2, errs2)
+    ctx2.close()
+
     browser.close()
 
 srv.shutdown()

@@ -1,4 +1,4 @@
-const CACHE = 'antrenman-assets-v3';
+const CACHE = 'antrenman-assets-v4';
 
 const PRECACHE = [
   '/antrenman/',
@@ -6,7 +6,7 @@ const PRECACHE = [
   '/antrenman/manifest.json',
   '/antrenman/icon-192.png',
   '/antrenman/icon-512.png',
-  'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'
+  '/antrenman/vendor/chart.umd.js'
 ];
 
 self.addEventListener('install', e => {
