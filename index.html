@@ -122,7 +122,7 @@ body {
 .day-select-next { border-left: 3px solid var(--accent); }
 .day-select-left { display: flex; align-items: center; gap: 12px; }
 .day-select-badge { width: 38px; height: 38px; border-radius: 12px; background: var(--accent-light); color: var(--accent); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.day-select-next .day-select-badge { background: var(--accent-fill); color: var(--on-accent); }
+.day-select-badge { font-size: 13px; letter-spacing: 0.3px; }
 .day-select-name { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
 .day-select-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 .next-tag { display: inline-block; background: var(--accent-fill); color: var(--on-accent); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.2px; }
@@ -329,7 +329,7 @@ body {
 .bi-label { font-size: 9px; font-weight: 700; color: var(--text-tertiary); padding: 0 5px; flex-shrink: 0; letter-spacing: 0.3px; }
 .bi-val { flex: 1; font-size: 12px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; }
 .bi-val::placeholder { color: var(--text-tertiary); font-size: 10px; font-weight: 400; }
-.bi-toggle-btn { font-size: 10px; padding: 3px 7px; border-radius: 6px; border: 1px solid var(--border); background: none; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+.bi-toggle-btn { flex-shrink: 0; font-size: 10px; padding: 5px 6px; border-radius: 6px; border: 1px solid var(--border); background: none; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
 .bi-toggle-btn.active { background: var(--accent-fill); color: var(--on-accent); border-color: var(--accent-fill); }
 .reps-val { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; -moz-appearance: textfield; }
 .reps-val::-webkit-outer-spin-button, .reps-val::-webkit-inner-spin-button { -webkit-appearance: none; }
@@ -401,7 +401,7 @@ body {
 .meas-section-title { font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; padding: 10px 16px 4px; background: var(--bg-secondary); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); text-transform: uppercase; }
 .form-label { font-size: 15px; flex: 1; }
 .form-input { background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 10px; font-size: 15px; font-weight: 500; color: var(--text-primary); text-align: right; width: 90px; outline: none; font-family: inherit; }
-.form-input::placeholder { color: transparent; }
+.form-input::placeholder { color: var(--text-tertiary); font-weight: 400; }
 .form-unit { font-size: 13px; color: var(--text-secondary); width: 30px; }
 .gender-toggle { display: flex; background: var(--bg-secondary); border-radius: 8px; padding: 2px; }
 .gender-btn { flex: 1; padding: 6px 10px; font-size: 13px; font-weight: 500; border: none; background: none; border-radius: 6px; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
@@ -432,8 +432,8 @@ body {
 .settings-row { display: flex; align-items: center; padding: 14px 16px; border-bottom: 0.5px solid var(--border); gap: 12px; }
 .settings-row:last-child { border-bottom: none; }
 .settings-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-.settings-label { flex: 1; font-size: 16px; }
-.settings-value { font-size: 15px; color: var(--text-secondary); }
+.settings-label { flex: 1 0 auto; font-size: 16px; white-space: nowrap; }
+.settings-value { flex: 0 1 auto; min-width: 0; font-size: 14px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
 .settings-chevron { color: var(--text-tertiary); font-size: 18px; }
 /* Toggle */
 .ios-toggle { position: relative; width: 51px; height: 31px; flex-shrink: 0; }
@@ -515,10 +515,10 @@ body {
 .day-toggle-btn.open { transform: rotate(180deg); }
 .day-exercises { display: none; }
 .day-exercises.open { display: block; }
-.day-ex-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 0.5px solid var(--border); gap: 8px; }
+.day-ex-row { display: flex; align-items: center; padding: 10px 12px; border-bottom: 0.5px solid var(--border); gap: 6px; }
 .day-ex-row:last-child { border-bottom: none; }
-.day-ex-name-input { flex: 1; background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 10px; font-size: 14px; color: var(--text-primary); outline: none; font-family: inherit; }
-.day-ex-sets-input { width: 50px; background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 8px; font-size: 14px; color: var(--text-primary); text-align: center; outline: none; font-family: inherit; }
+.day-ex-name-input { flex: 1; min-width: 0; background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 10px; font-size: 14px; color: var(--text-primary); outline: none; font-family: inherit; }
+.day-ex-sets-input { width: 40px; flex-shrink: 0; background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 8px; font-size: 14px; color: var(--text-primary); text-align: center; outline: none; font-family: inherit; }
 .remove-ex-btn { background: none; border: none; color: var(--red); font-size: 20px; cursor: pointer; padding: 4px; flex-shrink: 0; }
 .add-ex-btn { display: flex; align-items: center; gap: 8px; padding: 12px 16px; color: var(--accent); font-size: 14px; font-weight: 500; cursor: pointer; background: none; border: none; font-family: inherit; }
 .add-day-btn { margin: 12px 16px; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--bg-primary); border: 1.5px dashed var(--border-strong); border-radius: var(--card-radius); padding: 14px; color: var(--accent); font-size: 15px; font-weight: 500; cursor: pointer; }
@@ -551,7 +551,9 @@ body {
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* Export/Import buttons */
-.data-btn { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: none; padding: 14px 16px; font-size: 16px; font-family: inherit; cursor: pointer; color: var(--text-primary); }
+.data-btn { display: flex; align-items: center; gap: 12px; width: 100%; background: none; border: none; padding: 14px 16px; font-size: 16px; font-family: inherit; cursor: pointer; color: var(--text-primary); text-align: left; }
+.data-btn > span:first-of-type { flex: 1; white-space: nowrap; }
+.data-meta { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
 .data-btn.danger { color: var(--red); }
 
 /* Workout order indicator */
@@ -560,7 +562,11 @@ body {
 /* ── v2 arayüz eklemeleri ── */
 .home-totals { font-size: 12px; color: var(--text-secondary); margin-top: 12px; padding-top: 10px; border-top: 0.5px solid var(--border); }
 .home-totals b { color: var(--text-primary); font-weight: 700; }
-#rest-banner { width: 330px; max-width: calc(100% - 24px); padding: 8px 8px 8px 16px; gap: 8px; top: calc(74px + env(safe-area-inset-top, 0px)); }
+#rest-banner { width: 330px; max-width: calc(100% - 24px); padding: 8px 8px 8px 16px; gap: 8px; top: auto; bottom: calc(var(--tab-height) + 16px + env(safe-area-inset-bottom, 0px)); transform-origin: bottom center; }
+body.ws-open #rest-banner { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+body.rest-on:not(.ws-open) #toast { bottom: calc(var(--tab-height) + 80px); }
+body.rest-on .ws-body { padding-bottom: 96px; }
+body.awb-on .screen > .nav-header { padding-top: 84px; }
 .rest-banner-inner { min-width: 0; flex: 1; }
 .rest-banner-inner > div:last-child { min-width: 0; }
 .rest-label-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -751,6 +757,31 @@ body {
 [data-palette="lime"] #toast { background: rgba(28,36,32,0.94); }
 [data-palette="lime"] #toast .toast-ic.ok { color: var(--lime); }
 .hero-title .ic { width: 22px; height: 22px; margin-left: 6px; color: var(--lime); vertical-align: -0.12em; }
+
+/* ══════════ CİLA ══════════ */
+.dur-stepper { display: flex; align-items: center; gap: 2px; background: var(--bg-secondary); border-radius: 20px; padding: 2px; flex-shrink: 0; }
+.dur-stepper button { width: 32px; height: 30px; border: none; background: none; border-radius: 16px; color: var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.dur-stepper button:active { background: var(--bg-tertiary); }
+.dur-stepper button .ic { width: 15px; height: 15px; }
+.dur-stepper span { min-width: 44px; text-align: center; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+[data-palette="lime"] .dur-stepper button { color: var(--text-primary); }
+.data-btn .settings-chevron { margin-left: auto; transition: transform 0.2s; }
+.water-head { display: flex; align-items: center; gap: 8px; }
+.water-head .suppl-label { flex: none; }
+.water-total { flex: 1; font-size: 13px; font-weight: 600; color: #32ade6; }
+.water-goal { display: flex; align-items: center; gap: 2px; background: var(--bg-secondary); border-radius: 16px; padding: 1px; }
+.water-goal button { width: 26px; height: 24px; border: none; background: none; border-radius: 12px; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.water-goal button .ic { width: 13px; height: 13px; }
+.water-goal span { font-size: 12px; font-weight: 700; min-width: 16px; text-align: center; color: var(--text-secondary); }
+.water-bar { height: 6px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden; }
+.water-bar-fill { height: 100%; width: 0; background: #32ade6; border-radius: 3px; transition: width 0.3s ease; }
+.water-drop:not(.filled):not(.extra) .ic { opacity: 0.55; }
+.water-drop.extra { color: var(--text-secondary); }
+[data-palette="lime"] .suppl-cal-day.today { outline: none; box-shadow: inset 0 0 0 1.5px #8FBF3A; }
+[data-palette="lime"][data-theme="dark"] .suppl-cal-day.today { box-shadow: inset 0 0 0 1.5px var(--lime); }
+.recent-dot span { font-size: 12px; letter-spacing: 0.3px; }
+.de-header h2 { font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; text-align: center; }
+.de-header .back-btn, .de-header .de-save-btn { flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -883,10 +914,16 @@ body {
       <div class="card suppl-card">
         <div id="suppl-checklist"></div>
         <div class="suppl-row" style="cursor:default;flex-direction:column;align-items:stretch;gap:8px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="water-head">
             <span class="suppl-label">Su</span>
-            <span id="water-total" style="font-size:13px;font-weight:600;color:#5ac8fa;"></span>
+            <span id="water-total" class="water-total"></span>
+            <div class="water-goal">
+              <button onclick="changeWaterGoal(-1)" aria-label="Hedefi azalt"><i data-icon="minus"></i></button>
+              <span id="water-goal-num">8</span>
+              <button onclick="changeWaterGoal(1)" aria-label="Hedefi artır"><i data-icon="plus"></i></button>
+            </div>
           </div>
+          <div class="water-bar"><div class="water-bar-fill" id="water-bar-fill"></div></div>
           <div class="water-drops" id="water-drops"></div>
         </div>
       </div>
@@ -946,9 +983,6 @@ body {
           <span class="form-label">Boy</span>
           <input class="form-input" type="text" inputmode="decimal" id="m-height" placeholder="175" min="100" max="250" oninput="saveProfile()">
           <span class="form-unit">cm</span>
-        </div>
-        <div style="padding: 10px 16px 12px; display:flex; justify-content:flex-end;">
-          <button class="set-count-btn accent" onclick="saveProfile(true)">Kaydet</button>
         </div>
       </div>
     </div>
@@ -1153,12 +1187,11 @@ body {
         </div>
         <div class="settings-row" id="rest-dur-row">
           <div class="settings-icon" style="background:#007aff20;color:#007aff;"><i data-icon="clock"></i></div>
-          <span class="settings-label">Süre</span>
-          <div class="dur-selector">
-            <button class="dur-btn" onclick="setRestDuration(90)" data-dur="90">1.30 dk</button>
-            <button class="dur-btn" onclick="setRestDuration(120)" data-dur="120">2 dk</button>
-            <button class="dur-btn" onclick="setRestDuration(150)" data-dur="150">2.30 dk</button>
-            <button class="dur-btn" onclick="setRestDuration(180)" data-dur="180">3 dk</button>
+          <span class="settings-label">Varsayılan süre</span>
+          <div class="dur-stepper">
+            <button onclick="stepRestDuration(-1)" aria-label="Kısalt"><i data-icon="minus"></i></button>
+            <span id="rest-dur-label">1:30</span>
+            <button onclick="stepRestDuration(1)" aria-label="Uzat"><i data-icon="plus"></i></button>
           </div>
         </div>
       </div>
@@ -1193,29 +1226,26 @@ body {
       </div>
     </div>
 
-    <div class="section" style="margin-top:14px;">
-      <div class="card settings-group" style="overflow:hidden;">
-        <button class="settings-row" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;color:inherit;" onclick="toggleLogHistory()">
-          <div class="settings-icon" style="background:#ff3b3020;color:#ff3b30;"><i data-icon="history"></i></div>
-          <span class="settings-label">Antrenman Geçmişi</span>
-          <span class="settings-chevron" id="log-history-chevron">›</span>
-        </button>
-        <div id="log-delete-list" style="display:none;border-top:0.5px solid var(--border);"></div>
-      </div>
-    </div>
 
     <div class="section" style="margin-top:14px;">
       <div class="section-label">Veri</div>
-      <div class="card settings-group">
+      <div class="card settings-group" style="overflow:hidden;">
+        <button class="data-btn" onclick="toggleLogHistory()">
+          <div class="settings-icon" style="background:#5856d620;color:#5856d6;"><i data-icon="history"></i></div>
+          <span>Antrenman Geçmişi</span>
+          <span class="settings-chevron" id="log-history-chevron">›</span>
+        </button>
+        <div id="log-delete-list" style="display:none;border-top:0.5px solid var(--border);"></div>
+        <div style="height:0.5px;background:var(--border);"></div>
         <button class="data-btn" onclick="exportData()">
           <div class="settings-icon" style="background:#34c75920;color:#34c759;"><i data-icon="upload"></i></div>
-          <span>Veriyi Dışa Aktar (JSON)</span>
-          <span id="last-backup-label" style="font-size:11px;color:var(--text-secondary);margin-left:auto;"></span>
+          <span>Yedek Al</span>
+          <span id="last-backup-label" class="data-meta"></span>
         </button>
         <div style="height:0.5px;background:var(--border);"></div>
         <label class="data-btn" style="cursor:pointer;">
           <div class="settings-icon" style="background:#007aff20;color:#007aff;"><i data-icon="download"></i></div>
-          <span>Veriyi İçe Aktar (JSON)</span>
+          <span>Yedekten Geri Yükle</span>
           <input type="file" accept=".json" onchange="importData(event)" style="display:none;">
         </label>
         <div style="height:0.5px;background:var(--border);"></div>
@@ -1627,7 +1657,26 @@ function fmtDuration(secs) {
   const mm = String(m).padStart(2,'0'), ss = String(s).padStart(2,'0');
   return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
+function fmtMins(sec) {
+  sec = Number(sec) || 0;
+  if (sec < 60) return '<1 dk';
+  const m = Math.round(sec / 60);
+  return m >= 60 ? `${Math.floor(m / 60)} sa ${m % 60} dk` : `${m} dk`;
+}
 function firstChar(str) { return Array.from(String(str || '?'))[0] || '?'; }
+// "Torso A" → "TA", "Push" → "PU", "Üst Vücut 2" → "Ü2"
+function dayCode(name) {
+  const words = String(name || '?').trim().split(/\s+/).filter(Boolean);
+  const chars = w => Array.from(w);
+  const code = words.length >= 2
+    ? chars(words[0])[0] + chars(words[words.length - 1])[0]
+    : chars(words[0] || '?').slice(0, 2).join('');
+  return code.toLocaleUpperCase('tr').replace(/İ/g, 'I');
+}
+function dayBadgeStyle(dayId) {
+  const color = dayColorMap()[dayId];
+  return color ? `background:${color};color:${textOn(color)};` : '';
+}
 // Büyük/küçük harf ve I/ı/İ/i farkı gözetmeksizin karşılaştırma için
 function normName(n) { return String(n || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('tr').replace(/ı/g, 'i'); }
 function getDayById(id) { return DB.workoutDays.find(d => d.id === id); }
@@ -1810,7 +1859,7 @@ function renderDaySelectList() {
 
     return `<div class="card day-select-card ${isNext ? 'day-select-next' : ''}" onclick="openWorkoutScreen(${jsArg(day.id)})">
       <div class="day-select-left">
-        <div class="day-select-badge">${escapeHtml(firstChar(day.name))}</div>
+        <div class="day-select-badge" style="${dayBadgeStyle(day.id)}">${escapeHtml(dayCode(day.name))}</div>
         <div>
           <div class="day-select-name">${escapeHtml(day.name)}${isNext ? ' <span class="next-tag">Sıradaki</span>' : ''}</div>
           <div class="day-select-meta">${exCount} hareket · ${setCount} set${lastDateStr ? ` · Son: ${lastDateStr}` : ''}</div>
@@ -1905,11 +1954,11 @@ function renderRecentList() {
   }
   list.innerHTML = items.map(({ log, idx }) => {
     const name = dayDisplayName(log);
-    const initial = Array.from(name).slice(0, 2).join('').toUpperCase();
-    const dur = log.duration ? `${Math.round(log.duration/60)} dk` : '';
+    const initial = dayCode(name);
+    const dur = log.duration ? fmtMins(log.duration) : '';
     const vol = logVolume(log);
     return `<div class="recent-item" onclick="openHistoryModal(${idx})">
-      <div class="recent-dot"><span>${escapeHtml(initial)}</span></div>
+      <div class="recent-dot" style="${dayBadgeStyle(log.dayId)}"><span style="color:inherit;">${escapeHtml(initial)}</span></div>
       <div class="recent-info">
         <div class="recent-name">${escapeHtml(name)}</div>
         <div class="recent-date">${fmtDate(log.date)}${vol ? ' · ' + vol + ' kg hacim' : ''}</div>
@@ -1927,7 +1976,7 @@ function openHistoryModal(idx) {
   if (!log) return;
   historyIdx = idx;
   document.getElementById('hm-day-name').textContent = dayDisplayName(log);
-  const dur = log.duration ? `${Math.round(log.duration/60)} dk · ` : '';
+  const dur = log.duration ? `${fmtMins(log.duration)} · ` : '';
   document.getElementById('hm-meta').textContent = `${fmtDate(log.date)} · ${dur}${logVolume(log)} kg hacim`;
 
   const byEx = {};
@@ -2106,6 +2155,7 @@ function showWorkoutScreen() {
   document.getElementById('ws-done-btn').textContent = isEdit ? 'Kaydet' : 'Bitir';
   document.getElementById('workout-screen').classList.add('open');
   document.body.style.overflow = 'hidden';
+  document.body.classList.add('ws-open');
   hideActiveWorkoutBanner();
   startActiveTicker();
   updateProgress();
@@ -2118,6 +2168,7 @@ function reopenWorkoutScreen() { showWorkoutScreen(); }
 // Antrenmanı kapatmaz, sadece ekranı gizler ve banner gösterir
 function hideWorkoutScreen() { closeLayer('workout'); }
 function hideWorkoutScreenUI() {
+  document.body.classList.remove('ws-open');
   document.getElementById('workout-screen').classList.remove('open');
   document.body.style.overflow = '';
   if (active) {
@@ -2142,6 +2193,7 @@ function discardActive() {
   clearInterval(activeTicker);
   stopRest();
   hideActiveWorkoutBanner();
+  document.body.classList.remove('ws-open');
   document.getElementById('workout-screen').classList.remove('open');
   document.body.style.overflow = '';
   document.getElementById('ws-body').innerHTML = '';
@@ -2149,11 +2201,13 @@ function discardActive() {
 
 function showActiveWorkoutBanner() {
   if (!active) return;
+  document.body.classList.add('awb-on');
   document.getElementById('awb-name').innerHTML = (active.mode === 'edit' ? icon('pencil') : '') + escapeHtml(active.day.name);
   document.getElementById('active-workout-banner').classList.add('visible');
   startActiveTicker();
 }
 function hideActiveWorkoutBanner() {
+  document.body.classList.remove('awb-on');
   document.getElementById('active-workout-banner').classList.remove('visible');
 }
 
@@ -2510,6 +2564,7 @@ function startRest(exName, seconds) {
   document.getElementById('rest-exercise-label').textContent = exName ? exName + ' sonrası' : 'Dinlenme';
   restEndTime = Date.now() + (seconds || DB.settings.restDuration || 90) * 1000;
   updateRestDisplay();
+  document.body.classList.add('rest-on');
   document.getElementById('rest-banner').classList.add('visible');
   restInterval = setInterval(() => {
     if (Date.now() >= restEndTime) {
@@ -2555,6 +2610,7 @@ function playBeep() {
 function stopRest() {
   clearInterval(restInterval);
   restInterval = null;
+  document.body.classList.remove('rest-on');
   document.getElementById('rest-banner').classList.remove('visible');
 }
 function skipRest() { stopRest(); }
@@ -2597,7 +2653,7 @@ function finishWorkout() {
   pendingWorkoutData = { date: today(), dayId: active.dayId, dayName: day.name, sets: allSets, notes, exNotes, duration };
 
   document.getElementById('sum-sub').textContent = `${day.name} · ${fmtDate(today())}`;
-  document.getElementById('sum-dur').textContent = Math.round(duration / 60) + ' dk';
+  document.getElementById('sum-dur').textContent = fmtMins(duration);
   document.getElementById('sum-sets').textContent = allSets.length;
   document.getElementById('sum-vol').textContent = totalVol;
 
@@ -2971,8 +3027,22 @@ function calculateFat() {
   renderMeasurements();
 }
 
+// Boş alanlarda son ölçülen değer soluk renkte görünür
+function fillMeasPlaceholders() {
+  const lastOf = key => { for (let i = DB.measurements.length - 1; i >= 0; i--) if (DB.measurements[i][key] != null) return DB.measurements[i][key]; return null; };
+  Object.entries(MEAS_FIELDS).forEach(([k, id]) => {
+    const v = lastOf(k);
+    document.getElementById(id).placeholder = v != null ? String(v).replace('.', ',') : '—';
+  });
+  const w = lastOf('weight');
+  document.getElementById('quick-weight').placeholder = w != null ? String(w).replace('.', ',') : '—';
+  document.getElementById('m-birthyear').placeholder = '1995';
+  document.getElementById('m-height').placeholder = '175';
+}
+
 function renderMeasurements() {
   loadProfile();
+  fillMeasPlaceholders();
   renderMeasSummaryCard();
   renderFatChart();
   renderMeasHistory();
@@ -3217,7 +3287,7 @@ function renderLogDeleteList() {
     return;
   }
   el.innerHTML = items.map(({ log, idx }) => {
-    const dur = log.duration ? ` · ${Math.round(log.duration/60)} dk` : '';
+    const dur = log.duration ? ` · ${fmtMins(log.duration)}` : '';
     const setCount = (log.sets || []).filter(hasValue).length;
     return `<div class="suppl-setting-item">
       <div style="flex:1;min-width:0;">
@@ -3253,9 +3323,7 @@ function renderSettings() {
   document.getElementById('theme-light-btn').classList.toggle('active', s.theme !== 'dark');
   document.getElementById('theme-dark-btn').classList.toggle('active', s.theme === 'dark');
   document.getElementById('rest-toggle').checked = !!s.restTimerEnabled;
-  document.querySelectorAll('.dur-btn').forEach(btn => {
-    btn.classList.toggle('active', parseInt(btn.dataset.dur) === s.restDuration);
-  });
+  document.getElementById('rest-dur-label').textContent = fmtRest(s.restDuration || 90);
   document.getElementById('day-count-label').textContent = DB.workoutDays.length + ' gün';
   const orderNames = DB.workoutOrder.map(id => { const d = getDayById(id); return d ? d.name : id; });
   document.getElementById('order-label').textContent = orderNames.length ? orderNames.slice(0,2).join(' → ') + (orderNames.length > 2 ? ' → ...' : '') : '—';
@@ -3311,6 +3379,13 @@ function chartColor(fallback) {
 function toggleRestTimer(val) {
   DB.settings.restTimerEnabled = val;
   saveData('settings', DB.settings);
+}
+function stepRestDuration(dir) {
+  const cur = DB.settings.restDuration || 90;
+  let i = REST_OPTIONS.indexOf(cur);
+  if (i === -1) i = REST_OPTIONS.findIndex(v => v > cur) - (dir > 0 ? 1 : 0);
+  const next = REST_OPTIONS[Math.max(0, Math.min(REST_OPTIONS.length - 1, i + dir))];
+  setRestDuration(next);
 }
 function setRestDuration(dur) {
   DB.settings.restDuration = dur;
@@ -3572,6 +3647,19 @@ function removeWater(i) {
   renderSuppl();
   renderSupplCalendar();
 }
+function setWater(n) {
+  const data = getSuppl();
+  data.water = Math.max(0, n);
+  saveTodaySuppl(data);
+  renderSuppl();
+  renderSupplCalendar();
+}
+function getWaterGoal() { return DB.settings.waterGoal || 8; }
+function changeWaterGoal(d) {
+  DB.settings.waterGoal = Math.max(1, Math.min(20, getWaterGoal() + d));
+  saveData('settings', DB.settings);
+  renderSuppl();
+}
 
 function renderSuppl() {
   const data = getSuppl();
@@ -3591,11 +3679,19 @@ function renderSuppl() {
   const drops = document.getElementById('water-drops');
   if (!drops) return;
   const filled = Math.max(0, parseInt(data.water) || 0);
-  drops.innerHTML = Array.from({length: filled + 1}, (_, i) =>
-    `<button class="water-drop ${i < filled ? 'filled' : ''}" onclick="${i < filled ? `removeWater(${i})` : 'addWater()'}" aria-label="${i < filled ? 'Bardağı kaldır' : 'Bir bardak su ekle'}">${icon(i < filled ? 'droplet' : 'plus')}</button>`
-  ).join('');
+  const goal = getWaterGoal();
+  // Hedef kadar damla; dolu damlaya dokununca oraya kadar geri alınır,
+  // boş damlaya dokununca oraya kadar doldurulur. Hedef aşılırsa + ile devam.
+  const slots = Math.max(goal, filled + (filled >= goal ? 1 : 0));
+  drops.innerHTML = Array.from({ length: slots }, (_, i) => {
+    if (i < filled) return `<button class="water-drop filled" onclick="setWater(${i})" aria-label="${i + 1}. bardağı geri al">${icon('droplet')}</button>`;
+    if (i < goal) return `<button class="water-drop" onclick="setWater(${i + 1})" aria-label="${i + 1} bardağa tamamla">${icon('droplet')}</button>`;
+    return `<button class="water-drop extra" onclick="setWater(${filled + 1})" aria-label="Bir bardak daha">${icon('plus')}</button>`;
+  }).join('');
   const totalEl = document.getElementById('water-total');
-  if (totalEl) totalEl.textContent = filled > 0 ? `${filled * 250} ml` : '';
+  if (totalEl) totalEl.textContent = `${filled} / ${goal} bardak · ${(filled * 0.25).toLocaleString('tr-TR')} L`;
+  document.getElementById('water-goal-num').textContent = goal;
+  document.getElementById('water-bar-fill').style.width = Math.min(100, Math.round(filled / goal * 100)) + '%';
 }
 
 let supplCalOffset = 0;
