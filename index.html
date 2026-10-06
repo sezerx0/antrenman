@@ -32,6 +32,15 @@
   --purple: #5856d6;
   --shadow: 0 1px 3px rgba(0,0,0,0.08);
   --tab-height: 72px;
+  /* Vurgu dolgusu ve üstündeki yazı; tamamlandı rengi; geçti vurgusu */
+  --accent-fill: var(--accent);
+  --on-accent: #fff;
+  --done: var(--green);
+  --on-done: #fff;
+  --overload-bg: color-mix(in srgb, #34c759 15%, transparent);
+  --tab-active-bg: rgba(0,122,255,0.12);
+  --awb-bg: rgba(0, 122, 255, 0.92);
+  --awb-shadow: 0 4px 24px rgba(0,122,255,0.35), 0 1px 6px rgba(0,0,0,0.15);
 }
 [data-theme="dark"] {
   --bg-primary: #1c1c1e;
@@ -43,6 +52,7 @@
   --border: rgba(255,255,255,0.1);
   --border-strong: rgba(255,255,255,0.18);
   --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --tab-active-bg: rgba(0,122,255,0.18);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; overflow: hidden; }
@@ -92,10 +102,7 @@ body {
 }
 .tab-item.active {
   color: var(--accent);
-  background: rgba(0,122,255,0.12);
-}
-[data-theme="dark"] .tab-item.active {
-  background: rgba(0,122,255,0.18);
+  background: var(--tab-active-bg);
 }
 .tab-icon { font-size: 22px; line-height: 1; }
 /* ── Nav Header ── */
@@ -115,13 +122,13 @@ body {
 .day-select-next { border-left: 3px solid var(--accent); }
 .day-select-left { display: flex; align-items: center; gap: 12px; }
 .day-select-badge { width: 38px; height: 38px; border-radius: 12px; background: var(--accent-light); color: var(--accent); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.day-select-next .day-select-badge { background: var(--accent); color: #fff; }
+.day-select-next .day-select-badge { background: var(--accent-fill); color: var(--on-accent); }
 .day-select-name { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
 .day-select-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-.next-tag { display: inline-block; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.2px; }
+.next-tag { display: inline-block; background: var(--accent-fill); color: var(--on-accent); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.2px; }
 .day-select-arrow { color: var(--text-secondary); font-size: 20px; font-weight: 300; }
 .day-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; letter-spacing: 0.3px; }
-.btn-primary { display: block; width: 100%; margin-top: 14px; background: var(--accent); color: #fff; border: none; border-radius: 11px; padding: 13px; font-size: 15px; font-weight: 600; text-align: center; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+.btn-primary { display: block; width: 100%; margin-top: 14px; background: var(--accent-fill); color: var(--on-accent); border: none; border-radius: 11px; padding: 13px; font-size: 15px; font-weight: 600; text-align: center; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
 .btn-primary:active { opacity: 0.85; transform: scale(0.98); }
 /* ── Stats Row ── */
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; }
@@ -134,10 +141,10 @@ body {
 .weekly-goal-stepper { display: flex; align-items: center; gap: 10px; }
 .weekly-goal-stepper span { font-size: 16px; font-weight: 700; min-width: 20px; text-align: center; }
 .weekly-goal-bar-bg { height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; }
-.weekly-goal-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+.weekly-goal-bar-fill { height: 100%; background: var(--accent-fill); border-radius: 4px; transition: width 0.4s ease; }
 .weekly-goal-days { display: flex; gap: 6px; margin-top: 10px; justify-content: flex-start; }
 .wg-day { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
-.wg-day.done { background: var(--accent); color: #fff; }
+.wg-day.done { background: var(--accent-fill); color: var(--on-accent); }
 .wg-day.today { border: 2px solid var(--accent); color: var(--accent); background: var(--accent-light); }
 .wg-day.empty { background: var(--bg-tertiary); color: var(--text-secondary); }
 /* ── History Modal ── */
@@ -158,7 +165,7 @@ body {
 /* ── Trend tabs ── */
 .trend-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
 .trend-tab { background: var(--bg-tertiary); color: var(--text-secondary); border: none; border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-.trend-tab.active { background: var(--accent); color: #fff; }
+.trend-tab.active { background: var(--accent-fill); color: var(--on-accent); }
 /* ── PR & 1RM ── */
 .orm-row { display: flex; gap: 10px; }
 .orm-field { flex: 1 1 0; min-width: 0; }
@@ -253,7 +260,7 @@ body {
   transform: translateX(-50%) translateY(-120%);
   width: calc(100% - 32px);
   max-width: 398px;
-  background: rgba(0, 122, 255, 0.92);
+  background: var(--awb-bg);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   color: #fff;
@@ -261,7 +268,7 @@ body {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 10px 10px 16px;
   border-radius: 20px;
-  box-shadow: 0 4px 24px rgba(0,122,255,0.35), 0 1px 6px rgba(0,0,0,0.15);
+  box-shadow: var(--awb-shadow);
   transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
   opacity: 0;
 }
@@ -293,7 +300,7 @@ body {
 .ws-title { text-align: center; }
 .ws-title h2 { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; }
 .ws-title p { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
-.ws-done-btn { background: var(--green); color: #fff; border: none; border-radius: 20px; padding: 7px 16px; font-size: 14px; font-weight: 700; cursor: pointer; justify-self: end; transition: opacity 0.15s; letter-spacing: 0.1px; }
+.ws-done-btn { background: var(--done); color: var(--on-done); border: none; border-radius: 20px; padding: 7px 16px; font-size: 14px; font-weight: 700; cursor: pointer; justify-self: end; transition: opacity 0.15s; letter-spacing: 0.1px; }
 .ws-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 24px; }
 .ws-body::-webkit-scrollbar { display: none; }
 
@@ -308,7 +315,7 @@ body {
 .ex-prev-hint b { color: var(--accent); font-weight: 600; }
 .ex-sets-container { padding: 0 16px 12px; }
 .set-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; height: 38px; border-radius: 8px; transition: background 0.2s; }
-.set-row.overload { background: color-mix(in srgb, #34c759 15%, transparent); }
+.set-row.overload { background: var(--overload-bg); }
 .set-row.overload .kg-val, .set-row.overload .reps-val { border-color: #34c759; }
 .set-num { width: 16px; font-size: 12px; color: var(--text-secondary); font-weight: 600; text-align: center; flex-shrink: 0; }
 .kg-stepper { display: flex; align-items: center; background: var(--bg-secondary); border-radius: 9px; overflow: hidden; height: 38px; flex: 1.2; min-width: 0; }
@@ -323,12 +330,12 @@ body {
 .bi-val { flex: 1; font-size: 12px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; }
 .bi-val::placeholder { color: var(--text-tertiary); font-size: 10px; font-weight: 400; }
 .bi-toggle-btn { font-size: 10px; padding: 3px 7px; border-radius: 6px; border: 1px solid var(--border); background: none; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
-.bi-toggle-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.bi-toggle-btn.active { background: var(--accent-fill); color: var(--on-accent); border-color: var(--accent-fill); }
 .reps-val { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-primary); text-align: center; background: none; border: none; outline: none; padding: 0; min-width: 0; font-family: inherit; -moz-appearance: textfield; }
 .reps-val::-webkit-outer-spin-button, .reps-val::-webkit-inner-spin-button { -webkit-appearance: none; }
 .reps-val::placeholder { color: var(--text-tertiary); font-size: 12px; }
 .set-done-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border-strong); background: none; color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
-.set-done-btn.done { background: var(--green); border-color: var(--green); color: #fff; }
+.set-done-btn.done { background: var(--done); border-color: var(--done); color: var(--on-done); }
 .set-col-header { display: flex; align-items: center; gap: 8px; padding: 0 0 4px; }
 .set-col-header .set-num { width: 16px; flex-shrink: 0; display: inline-block; }
 .set-col-label { flex: 1; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-align: center; letter-spacing: 0.2px; }
@@ -399,7 +406,7 @@ body {
 .gender-toggle { display: flex; background: var(--bg-secondary); border-radius: 8px; padding: 2px; }
 .gender-btn { flex: 1; padding: 6px 10px; font-size: 13px; font-weight: 500; border: none; background: none; border-radius: 6px; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
 .gender-btn.active { background: var(--bg-primary); color: var(--text-primary); box-shadow: var(--shadow); }
-.result-card { background: var(--accent); border-radius: var(--card-radius); padding: 20px; color: #fff; text-align: center; margin-top: 12px; }
+.result-card { background: var(--accent-fill); border-radius: var(--card-radius); padding: 20px; color: var(--on-accent); text-align: center; margin-top: 12px; }
 .result-pct { font-size: 48px; font-weight: 700; letter-spacing: -2px; }
 .result-label { font-size: 14px; opacity: 0.88; margin-top: 4px; }
 .result-cat { font-size: 13px; font-weight: 600; margin-top: 8px; background: rgba(255,255,255,0.2); display: inline-block; padding: 4px 12px; border-radius: 20px; }
@@ -432,7 +439,7 @@ body {
 .ios-toggle { position: relative; width: 51px; height: 31px; flex-shrink: 0; }
 .ios-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
 .ios-toggle-track { position: absolute; inset: 0; background: var(--bg-tertiary); border-radius: 31px; transition: background 0.2s; cursor: pointer; }
-.ios-toggle input:checked + .ios-toggle-track { background: var(--green); }
+.ios-toggle input:checked + .ios-toggle-track { background: var(--done); }
 .ios-toggle-thumb { position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.2s; pointer-events: none; }
 .ios-toggle input:checked ~ .ios-toggle-thumb { transform: translateX(20px); }
 
@@ -499,10 +506,10 @@ body {
 .suppl-add-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px 12px; }
 .suppl-add-input { flex: 1; background: var(--bg-secondary); border: none; border-radius: 8px; padding: 9px 12px; font-size: 14px; color: var(--text-primary); outline: none; }
 .suppl-add-input:focus { outline: 1.5px solid var(--accent); }
-.suppl-add-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.suppl-add-btn { background: var(--accent-fill); color: var(--on-accent); border: none; border-radius: 8px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .de-header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); padding: 16px 20px 14px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
 .de-header h2 { font-size: 20px; font-weight: 700; flex: 1; }
-.de-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 9px; padding: 7px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.de-save-btn { background: var(--accent-fill); color: var(--on-accent); border: none; border-radius: 9px; padding: 7px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
 .day-item { background: var(--bg-primary); margin: 8px 16px 0; border-radius: var(--card-radius); overflow: hidden; }
 .day-item-header { display: flex; align-items: center; padding: 14px 16px; gap: 10px; cursor: pointer; border-bottom: 0.5px solid var(--border); }
 .day-item-name-input { flex: 1; background: none; border: none; font-size: 16px; font-weight: 600; color: var(--text-primary); outline: none; font-family: inherit; }
@@ -520,14 +527,14 @@ body {
 .remove-day-btn { background: none; border: none; color: var(--red); font-size: 20px; cursor: pointer; padding: 4px; }
 /* Duration display */
 .ws-timer-bar { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 0 8px; background: var(--bg-primary); border-bottom: 0.5px solid var(--border); font-size: 13px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.5px; }
-.ws-timer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; animation: pulse 1.5s infinite; }
+.ws-timer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--done); display: inline-block; animation: pulse 1.5s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
 /* Duration selector */
 .dur-selector { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
 .dur-selector::-webkit-scrollbar { display: none; }
 .dur-btn { padding: 6px 12px; border: 1px solid var(--border-strong); border-radius: 20px; background: none; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
-.dur-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.dur-btn.active { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent); }
 
 /* Segment control for theme */
 .segment-control { display: flex; background: var(--bg-secondary); border-radius: 9px; padding: 2px; }
@@ -562,7 +569,7 @@ body {
 .rest-adj { background: rgba(255,255,255,0.12); color: #fff; border: none; border-radius: 14px; padding: 6px 9px; font-size: 12px; font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; }
 .rest-adj:active { background: rgba(255,255,255,0.28); }
 .ws-progress { height: 3px; background: var(--bg-tertiary); }
-.ws-progress-fill { height: 100%; width: 0; background: var(--green); transition: width 0.3s ease; }
+.ws-progress-fill { height: 100%; width: 0; background: var(--done); transition: width 0.3s ease; }
 .ex-chip { background: var(--bg-secondary); border: none; color: var(--text-secondary); font-size: 11px; font-weight: 600; cursor: pointer; padding: 5px 9px; border-radius: 20px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .ex-chip.custom { color: var(--accent); background: var(--accent-light); }
 .ex-chip.has-note { color: var(--orange); background: #ff9f0a20; }
@@ -582,6 +589,120 @@ body {
 .chart-empty { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; font-size: 13px; color: var(--text-secondary); text-align: center; }
 .tab-item { margin: 6px 1px; }
 .tab-item span:last-child { white-space: nowrap; }
+
+/* ══════════ LIME PALETİ ══════════ */
+.lime-only { display: none; }
+[data-palette="lime"] .lime-only { display: block; }
+[data-palette="lime"] .classic-only { display: none !important; }
+[data-palette="lime"] {
+  --lime: #C8F169;
+  --ink: #1C2420;
+  --accent: #1C2420;               /* yazı/ikon vurgusu: açık zeminde okunur */
+  --accent-light: rgba(200,241,105,0.38);
+  --accent-fill: #C8F169;          /* dolgular lime, üstünde koyu yazı */
+  --on-accent: #1C2420;
+  --done: #C8F169;
+  --on-done: #1C2420;
+  --overload-bg: rgba(38,166,154,0.13);
+  --bg-primary: #ffffff;
+  --bg-secondary: #F1F1EA;
+  --bg-tertiary: #E3E4DB;
+  --text-primary: #161B18;
+  --text-secondary: #6B726C;
+  --text-tertiary: #A2A79F;
+  --border: rgba(28,36,32,0.08);
+  --border-strong: rgba(28,36,32,0.18);
+  --card-radius: 20px;
+  --shadow: 0 1px 2px rgba(28,36,32,0.04), 0 0 0 1px rgba(28,36,32,0.05);
+  --tab-active-bg: rgba(200,241,105,0.14);
+  --awb-bg: rgba(28,36,32,0.94);
+  --awb-shadow: 0 6px 24px rgba(0,0,0,0.25);
+  --hero-bg: #1C2420;
+}
+[data-palette="lime"][data-theme="dark"] {
+  --accent: #C8F169;               /* koyu zeminde lime yazı okunur */
+  --accent-light: rgba(200,241,105,0.13);
+  --bg-primary: #1A201D;
+  --bg-secondary: #0F1311;
+  --bg-tertiary: #29312C;
+  --text-primary: #F1F4EC;
+  --text-secondary: #8A938B;
+  --text-tertiary: #5A635C;
+  --border: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.16);
+  --shadow: 0 0 0 1px rgba(255,255,255,0.05);
+  --overload-bg: rgba(38,166,154,0.22);
+  --hero-bg: #1A201D;
+}
+[data-palette="lime"] .nav-header { background: var(--bg-secondary); border-bottom: none; padding-top: 20px; }
+[data-palette="lime"] .nav-header h1 { font-weight: 800; letter-spacing: -0.8px; }
+[data-palette="lime"] .section-label { text-transform: none; font-size: 17px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.2px; }
+[data-palette="lime"] .card, [data-palette="lime"] .ex-card, [data-palette="lime"] .meas-form { border-radius: var(--card-radius); }
+[data-palette="lime"] .day-select-next { border-left: none; box-shadow: 0 0 0 2px var(--lime), var(--shadow); }
+[data-palette="lime"] .day-select-badge { border-radius: 14px; }
+[data-palette="lime"] .stepper-btn { color: var(--text-primary); }
+[data-palette="lime"][data-theme="dark"] .stepper-btn { color: var(--lime); }
+[data-palette="lime"] .ex-prev-hint b { color: var(--text-primary); }
+[data-palette="lime"][data-theme="dark"] .ex-prev-hint b { color: var(--lime); }
+[data-palette="lime"] .ex-graph-btn,
+[data-palette="lime"] .set-count-btn.accent { background: var(--accent-light); color: var(--accent); }
+[data-palette="lime"] .ex-chip.custom { background: var(--accent-light); color: var(--accent); }
+[data-palette="lime"] .wcal-day.today:not(.has-workout) { outline-color: var(--text-primary); background: var(--accent-light); }
+[data-palette="lime"] .wcal-day.today .wcal-num { color: var(--text-primary); }
+[data-palette="lime"] .wcal-day.today.has-workout { outline: 2px solid var(--text-primary); }
+[data-palette="lime"] .wg-day.today { border-color: var(--text-primary); color: var(--text-primary); background: var(--accent-light); }
+[data-palette="lime"] .meas-sum-val, [data-palette="lime"] .pr-stat-val, [data-palette="lime"] .orm-result-val { color: var(--text-primary); }
+[data-palette="lime"] .awb-cta { background: var(--lime); color: var(--ink); }
+[data-palette="lime"] #rest-banner { background: var(--ink); border: 1px solid rgba(200,241,105,0.25); }
+[data-palette="lime"] .rest-time-display { color: var(--lime); }
+[data-palette="lime"] .back-btn { color: var(--text-primary); }
+[data-palette="lime"][data-theme="dark"] .back-btn { color: var(--lime); }
+[data-palette="lime"] .ws-header { background: var(--bg-secondary); }
+[data-palette="lime"] .seg-btn.active { background: var(--ink); color: var(--lime); }
+[data-palette="lime"][data-theme="dark"] .seg-btn.active { background: var(--lime); color: var(--ink); }
+
+/* Koyu alt menü */
+[data-palette="lime"] .tab-bar {
+  background: rgba(28,36,32,0.94);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+[data-palette="lime"] .tab-item { color: rgba(255,255,255,0.55); }
+[data-palette="lime"] .tab-item.active { color: var(--lime); background: var(--tab-active-bg); }
+
+/* Ana sekme: kahraman kart en üstte */
+[data-palette="lime"] #tab-workout > .nav-header { order: -2; }
+[data-palette="lime"] #tab-workout > .hero-section { order: -1; }
+[data-palette="lime"] #weekly-goal-card { background: var(--hero-bg); padding: 20px !important; border-radius: 26px; box-shadow: 0 10px 30px rgba(28,36,32,0.18); color: #fff; }
+.hero-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hero-kicker { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; color: rgba(255,255,255,0.55); text-transform: uppercase; }
+.hero-goal { display: flex; align-items: center; gap: 2px; background: rgba(255,255,255,0.08); border-radius: 20px; padding: 2px; }
+.hero-goal button { background: none; border: none; color: var(--lime); font-size: 16px; width: 28px; height: 26px; border-radius: 14px; cursor: pointer; }
+.hero-goal button:active { background: rgba(255,255,255,0.12); }
+.hero-goal span { font-size: 12px; font-weight: 700; color: var(--lime); min-width: 54px; text-align: center; white-space: nowrap; }
+.hero-title { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; margin-top: 10px; line-height: 1.15; }
+.hero-sub { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+.hero-body { display: flex; align-items: center; gap: 18px; margin-top: 18px; }
+.hero-ring { position: relative; width: 132px; height: 132px; flex-shrink: 0; }
+.hero-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.hero-ring-track { stroke: rgba(255,255,255,0.09); }
+.hero-ring-fill { stroke: var(--lime); transition: stroke-dashoffset 0.6s cubic-bezier(0.4,0,0.2,1); }
+.hero-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.hero-ring-pct { font-size: 30px; font-weight: 800; letter-spacing: -1px; }
+.hero-ring-lbl { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 1px; }
+.hero-stats { display: flex; flex-direction: column; gap: 12px; min-width: 0; flex: 1; }
+.hero-stat { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.hero-stat-icon { width: 34px; height: 34px; border-radius: 11px; background: rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--lime); }
+.hero-stat-icon svg { width: 17px; height: 17px; }
+.hero-stat-val { font-size: 17px; font-weight: 800; line-height: 1.1; white-space: nowrap; }
+.hero-stat-lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.6px; color: rgba(255,255,255,0.5); text-transform: uppercase; white-space: nowrap; }
+.hero-days { display: flex; gap: 6px; margin-top: 18px; }
+.hero-day { flex: 1; height: 30px; border-radius: 10px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.hero-day.done { background: var(--lime); color: var(--ink); }
+.hero-day.today:not(.done) { box-shadow: inset 0 0 0 1.5px rgba(200,241,105,0.7); color: var(--lime); }
+[data-palette="lime"][data-theme="dark"] #weekly-goal-card { box-shadow: inset 0 0 0 1px rgba(200,241,105,0.14); }
+[data-palette="lime"] .ws-progress { height: 4px; }
+[data-palette="lime"]:not([data-theme="dark"]) .ws-progress-fill { background: #8FBF3A; }
 </style>
 </head>
 <body>
@@ -624,9 +745,49 @@ body {
       <div class="section-label">Antrenman Seç</div>
       <div id="day-select-list"></div>
     </div>
-    <div class="section" style="margin-top:12px;">
-      <div class="section-label">Bu Hafta</div>
+    <div class="section hero-section" style="margin-top:12px;">
+      <div class="section-label classic-only">Bu Hafta</div>
       <div class="card" style="padding:16px;" id="weekly-goal-card">
+        <div class="lime-only">
+          <div class="hero-top">
+            <span class="hero-kicker">Bu Hafta</span>
+            <div class="hero-goal">
+              <button onclick="changeWeeklyGoal(-1)" aria-label="Hedefi azalt">−</button>
+              <span id="hero-goal-num">Hedef 4</span>
+              <button onclick="changeWeeklyGoal(1)" aria-label="Hedefi artır">+</button>
+            </div>
+          </div>
+          <div class="hero-title" id="hero-title">İyi gidiyorsun</div>
+          <div class="hero-sub" id="hero-sub"></div>
+          <div class="hero-body">
+            <div class="hero-ring">
+              <svg viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="hero-ring-track" cx="60" cy="60" r="50" fill="none" stroke-width="12"/>
+                <circle class="hero-ring-fill" id="hero-ring-fill" cx="60" cy="60" r="50" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+              </svg>
+              <div class="hero-ring-center">
+                <span class="hero-ring-pct" id="hero-ring-pct">0%</span>
+                <span class="hero-ring-lbl">hedefin</span>
+              </div>
+            </div>
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M3 9.5v5M21 9.5v5M6.5 5v14M17.5 5v14"/></svg></div>
+                <div><div class="hero-stat-val" id="hero-week-vol">0</div><div class="hero-stat-lbl">Haftalık hacim (kg)</div></div>
+              </div>
+              <div class="hero-stat">
+                <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+                <div><div class="hero-stat-val" id="hero-month">0</div><div class="hero-stat-lbl">Bu ay</div></div>
+              </div>
+              <div class="hero-stat">
+                <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg></div>
+                <div><div class="hero-stat-val" id="hero-total">0</div><div class="hero-stat-lbl">Toplam</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="hero-days" id="hero-days"></div>
+        </div>
+        <div class="classic-only">
         <div class="weekly-goal-top">
           <span class="weekly-goal-label" id="weekly-goal-label">0 / 0 antrenman</span>
           <div class="weekly-goal-stepper">
@@ -640,6 +801,7 @@ body {
         </div>
         <div class="weekly-goal-days" id="weekly-goal-days"></div>
         <div class="home-totals">Bu ay <b id="stat-month-count">0</b> · Toplam <b id="stat-total-count">0</b> antrenman</div>
+        </div>
       </div>
     </div>
     <div class="section" style="margin-top:12px;">
@@ -911,8 +1073,16 @@ body {
       <div class="section-label">Görünüm</div>
       <div class="card settings-group">
         <div class="settings-row">
+          <div class="settings-icon" style="background:#c8f16940;">🎨</div>
+          <span class="settings-label">Renk</span>
+          <div class="segment-control">
+            <button class="seg-btn" id="palette-classic-btn" onclick="setPalette('classic')">Klasik</button>
+            <button class="seg-btn" id="palette-lime-btn" onclick="setPalette('lime')">Lime</button>
+          </div>
+        </div>
+        <div class="settings-row">
           <div class="settings-icon" style="background:#ff9f0a20;">🌙</div>
-          <span class="settings-label">Tema</span>
+          <span class="settings-label">Mod</span>
           <div class="segment-control">
             <button class="seg-btn" id="theme-light-btn" onclick="setTheme('light')">Açık</button>
             <button class="seg-btn" id="theme-dark-btn" onclick="setTheme('dark')">Koyu</button>
@@ -1552,10 +1722,21 @@ function renderDaySelectList() {
 }
 
 const DAY_PALETTE = ['#007aff','#34c759','#ff9f0a','#af52de','#ff3b30','#5ac8fa'];
+const DAY_PALETTE_LIME = ['#C8F169','#1C2420','#8FBF3A','#5B6B60','#E4F6B8','#3A4740'];
+const DAY_PALETTE_LIME_DARK = ['#C8F169','#F1F4EC','#8FBF3A','#7E8C82','#E4F6B8','#4E5C53'];
 function dayColorMap() {
+  const pal = isLime() ? (isDarkMode() ? DAY_PALETTE_LIME_DARK : DAY_PALETTE_LIME) : DAY_PALETTE;
   const map = {};
-  DB.workoutDays.forEach((d, i) => { map[d.id] = DAY_PALETTE[i % DAY_PALETTE.length]; });
+  DB.workoutDays.forEach((d, i) => { map[d.id] = pal[i % pal.length]; });
   return map;
+}
+// Arka plan rengine göre okunur yazı rengi
+function textOn(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return '#fff';
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return (0.299 * r + 0.587 * g + 0.114 * b) > 160 ? '#1C2420' : '#fff';
 }
 
 let workoutCalOffset = 0;
@@ -1595,8 +1776,8 @@ function renderHeatmap() {
     const isToday = dateStr === todayStr ? ' today' : '';
     if (log) {
       const color = dayColors[log.dayId] || '#8e8e93';
-      html += `<div class="wcal-day has-workout${isToday}" style="background:${color}${isToday ? ';outline-color:'+color : ''};">
-        <span class="wcal-num">${d}</span>
+      html += `<div class="wcal-day has-workout${isToday}" style="background:${color}${isToday && !isLime() ? ';outline-color:'+color : ''};">
+        <span class="wcal-num" style="color:${textOn(color)};">${d}</span>
       </div>`;
     } else {
       html += `<div class="wcal-day${isToday}"><span class="wcal-num">${d}</span></div>`;
@@ -1608,7 +1789,7 @@ function renderHeatmap() {
   monthLogs.forEach(l => { if (!seen.find(x => x.dayId === l.dayId)) seen.push(l); });
   if (seen.length) {
     legendEl.innerHTML = seen.map(l =>
-      `<div class="wcal-legend-item"><div class="wcal-legend-dot" style="background:${dayColors[l.dayId] || '#8e8e93'};"></div>${escapeHtml(dayDisplayName(l))}</div>`
+      `<div class="wcal-legend-item"><div class="wcal-legend-dot" style="background:${dayColors[l.dayId] || '#8e8e93'};box-shadow:inset 0 0 0 1px var(--border-strong);"></div>${escapeHtml(dayDisplayName(l))}</div>`
     ).join('');
   } else {
     legendEl.innerHTML = `<span style="color:var(--text-secondary);font-size:12px;">Bu ay antrenman yok</span>`;
@@ -1624,7 +1805,7 @@ function renderRecentList() {
   }
   list.innerHTML = items.map(({ log, idx }) => {
     const name = dayDisplayName(log);
-    const initial = Array.from(name).slice(0, 2).join('').toLocaleUpperCase('tr');
+    const initial = Array.from(name).slice(0, 2).join('').toUpperCase();
     const dur = log.duration ? `${Math.round(log.duration/60)} dk` : '';
     const vol = logVolume(log);
     return `<div class="recent-item" onclick="openHistoryModal(${idx})">
@@ -1721,6 +1902,32 @@ function renderWeeklyGoal() {
   document.getElementById('weekly-goal-days').innerHTML = weekDays.map(d => {
     const cls = loggedDates.has(d.str) ? 'done' : d.str === todayStr ? 'today' : 'empty';
     return `<div class="wg-day ${cls}">${d.label}</div>`;
+  }).join('');
+
+  // Lime kahraman kartı
+  const pctRaw = goal ? doneThisWeek / goal : 0;
+  const pct = Math.round(Math.min(1, pctRaw) * 100);
+  const C = 2 * Math.PI * 50;
+  document.getElementById('hero-ring-fill').setAttribute('stroke-dashoffset', String(C * (1 - Math.min(1, pctRaw))));
+  document.getElementById('hero-ring-pct').textContent = pct + '%';
+  document.getElementById('hero-goal-num').textContent = `Hedef ${goal}`;
+  const left = goal - doneThisWeek;
+  let title, sub;
+  if (doneThisWeek >= goal) { title = 'Hedef tamam! 🎉'; sub = `Bu hafta ${doneThisWeek} antrenman yaptın.`; }
+  else if (doneThisWeek === 0) { title = 'Yeni hafta, temiz sayfa'; sub = `Bu haftaki hedefin ${goal} antrenman.`; }
+  else if (left === 1) { title = 'Son bir antrenman!'; sub = 'Hedefe sadece 1 antrenman kaldı.'; }
+  else { title = 'İyi gidiyorsun'; sub = `Hedefe ${left} antrenman kaldı.`; }
+  document.getElementById('hero-title').textContent = title;
+  document.getElementById('hero-sub').textContent = sub;
+  const weekSet = new Set(weekDays.map(d => d.str));
+  const weekVol = DB.workoutLogs.filter(l => weekSet.has(l.date)).reduce((a, l) => a + logVolume(l), 0);
+  document.getElementById('hero-week-vol').textContent = weekVol.toLocaleString('tr-TR');
+  const monthStr = today().slice(0, 7);
+  document.getElementById('hero-month').textContent = DB.workoutLogs.filter(l => String(l.date).startsWith(monthStr)).length;
+  document.getElementById('hero-total').textContent = DB.workoutLogs.length;
+  document.getElementById('hero-days').innerHTML = weekDays.map(d => {
+    const cls = loggedDates.has(d.str) ? 'done' : d.str === todayStr ? 'today' : '';
+    return `<div class="hero-day ${cls}">${d.label}</div>`;
   }).join('');
 }
 
@@ -2474,9 +2681,9 @@ function openProgressModal(exName) {
         datasets: [{
           label: 'Tahmini 1RM (kg)',
           data: oneRMs,
-          borderColor: '#007AFF',
-          backgroundColor: 'rgba(0,122,255,0.1)',
-          fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#007AFF',
+          borderColor: chartColor('#007AFF'),
+          backgroundColor: chartColor('#007AFF') + '1f',
+          fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: chartColor('#007AFF'),
         }]
       },
       options: {
@@ -2750,9 +2957,9 @@ function renderFatChart() {
       datasets: [{
         label: meta.label,
         data: data.map(m => m[key]),
-        borderColor: meta.color,
-        backgroundColor: meta.color + '18',
-        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: meta.color,
+        borderColor: chartColor(meta.color),
+        backgroundColor: chartColor(meta.color) + '1f',
+        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: chartColor(meta.color),
       }]
     },
     options: {
@@ -2941,6 +3148,8 @@ function deleteWorkoutLog(idx) {
 
 function renderSettings() {
   const s = DB.settings;
+  document.getElementById('palette-classic-btn').classList.toggle('active', s.palette !== 'lime');
+  document.getElementById('palette-lime-btn').classList.toggle('active', s.palette === 'lime');
   document.getElementById('theme-light-btn').classList.toggle('active', s.theme !== 'dark');
   document.getElementById('theme-dark-btn').classList.toggle('active', s.theme === 'dark');
   document.getElementById('rest-toggle').checked = !!s.restTimerEnabled;
@@ -2970,13 +3179,34 @@ function setTheme(t) {
   DB.settings.theme = t;
   saveData('settings', DB.settings);
   applyTheme();
-  renderSettings();
-  if (fatChart) renderFatChart();
+  refreshAfterThemeChange();
 }
+function isLime() { return DB.settings.palette === 'lime'; }
+function isDarkMode() { return DB.settings.theme === 'dark'; }
 function applyTheme() {
-  const isDark = DB.settings.theme === 'dark';
+  const isDark = isDarkMode();
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
-  document.getElementById('theme-color-meta').setAttribute('content', isDark ? '#1c1c1e' : '#ffffff');
+  document.documentElement.setAttribute('data-palette', isLime() ? 'lime' : 'classic');
+  const bar = isLime() ? (isDark ? '#0F1311' : '#F1F1EA') : (isDark ? '#1c1c1e' : '#ffffff');
+  document.getElementById('theme-color-meta').setAttribute('content', bar);
+}
+function setPalette(p) {
+  DB.settings.palette = p === 'lime' ? 'lime' : 'classic';
+  saveData('settings', DB.settings);
+  applyTheme();
+  refreshAfterThemeChange();
+}
+// Renkleri JS'te hesaplanan parçaları (takvim, grafikler, kartlar) yeniden çizer
+function refreshAfterThemeChange() {
+  renderSettings();
+  renderHome();
+  if (currentTab === 'meas') renderMeasurements();
+  if (active) { renderExerciseCards(); applyActiveValues(); }
+}
+// Grafik rengi: Lime'da açık zeminde koyu lime-yeşil, koyuda parlak lime
+function chartColor(fallback) {
+  if (!isLime()) return fallback;
+  return isDarkMode() ? '#C8F169' : '#7FAE1F';
 }
 function toggleRestTimer(val) {
   DB.settings.restTimerEnabled = val;
