@@ -1,4 +1,4 @@
-const CACHE = 'antrenman-assets-v4';
+const CACHE = 'antrenman-assets-v5';
 
 const PRECACHE = [
   '/antrenman/',
@@ -6,6 +6,15 @@ const PRECACHE = [
   '/antrenman/manifest.json',
   '/antrenman/icon-192.png',
   '/antrenman/icon-512.png',
+  '/antrenman/css/app.css',
+  '/antrenman/js/core.js',
+  '/antrenman/js/home.js',
+  '/antrenman/js/workout.js',
+  '/antrenman/js/stats.js',
+  '/antrenman/js/measurements.js',
+  '/antrenman/js/routine.js',
+  '/antrenman/js/settings.js',
+  '/antrenman/js/main.js',
   '/antrenman/vendor/chart.umd.js'
 ];
 

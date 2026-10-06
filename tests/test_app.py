@@ -607,7 +607,8 @@ with sync_playwright() as p:
     pg2.wait_for_function("navigator.serviceWorker && navigator.serviceWorker.controller !== null", timeout=15000)
     pg2.wait_for_timeout(500)
     cached = pg2.evaluate("""async () => { const out = []; for (const k of await caches.keys()) { const c = await caches.open(k); for (const r of await c.keys()) out.push(new URL(r.url).pathname); } return out; }""")
-    check('Chart.js ve sayfa önbellekte', '/antrenman/vendor/chart.umd.js' in cached and '/antrenman/index.html' in cached, cached)
+    need = ['/antrenman/index.html', '/antrenman/vendor/chart.umd.js', '/antrenman/css/app.css'] + [f'/antrenman/js/{f}' for f in sorted(os.listdir(os.path.join(REPO, 'js')))]
+    check('tüm uygulama dosyaları önbellekte', all(n in cached for n in need), [n for n in need if n not in cached])
     ctx2.set_offline(True)
     pg2.reload()
     pg2.wait_for_timeout(500)
