@@ -787,6 +787,18 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 #storage-status .ic { width: 12px; height: 12px; }
 #storage-status.ok { color: var(--text-secondary); }
 #storage-status.warn { color: var(--orange); }
+.nudge-section { margin-top: 12px; }
+[data-palette="lime"] #tab-workout > .nudge-section { order: -1; }
+.nudge-card { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: var(--card-radius); background: color-mix(in srgb, var(--orange) 12%, var(--bg-primary)); box-shadow: var(--shadow); }
+.nudge-icon { width: 34px; height: 34px; border-radius: 10px; background: color-mix(in srgb, var(--orange) 22%, transparent); color: var(--orange); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.nudge-icon .ic { width: 18px; height: 18px; }
+.nudge-body { flex: 1; min-width: 0; }
+.nudge-title { font-size: 15px; font-weight: 700; }
+.nudge-sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; line-height: 1.35; }
+.nudge-actions { display: flex; gap: 8px; margin-top: 10px; }
+.nudge-actions button { border: none; border-radius: 10px; padding: 8px 14px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.nudge-primary { background: var(--accent-fill); color: var(--on-accent); }
+.nudge-secondary { background: var(--bg-tertiary); color: var(--text-primary); }
 </style>
 </head>
 <body>
@@ -825,6 +837,7 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
       <h1>Antrenman</h1>
       <p id="home-date"></p>
     </div>
+    <div class="section nudge-section" id="backup-nudge" style="display:none;"></div>
     <div class="section" style="margin-top:14px;">
       <div class="section-label">Antrenman Seç</div>
       <div id="day-select-list"></div>
@@ -1826,7 +1839,7 @@ function switchTab(tab) {
 //  HOME SCREEN
 // ═══════════════════════════════════════════════
 function renderHome() {
-  document.getElementById('home-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  document.getElementById('home-date').textContent = logicalNow().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
   renderDaySelectList();
 
@@ -1838,6 +1851,47 @@ function renderHome() {
   renderHeatmap();
   renderRecentList();
   renderWeeklyGoal();
+  renderBackupNudge();
+}
+
+// ── Yedek hatırlatması ──
+// En az 3 antrenman kaydı varken son yedek 14 günden eskiyse (ya da hiç
+// yoksa) ana sekmede gösterilir. "Sonra" 7 gün erteler.
+function daysBetween(a, b) { return Math.floor((new Date(b) - new Date(a)) / 86400000); }
+function backupNudgeState() {
+  if (DB.workoutLogs.length < 3) return null;
+  const last = lsGet('lastBackup');
+  const age = last ? daysBetween(last, today()) : null;
+  if (age !== null && age < 14) return null;
+  const snooze = DB.settings.backupSnoozeUntil;
+  if (snooze && today() < snooze) return null;
+  return { age };
+}
+function renderBackupNudge() {
+  const el = document.getElementById('backup-nudge');
+  if (!el) return;
+  const st = backupNudgeState();
+  if (!st) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  const title = st.age === null ? 'Henüz hiç yedek almadın' : `Son yedek ${st.age} gün önce`;
+  el.style.display = 'block';
+  el.innerHTML = `<div class="nudge-card">
+    <div class="nudge-icon">${icon('upload')}</div>
+    <div class="nudge-body">
+      <div class="nudge-title">${title}</div>
+      <div class="nudge-sub">${DB.workoutLogs.length} antrenman kaydın sadece bu telefonda duruyor. Bir yedek dosyası al, telefon değişse de kaybolmasın.</div>
+      <div class="nudge-actions">
+        <button class="nudge-primary" onclick="exportData()">Yedek Al</button>
+        <button class="nudge-secondary" onclick="snoozeBackupNudge()">Sonra</button>
+      </div>
+    </div>
+  </div>`;
+}
+function snoozeBackupNudge() {
+  const d = logicalNow();
+  d.setDate(d.getDate() + 7);
+  DB.settings.backupSnoozeUntil = isoDate(d);
+  saveData('settings', DB.settings);
+  renderBackupNudge();
 }
 
 function renderRoutine() {
@@ -3823,6 +3877,7 @@ function renderStorageStatus() {
 function markBackup() {
   lsSet('lastBackup', today());
   renderSettings();
+  renderBackupNudge();
 }
 
 async function exportData() {
