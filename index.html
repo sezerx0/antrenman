@@ -842,6 +842,10 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .muscle-legend { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); margin-top: 10px; }
 .muscle-legend i { display: inline-block; width: 14px; height: 8px; flex-shrink: 0; background: color-mix(in srgb, var(--green) 7%, transparent); border-left: 1.5px solid color-mix(in srgb, var(--green) 45%, transparent); border-right: 1.5px solid color-mix(in srgb, var(--green) 45%, transparent); }
 .muscle-empty { font-size: 14px; color: var(--text-secondary); text-align: center; padding: 8px 0; }
+.ex-plateau { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; color: var(--orange); margin-top: 6px; background: color-mix(in srgb, var(--orange) 10%, transparent); border-radius: 8px; padding: 6px 8px; line-height: 1.35; }
+.ex-plateau .ic { width: 13px; height: 13px; flex-shrink: 0; margin-top: 1px; }
+.pr-plateau { display: inline-flex; align-items: center; gap: 3px; margin-left: 8px; font-size: 11px; font-weight: 600; color: var(--orange); background: color-mix(in srgb, var(--orange) 12%, transparent); padding: 2px 7px; border-radius: 8px; vertical-align: 2px; }
+.pr-plateau .ic { width: 11px; height: 11px; }
 </style>
 </head>
 <body>
@@ -1819,6 +1823,23 @@ function calcEpley(kg, reps) {
   if (reps === 1) return Math.round(kg * 10) / 10;
   return Math.round(kg * (1 + reps / 30) * 10) / 10;
 }
+// ── Plato tespiti ──
+// Her antrenmanın en iyi tahmini 1RM'i (vücut ağırlığında en iyi tekrar)
+// alınır; son rekordan bu yana 3+ antrenman geçtiyse plato sayılır.
+function sessionBest(sets) {
+  const withKg = sets.filter(s => s.kg > 0 && s.reps > 0);
+  if (withKg.length) return Math.max(...withKg.map(s => calcEpley(s.kg, s.reps)));
+  return Math.max(0, ...sets.map(s => s.reps || 0)) / 1000; // vücut ağırlığı: tekrar
+}
+function plateauInfo(exName, excludeLog) {
+  const vals = getLogsByExName(exName).filter(e => e.log !== excludeLog).map(e => sessionBest(e.sets)).filter(v => v > 0);
+  if (vals.length < 4) return null;
+  let best = vals[0], lastImprove = 0;
+  for (let i = 1; i < vals.length; i++) if (vals[i] > best + 1e-9) { best = vals[i]; lastImprove = i; }
+  const stalled = vals.length - 1 - lastImprove;
+  return stalled >= 3 ? { stalled } : null;
+}
+
 function isPR(exName, volume) {
   const all = getLogsByExName(exName);
   if (!all.length) return false;
@@ -2488,6 +2509,10 @@ function renderExerciseCards() {
       const dayLabel = entry.dayName ? ` · ${escapeHtml(entry.dayName)}` : '';
       prevHint = `<div class="ex-prev-hint">Son: ${fmtDateShort(entry.log.date)}${dayLabel} — <b>${escapeHtml(entry.sets.map(fmtSetShort).join(', '))}</b></div>`;
     }
+    const plateau = isEdit ? null : plateauInfo(ex.name);
+    const plateauLine = plateau
+      ? `<div class="ex-plateau">${icon('alert')}<span>${plateau.stalled} antrenmandır rekor yok. Tekrar aralığını, set sayısını ya da hareketi değiştirmeyi düşünebilirsin.</span></div>`
+      : '';
     const noteVal = entry ? noteForExName(entry.log, ex.name) : '';
     const prevNote = noteVal ? `<div class="ex-prev-note">${icon('note')}${escapeHtml(noteVal)}</div>` : '';
     const rest = restFor(ex.name);
@@ -2526,6 +2551,7 @@ function renderExerciseCards() {
         ${ex.swappedFrom ? `<div class="ex-swapped">${icon('swap')}Bugün ${escapeHtml(ex.swappedFrom)} yerine</div>` : ''}
         ${prevHint}
         ${sugLine}
+        ${plateauLine}
         ${prevNote}
       </div>
       <div class="ex-sets-container">
@@ -3648,7 +3674,7 @@ function renderPrList() {
 
   list.innerHTML = entries.map(pr => `
     <div class="pr-item" data-name="${escapeHtml(pr.name)}">
-      <div class="pr-name">${escapeHtml(pr.name)}</div>
+      <div class="pr-name">${escapeHtml(pr.name)}${(() => { const pl = plateauInfo(pr.name); return pl ? `<span class="pr-plateau">${icon('alert')}Plato · ${pl.stalled} antrenman</span>` : ''; })()}</div>
       <div class="pr-stats">
         <div class="pr-stat"><span class="pr-stat-val">${pr.bestKg} kg</span><span class="pr-stat-sub">${pr.bestKgReps} tekrar</span><span class="pr-stat-lbl">Max ağırlık</span></div>
         <div class="pr-stat"><span class="pr-stat-val">${pr.best1RM} kg</span><span class="pr-stat-sub">&nbsp;</span><span class="pr-stat-lbl">Tahmini 1RM</span></div>
