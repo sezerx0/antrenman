@@ -846,6 +846,7 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .ex-plateau .ic { width: 13px; height: 13px; flex-shrink: 0; margin-top: 1px; }
 .pr-plateau { display: inline-flex; align-items: center; gap: 3px; margin-left: 8px; font-size: 11px; font-weight: 600; color: var(--orange); background: color-mix(in srgb, var(--orange) 12%, transparent); padding: 2px 7px; border-radius: 8px; vertical-align: 2px; }
 .pr-plateau .ic { width: 11px; height: 11px; }
+.meas-sum-avg { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -1150,7 +1151,7 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
           <button class="trend-tab" onclick="switchTrend('waist',this)">Bel</button>
           <button class="trend-tab" onclick="switchTrend('thighR',this)">Uyluk</button>
         </div>
-        <div class="chart-container" style="height:160px;margin-top:10px;">
+        <div class="chart-container" style="height:180px;margin-top:10px;">
           <canvas id="fat-chart"></canvas>
           <div class="chart-empty" id="fat-chart-empty">Grafik için en az 2 ölçüm gerekli.</div>
         </div>
@@ -3187,7 +3188,7 @@ function openProgressModal(exName) {
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } },
           y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
         }
       }
@@ -3424,6 +3425,7 @@ function renderMeasSummaryCard() {
       ${wLast ? `<div class="meas-sum-item">
         <div class="meas-sum-val">${escapeHtml(wLast.weight)} kg</div>
         <div class="meas-sum-lbl">Vücut Ağırlığı ${diffBadge(wDiff, ' kg')}</div>
+        ${(() => { const av = weightAverages(data); const n = data.filter(m => m.weight != null).length; return n >= 3 ? `<div class="meas-sum-avg">7 gün ort. ${av[av.length - 1]} kg</div>` : ''; })()}
       </div>` : ''}
     </div>
     ${leanW ? `<div class="meas-sum-sub">
@@ -3449,6 +3451,15 @@ const trendMeta = {
   thighR: { label: 'Uyluk',     color: '#5ac8fa', suffix: v => v + ' cm' },
 };
 
+// Her tartı günü için o gün dahil son 7 günün ortalaması
+function weightAverages(data) {
+  const pts = data.filter(m => m.weight != null).map(m => ({ date: m.date, t: new Date(m.date + 'T00:00:00').getTime(), w: m.weight }));
+  return pts.map(p => {
+    const win = pts.filter(q => q.t <= p.t && q.t > p.t - 7 * 86400000);
+    return Math.round(win.reduce((a, q) => a + q.w, 0) / win.length * 10) / 10;
+  });
+}
+
 function renderFatChart() {
   const canvas = document.getElementById('fat-chart');
   if (fatChart) { fatChart.destroy(); fatChart = null; }
@@ -3461,23 +3472,27 @@ function renderFatChart() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
   const textColor = '#8e8e93';
+  const col = chartColor(meta.color);
+  const isWeight = key === 'weight';
+  // Kilo: günlük tartı su/tuzla oynar; noktalar ham değer, kalın çizgi 7 günlük ortalama
+  const datasets = isWeight ? [
+    { label: 'Tartı', data: data.map(m => m.weight), showLine: false, pointRadius: 3, pointBackgroundColor: col + '80', pointBorderColor: 'transparent', order: 2 },
+    { label: '7 günlük ortalama', data: weightAverages(data), borderColor: col, backgroundColor: col + '1f', borderWidth: 3, fill: true, tension: 0.35, pointRadius: 0, order: 1 },
+  ] : [{
+    label: meta.label,
+    data: data.map(m => m[key]),
+    borderColor: col,
+    backgroundColor: col + '1f',
+    fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: col,
+  }];
   fatChart = new Chart(canvas, {
     type: 'line',
-    data: {
-      labels: data.map(m => fmtDateShort(m.date)),
-      datasets: [{
-        label: meta.label,
-        data: data.map(m => m[key]),
-        borderColor: chartColor(meta.color),
-        backgroundColor: chartColor(meta.color) + '1f',
-        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: chartColor(meta.color),
-      }]
-    },
+    data: { labels: data.map(m => fmtDateShort(m.date)), datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: { legend: { display: isWeight, position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, color: textColor, font: { size: 11 } } } },
       scales: {
-        x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+        x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } },
         y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: meta.suffix }, ...(key === 'fat' ? { min: 0 } : {}) }
       }
     }
