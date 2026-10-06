@@ -830,6 +830,18 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .ex-skip-bar { display: none; align-items: center; justify-content: space-between; padding: 0 16px 14px; font-size: 13px; color: var(--text-secondary); }
 .ex-card.skipped .ex-skip-bar { display: flex; }
 .ex-skip-bar button { border: none; background: var(--accent-light); color: var(--accent); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.muscle-card { padding: 14px 16px; }
+.muscle-row { display: grid; grid-template-columns: 92px 1fr 28px; align-items: center; gap: 10px; padding: 5px 0; }
+.muscle-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.muscle-row.zero .muscle-name, .muscle-row.zero .muscle-num { color: var(--text-tertiary); }
+.muscle-bar { position: relative; height: 10px; background: var(--bg-secondary); border-radius: 5px; overflow: hidden; }
+.muscle-zone { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--green) 7%, transparent); border-left: 1.5px solid color-mix(in srgb, var(--green) 45%, transparent); border-right: 1.5px solid color-mix(in srgb, var(--green) 45%, transparent); box-sizing: border-box; }
+.muscle-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent-fill); border-radius: 5px; z-index: 1; }
+[data-palette="lime"]:not([data-theme="dark"]) .muscle-fill { background: #9CCB3B; }
+.muscle-num { font-size: 13px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.muscle-legend { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); margin-top: 10px; }
+.muscle-legend i { display: inline-block; width: 14px; height: 8px; flex-shrink: 0; background: color-mix(in srgb, var(--green) 7%, transparent); border-left: 1.5px solid color-mix(in srgb, var(--green) 45%, transparent); border-right: 1.5px solid color-mix(in srgb, var(--green) 45%, transparent); }
+.muscle-empty { font-size: 14px; color: var(--text-secondary); text-align: center; padding: 8px 0; }
 </style>
 </head>
 <body>
@@ -1153,6 +1165,11 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
     <div class="nav-header">
       <h1>PR & 1RM</h1>
       <p>Kişisel rekorlar ve hesaplayıcı</p>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">Son 7 Gün · Kas Grubu Başına Set</div>
+      <div class="card muscle-card" id="muscle-card"></div>
     </div>
 
     <div class="section" style="margin-top:14px;">
@@ -2612,6 +2629,11 @@ function renderExSheet(view) {
       : `<button class="sheet-row" onclick="renderExSheet('swap')">${icon('swap')}Bu antrenmanda değiştir</button>`);
     rows.push(`<button class="sheet-row" onclick="toggleSkipEx(${ei}); closeExSheet();">${icon(skipped ? 'undo' : 'skip')}${skipped ? 'Atlamayı geri al' : 'Bu antrenmanda atla'}</button>`);
   }
+  const m = muscleFor(ex.name);
+  rows.push(`<label class="sheet-row">${icon('target')}Kas grubu
+    <select onchange="setMuscle(active.day.exercises[exSheetIdx].name, this.value); toast('Kas grubu: ' + MUSCLES[this.value], 1500)">
+      ${Object.entries(MUSCLES).map(([k, v]) => `<option value="${k}"${k === m ? ' selected' : ''}>${v}</option>`).join('')}
+    </select></label>`);
   body.innerHTML = `<div class="sheet-list">${rows.join('')}</div>`;
 }
 function exSheetGraph() {
@@ -3510,7 +3532,86 @@ function filterPR(query) {
   });
 }
 
+// ── Kas grupları ──
+const MUSCLES = {
+  chest: 'Göğüs', back: 'Sırt', shoulders: 'Omuz', rearDelts: 'Arka omuz', biceps: 'Biceps', triceps: 'Triceps',
+  quads: 'Ön bacak', hamstrings: 'Arka bacak', glutes: 'Kalça', calves: 'Baldır', abs: 'Karın', traps: 'Trapez',
+  forearms: 'Ön kol', other: 'Diğer',
+};
+// Sıra önemli: özel kalıplar genel kalıplardan önce ("leg curl" → arka bacak, "curl" → biceps)
+const MUSCLE_RULES = [
+  ['rearDelts', /rear delt|reverse (pec|fly|flye)|face ?pull|arka omuz/],
+  ['hamstrings', /leg curl|hamstring|\brdl\b|romanian|nordic|good ?morning|arka bacak/],
+  ['quads', /leg ext|squat|leg press|lunge|hack|sissy|step ?up|ön bacak|bacak pres/],
+  ['calves', /calf|baldır/],
+  ['triceps', /tricep|pushdown|push ?down|skull|\bdips?\b|close ?grip|arka kol|french press/],
+  ['glutes', /hip thrust|glute|kick ?back|abduct|kalça/],
+  ['shoulders', /lateral raise|shoulder|overhead press|military|\bohp\b|arnold|front raise|upright row|omuz/],
+  ['biceps', /curl|bicep|preacher|hammer|pazı/],
+  ['traps', /shrug|trap/],
+  // "Chest Supported Row" bir sırt hareketi: sırt kuralı göğüsten önce
+  ['back', /\blat\b|lats|\brows?\b|pulldown|pull ?up|chin ?up|pullover|deadlift|sırt|kanat/],
+  ['chest', /pec|chest|bench|fly|flye|push ?up|crossover|göğüs/],
+  ['abs', /crunch|\babs?\b|plank|leg raise|sit ?up|karın|mekik/],
+  ['forearms', /wrist|forearm|ön kol|bilek/],
+];
+function detectMuscle(name) {
+  const n = normName(name);
+  for (const [m, re] of MUSCLE_RULES) if (re.test(n)) return m;
+  return 'other';
+}
+function muscleFor(name) {
+  const o = (DB.settings.muscleByEx || {})[normName(name)];
+  return MUSCLES[o] ? o : detectMuscle(name);
+}
+function setMuscle(name, m) {
+  DB.settings.muscleByEx = DB.settings.muscleByEx || {};
+  if (m === detectMuscle(name)) delete DB.settings.muscleByEx[normName(name)];
+  else DB.settings.muscleByEx[normName(name)] = m;
+  saveData('settings', DB.settings);
+}
+
+// Son 7 günde (bugün dahil) kas grubu başına dolu set sayısı
+function weeklyMuscleSets() {
+  const start = logicalNow(); start.setDate(start.getDate() - 6);
+  const from = isoDate(start), to = today();
+  const counts = {};
+  DB.workoutLogs.forEach(log => {
+    if (log.date < from || log.date > to) return;
+    (log.sets || []).forEach(s => {
+      if (!hasValue(s)) return;
+      const name = s.exName || (getDayById(log.dayId)?.exercises.find(e => e.id === s.exId) || {}).name;
+      if (!name) return;
+      const m = muscleFor(name);
+      counts[m] = (counts[m] || 0) + 1;
+    });
+  });
+  return counts;
+}
+function renderMuscleCard() {
+  const el = document.getElementById('muscle-card');
+  if (!el) return;
+  const counts = weeklyMuscleSets();
+  // Programdaki kas gruplarını sıfır olsa bile göster: ihmal edileni görmek için
+  const inProgram = new Set();
+  DB.workoutDays.forEach(d => d.exercises.forEach(e => inProgram.add(muscleFor(e.name))));
+  const keys = Object.keys(MUSCLES).filter(k => counts[k] || inProgram.has(k));
+  if (!keys.length) { el.innerHTML = '<div class="muscle-empty">Henüz veri yok.</div>'; return; }
+  keys.sort((a, b) => (counts[b] || 0) - (counts[a] || 0) || MUSCLES[a].localeCompare(MUSCLES[b], 'tr'));
+  const scale = Math.max(20, ...keys.map(k => counts[k] || 0));
+  const zoneL = 10 / scale * 100, zoneW = 10 / scale * 100;
+  el.innerHTML = keys.map(k => {
+    const n = counts[k] || 0;
+    return `<div class="muscle-row${n ? '' : ' zero'}">
+      <span class="muscle-name">${MUSCLES[k]}</span>
+      <div class="muscle-bar"><div class="muscle-zone" style="left:${zoneL}%;width:${zoneW}%;"></div><div class="muscle-fill" style="width:${n / scale * 100}%;"></div></div>
+      <span class="muscle-num">${n}</span>
+    </div>`;
+  }).join('') + `<div class="muscle-legend"><i></i>Haftada 10–20 set, çoğu kişi için yaygın bir hacim aralığı. Kas grubunu hareketin ⋯ menüsünden değiştirebilirsin.</div>`;
+}
+
 function renderStats() {
+  renderMuscleCard();
   renderPrList();
   const search = document.getElementById('pr-search');
   if (search) search.value = '';
