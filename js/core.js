@@ -296,13 +296,33 @@ function fmtMins(sec) {
 function firstChar(str) { return Array.from(String(str || '?'))[0] || '?'; }
 // "Torso A" → "TA", "Push" → "PU", "Üst Vücut 2" → "Ü2"
 function dayCode(name) {
-  const words = String(name || '?').trim().split(/\s+/).filter(Boolean);
+  // "Pull B + Bacak" → "Pull B" kısmından kod üret
+  const words = String(name || '?').split('+')[0].trim().split(/\s+/).filter(Boolean);
   const chars = w => Array.from(w);
   const code = words.length >= 2
     ? chars(words[0])[0] + chars(words[words.length - 1])[0]
     : chars(words[0] || '?').slice(0, 2).join('');
   return code.toLocaleUpperCase('tr').replace(/İ/g, 'I');
 }
+// Programdaki günlerin kodları; aynı kodu alanlar ilk kelimenin ayırt edici harfiyle
+// ayrılır: Push A / Pull A → "PSA" / "PLA"
+function dayCodes() {
+  const up = s => String(s).toLocaleUpperCase('tr').replace(/İ/g, 'I');
+  const first = n => Array.from(up(String(n || '').split('+')[0].trim().split(/\s+/)[0] || '?'));
+  const base = DB.workoutDays.map(d => ({ id: d.id, name: d.name, code: dayCode(d.name) }));
+  const out = {};
+  base.forEach(b => {
+    const others = base.filter(o => o.id !== b.id && o.code === b.code);
+    out[b.id] = b.code;
+    if (!others.length) return;
+    const w = first(b.name);
+    for (let k = 1; k < w.length; k++) {
+      if (others.every(o => first(o.name)[k] !== w[k])) { out[b.id] = w[0] + w[k] + Array.from(b.code).slice(1).join(''); break; }
+    }
+  });
+  return out;
+}
+function codeForDay(dayId, name) { return dayCodes()[dayId] || dayCode(name); }
 function dayBadgeStyle(dayId) {
   const color = dayColorMap()[dayId];
   return color ? `background:${color};color:${textOn(color)};` : '';
@@ -409,6 +429,7 @@ const LAYER_CLOSERS = {
   dayEditor:     () => document.getElementById('day-editor').classList.remove('open'),
   orderEditor:   () => document.getElementById('order-editor').classList.remove('open'),
   exSheet:       () => document.getElementById('ex-sheet').classList.remove('open'),
+  templateSheet: () => document.getElementById('template-sheet').classList.remove('open'),
 };
 function pushLayer(name) {
   if (layers[layers.length - 1] === name) return;

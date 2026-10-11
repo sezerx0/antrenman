@@ -84,7 +84,7 @@ function renderDaySelectList() {
 
     return `<div class="card day-select-card ${isNext ? 'day-select-next' : ''}" onclick="openWorkoutScreen(${jsArg(day.id)})">
       <div class="day-select-left">
-        <div class="day-select-badge" style="${dayBadgeStyle(day.id)}">${escapeHtml(dayCode(day.name))}</div>
+        <div class="day-select-badge" style="${dayBadgeStyle(day.id)}">${escapeHtml(codeForDay(day.id, day.name))}</div>
         <div>
           <div class="day-select-name">${escapeHtml(day.name)}${isNext ? ' <span class="next-tag">Sıradaki</span>' : ''}</div>
           <div class="day-select-meta">${exCount} hareket · ${setCount} set${lastDateStr ? ` · Son: ${lastDateStr}` : ''}</div>
@@ -102,6 +102,9 @@ function dayColorMap() {
   const pal = isLime() ? (isDarkMode() ? DAY_PALETTE_LIME_DARK : DAY_PALETTE_LIME) : DAY_PALETTE;
   const map = {};
   DB.workoutDays.forEach((d, i) => { map[d.id] = pal[i % pal.length]; });
+  // Program değiştiyse eski günlerin kayıtları da renkli kalsın
+  let n = DB.workoutDays.length;
+  DB.workoutLogs.forEach(l => { if (!map[l.dayId]) map[l.dayId] = pal[n++ % pal.length]; });
   return map;
 }
 // Arka plan rengine göre okunur yazı rengi
@@ -179,7 +182,7 @@ function renderRecentList() {
   }
   list.innerHTML = items.map(({ log, idx }) => {
     const name = dayDisplayName(log);
-    const initial = dayCode(name);
+    const initial = codeForDay(log.dayId, name);
     const dur = log.duration ? fmtMins(log.duration) : '';
     const vol = logVolume(log);
     return `<div class="recent-item" onclick="openHistoryModal(${idx})">

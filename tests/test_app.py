@@ -628,6 +628,52 @@ with sync_playwright() as p:
     check('sağ/sol harekette önceki "25×10/9"', bi == '25×10/9', bi)
     page.evaluate("discardActive(); DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs)")
 
+
+    # ── 36. Program şablonları ──
+    page.evaluate("""() => { discardActive(); localStorage.removeItem('antrenman:programBackup');
+      DB.workoutDays = deepCopy(DEFAULT_DAYS); DB.workoutDays[1].exercises[0].bilateral = true;
+      saveData('workoutDays', DB.workoutDays); DB.workoutOrder = DB.workoutDays.map(d => d.id); saveData('workoutOrder', DB.workoutOrder);
+      DB.workoutLogs.push({date: today(), dayId:'limbs-b', dayName:'Limbs B', __test:1, sets:[{exId:'hack-squat', exName:'Hack Squat', setIdx:0, kg:80, reps:10}], notes:{}});
+      saveData('workoutLogs', DB.workoutLogs); switchTab('settings'); }""")
+    check('program etiketi "Torso / Limbs"', page.inner_text('#program-label') == 'Torso / Limbs', page.inner_text('#program-label'))
+    layers_before = page.evaluate("layers.length")
+    page.click('#tab-settings .settings-row:has(#program-label)'); page.wait_for_timeout(300)
+    check('şablon ekranı açıldı, mevcut program işaretli', page.is_visible('#template-sheet') and page.evaluate("document.querySelectorAll('#template-list .tpl-card.current').length") == 1)
+    page.click('#template-list .tpl-apply >> nth=0'); page.wait_for_timeout(400)
+    check('Push / Pull programına geçildi', page.evaluate("DB.workoutDays.map(d => d.name).join('|')") == 'Push A|Pull A|Push B|Pull B + Bacak' and not page.is_visible('#template-sheet'))
+    check('katman kapandı', page.evaluate("layers.length") == layers_before, (layers_before, page.evaluate("layers.join(',')")))
+    upper = page.evaluate("""() => { const tot = days => { const m = {}; days.forEach(d => d.exercises.forEach(e => { m[e.name] = (m[e.name] || 0) + e.sets; })); return m; };
+      const a = tot(DEFAULT_DAYS), b = tot(DB.workoutDays); const legs = ['Lying Leg Curl','Leg Extension','Leg Press','Hack Squat'];
+      return Object.keys(a).filter(k => !legs.includes(k)).filter(k => a[k] !== b[k]); }""")
+    check('üst vücut hareketleri ve set sayıları birebir aynı', upper == [], upper)
+    legs = page.evaluate("getDayById('pull-b').exercises.slice(-3).map(e => e.name + ' ' + e.sets).join(', ')")
+    check('bacak Pull B sonunda, aynı set sayılarıyla', legs == 'Lying Leg Curl 3, Leg Extension 3, Leg Press 3', legs)
+    check('sağ/sol ayarı korundu', page.evaluate("getDayById('pull-a').exercises.find(e => e.name === 'Preacher Curl Machine').bilateral") is True)
+    check('sıradaki gün Push A', page.evaluate("getNextDayId()") == 'push-a')
+    codes = page.evaluate("Object.values(dayCodes())")
+    check('gün kodları ayırt edici', len(set(codes)) == 4 and codes == ['PSA', 'PLA', 'PSB', 'PLB'], codes)
+    check('ayarlarda program adı', page.inner_text('#program-label') == 'Push / Pull + Bacak')
+    page.evaluate("switchTab('workout'); workoutCalOffset = 0; renderHeatmap()")
+    old_bg = page.evaluate("[...document.querySelectorAll('.wcal-day.has-workout')].map(e => e.style.background)")
+    check('eski günlerin kayıtları takvimde renkli kalıyor', old_bg and all('142, 142, 147' not in b for b in old_bg), old_bg)
+    page.evaluate("openWorkoutScreen('push-a')"); page.wait_for_timeout(300)
+    check('yeni günde Pec Deck önceki değerleri geliyor', page.evaluate("document.querySelectorAll('#ex-card-0 .set-prev:not(.empty)').length") >= 1)
+    page.evaluate("switchTab('settings'); openTemplateSheet()"); page.wait_for_timeout(200)
+    page.click('#template-list .tpl-apply >> nth=0'); page.wait_for_timeout(300)
+    check('antrenman sürerken program değişmiyor', page.evaluate("DB.workoutDays[0].name") == 'Push A' and 'bitir' in page.inner_text('#toast'))
+    page.evaluate("closeTemplateSheet(); discardActive()"); page.wait_for_timeout(300)
+    page.evaluate("""() => { DB.workoutDays[0].exercises[0].sets = 4; saveData('workoutDays', DB.workoutDays); renderSettings(); }""")
+    check('elle değişen program "Özel"', page.inner_text('#program-label') == 'Özel')
+    page.evaluate("openTemplateSheet()"); page.wait_for_timeout(200)
+    page.click('#template-list .tpl-card:has-text("Torso / Limbs") .tpl-apply'); page.wait_for_timeout(300)
+    check('Torso / Limbs\'e geri dönüldü', page.evaluate("DB.workoutDays.map(d => d.id).join(',')") == 'torso-a,limbs-a,torso-b,limbs-b')
+    page.evaluate("openTemplateSheet()"); page.wait_for_timeout(200)
+    check('elle düzenlenen program "Önceki programım" olarak duruyor', page.evaluate("document.querySelectorAll('#template-list .tpl-card.backup').length") == 1)
+    page.click('#template-list .tpl-card.backup .tpl-apply'); page.wait_for_timeout(300)
+    check('önceki programa tek dokunuşla dönüş (elle değişiklik dahil)', page.evaluate("DB.workoutDays[0].name + ' ' + DB.workoutDays[0].exercises[0].sets") == 'Push A 4')
+    page.evaluate("""() => { DB.workoutDays = deepCopy(DEFAULT_DAYS); saveData('workoutDays', DB.workoutDays); DB.workoutOrder = DB.workoutDays.map(d => d.id); saveData('workoutOrder', DB.workoutOrder);
+      localStorage.removeItem('antrenman:programBackup'); DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); renderHome(); renderSettings(); }""")
+
     check('sayfa hatası yok', not errors, errors)
 
     # ── 35. Antrenman bildirimi ──

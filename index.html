@@ -469,6 +469,12 @@
     <div class="section" style="margin-top:14px;">
       <div class="section-label">Antrenman Günleri</div>
       <div class="card settings-group">
+        <div class="settings-row" style="cursor:pointer;" onclick="openTemplateSheet()">
+          <div class="settings-icon" style="background:#ff9f0a20;color:#ff9f0a;"><i data-icon="swap"></i></div>
+          <span class="settings-label">Program</span>
+          <span class="settings-value" id="program-label"></span>
+          <span class="settings-chevron">›</span>
+        </div>
         <div class="settings-row" style="cursor:pointer;" onclick="openDayEditor()">
           <div class="settings-icon" style="background:#5856d620;color:#5856d6;"><i data-icon="list"></i></div>
           <span class="settings-label">Günleri Düzenle</span>
@@ -621,6 +627,16 @@
     <h3 id="ex-sheet-title">Hareket</h3>
     <p class="sub" id="ex-sheet-sub"></p>
     <div id="ex-sheet-body"></div>
+  </div>
+</div>
+
+<!-- Program şablonları -->
+<div id="template-sheet" class="bottom-sheet" onclick="closeTemplateSheet()">
+  <div class="progress-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <h3>Program</h3>
+    <p class="sub">Seçtiğin program antrenman günlerinin yerine geçer. Geçmiş kayıtların, grafiklerin ve "Önceki" değerlerin korunur.</p>
+    <div id="template-list"></div>
   </div>
 </div>
 
