@@ -119,13 +119,14 @@ const MUSCLE_RULES = [
   ['triceps', /tricep|pushdown|push ?down|skull|\bdips?\b|close ?grip|arka kol|french press/],
   ['glutes', /hip thrust|glute|kick ?back|abduct|kalça/],
   ['shoulders', /lateral raise|shoulder|overhead press|military|\bohp\b|arnold|front raise|upright row|omuz/],
+  // Ön kol: "reverse curl" ve "wrist curl" biceps sayılmasın diye biceps'ten önce
+  ['forearms', /wrist|forearm|reverse curl|ön ?kol|bilek/],
   ['biceps', /curl|bicep|preacher|hammer|pazı/],
   ['traps', /shrug|trap/],
   // "Chest Supported Row" bir sırt hareketi: sırt kuralı göğüsten önce
   ['back', /\blat\b|lats|\brows?\b|pulldown|pull ?up|chin ?up|pullover|deadlift|sırt|kanat/],
   ['chest', /pec|chest|bench|fly|flye|push ?up|crossover|göğüs/],
   ['abs', /crunch|\babs?\b|plank|leg raise|sit ?up|karın|mekik/],
-  ['forearms', /wrist|forearm|ön kol|bilek/],
 ];
 function detectMuscle(name) {
   const n = normName(name);

@@ -538,10 +538,10 @@ with sync_playwright() as p:
     # ── 30. Kas grupları ──
     det = page.evaluate("""() => ['Pec Deck Fly','Incline Chest Press','Cable Lateral Raise','Lat Pulldown','Chest Supported Machine Row','Chest Supported T-Bar Row Machine',
       'Preacher Curl Machine','Cable Triceps Pushdown','Bayesian Curl Cable','Triceps Overhead Extension','Lying Leg Curl','Leg Extension','Leg Press','Hack Squat',
-      'Reverse Pec Deck','Hip Thrust','Standing Calf Raise','Shrug','Cable Crunch'].map(n => n + '=' + detectMuscle(n)).join('|')""")
+      'Reverse Pec Deck','Hip Thrust','Standing Calf Raise','Shrug','Cable Crunch','Cable Reverse Curl','Dumbbell Wrist Curl'].map(n => n + '=' + detectMuscle(n)).join('|')""")
     exp = ['Pec Deck Fly=chest','Incline Chest Press=chest','Cable Lateral Raise=shoulders','Lat Pulldown=back','Chest Supported Machine Row=back','Chest Supported T-Bar Row Machine=back',
       'Preacher Curl Machine=biceps','Cable Triceps Pushdown=triceps','Bayesian Curl Cable=biceps','Triceps Overhead Extension=triceps','Lying Leg Curl=hamstrings','Leg Extension=quads','Leg Press=quads','Hack Squat=quads',
-      'Reverse Pec Deck=rearDelts','Hip Thrust=glutes','Standing Calf Raise=calves','Shrug=traps','Cable Crunch=abs']
+      'Reverse Pec Deck=rearDelts','Hip Thrust=glutes','Standing Calf Raise=calves','Shrug=traps','Cable Crunch=abs','Cable Reverse Curl=forearms','Dumbbell Wrist Curl=forearms']
     wrong = [a for a, b in zip(det.split('|'), exp) if a != b]
     check('kas grubu tahmini (varsayılan program + yaygın hareketler)', not wrong, wrong)
     page.evaluate("""() => { DB.workoutLogs.push({date: today(), dayId:'torso-a', dayName:'Torso A', __test:1, sets:[
