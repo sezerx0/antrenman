@@ -538,51 +538,101 @@ function resetData() {
 // ═══════════════════════════════════════════════
 //  PROGRAM ŞABLONLARI
 // ═══════════════════════════════════════════════
-// Hareket adları mevcut programla birebir aynı: geçmiş, "Önceki" sütunu ve
-// grafikler program değişince de devam eder.
-const PUSH_PULL_DAYS = (() => {
-  const ex = (id, name, sets) => ({ id, name, sets });
-  const push = (k, press) => ({ id: `push-${k}`, name: `Push ${k.toUpperCase()}`, exercises: [
-    ex(`push-${k}-pec-deck`, 'Pec Deck Fly', 2),
-    ex(`push-${k}-press`, press, 2),
-    ex(`push-${k}-cable-lat`, 'Cable Lateral Raise', 3),
-    ex(`push-${k}-tricep-push`, 'Cable Triceps Pushdown', 2),
-    ex(`push-${k}-tri-overhead`, 'Triceps Overhead Extension', 2),
-  ]});
-  const pull = (k, legs) => ({ id: `pull-${k}`, name: `Pull ${k.toUpperCase()}${legs ? ' + Bacak' : ''}`, exercises: [
-    ex(`pull-${k}-lat-pulldown`, 'Lat Pulldown', 2),
-    ex(`pull-${k}-cs-row`, 'Chest Supported Machine Row', 1),
-    ex(`pull-${k}-tbar-row`, 'Chest Supported T-Bar Row Machine', 3),
-    ex(`pull-${k}-preacher`, 'Preacher Curl Machine', 2),
-    ex(`pull-${k}-bayesian`, 'Bayesian Curl Cable', 2),
-    ...(legs ? [
-      ex(`pull-${k}-leg-curl`, 'Lying Leg Curl', 3),
-      ex(`pull-${k}-leg-ext`, 'Leg Extension', 3),
-      ex(`pull-${k}-leg-press`, 'Leg Press', 3),
-    ] : []),
-  ]});
-  return [push('a', 'Incline Chest Press'), pull('a', false), push('b', 'Horizontal Chest Press'), pull('b', true)];
-})();
+// Push / Pull şablonu sabit değil: kullanıcının kendi programındaki hareketler
+// ve set sayılarından üretilir. Hareket adları aynı kaldığı için geçmiş,
+// "Önceki" sütunu ve grafikler program değişince de devam eder.
+const PUSH_MUSCLES = new Set(['chest', 'shoulders', 'triceps']);
+const LEG_MUSCLES = new Set(['quads', 'hamstrings', 'glutes', 'calves']);
 
-const PROGRAM_TEMPLATES = [
-  { id: 'push-pull', name: 'Push / Pull + Bacak',
-    desc: 'Push A → Pull A → dinlenme → Push B → Pull B + Bacak → dinlenme. Mevcut hareketlerin ve set sayılarınla; bacak haftada bir, Pull B\'nin sonunda. Dinlenme günlerini uygulamaya girmen gerekmez.',
-    days: PUSH_PULL_DAYS },
-  { id: 'torso-limbs', name: 'Torso / Limbs',
-    desc: 'Üst ve alt vücut günleri dönüşümlü, bacak haftada iki kez.',
-    days: DEFAULT_DAYS },
-];
-
+function isPushPullProgram(days) {
+  return Array.isArray(days) && days.length > 0 && days.every(d => /^(push|pull)-/.test(String(d.id)));
+}
 function programSignature(days) {
   return JSON.stringify((days || []).map(d => [normName(d.name), d.exercises.map(e => [normName(e.name), e.sets])]));
 }
-function getProgramBackup() {
-  const b = readJSON('programBackup', null);
-  return isPlainObject(b) && Array.isArray(b.days) && b.days.length ? b : null;
+
+// Önceki programlar (en yeni başta, en fazla 5, aynıları tekrar edilmez)
+function getProgramHistory() {
+  let h = readJSON('programHistory', null);
+  if (!Array.isArray(h)) {
+    h = [];
+    const old = readJSON('programBackup', null);   // ilk sürümdeki tek yedek
+    if (isPlainObject(old)) h.push(old);
+  }
+  return h.filter(x => isPlainObject(x) && Array.isArray(x.days) && x.days.length);
+}
+function saveProgramToHistory(entry) {
+  const sig = programSignature(entry.days);
+  const h = getProgramHistory().filter(x => programSignature(x.days) !== sig);
+  h.unshift(entry);
+  lsSet('programHistory', JSON.stringify(h.slice(0, 5)));
+  lsRemove('programBackup');
+}
+
+// Push/Pull'un kaynağı: şu anki program; zaten Push/Pull'daysa ondan önceki program
+function pushPullSource() {
+  if (!isPushPullProgram(DB.workoutDays)) return { days: DB.workoutDays, from: 'current' };
+  const prev = getProgramHistory().find(x => !isPushPullProgram(x.days));
+  return prev ? { days: prev.days, from: 'history' } : { days: DEFAULT_DAYS, from: 'default' };
+}
+function exerciseSide(name) {
+  const m = muscleFor(name);
+  return PUSH_MUSCLES.has(m) ? 'push' : LEG_MUSCLES.has(m) ? 'legs' : 'pull';
+}
+// Günler sırayla iki yarıya bölünür (Torso A + Limbs A → A, Torso B + Limbs B → B);
+// her yarının hareketleri itiş / çekiş / bacak olarak ayrılır, set sayıları aynen kalır.
+// Bacak haftada bir: ilk yarının bacak hareketleri Pull B'nin sonuna eklenir.
+function buildPushPull(src) {
+  const half = Math.ceil(src.length / 2);
+  const groups = [src.slice(0, half), src.slice(half)];
+  if (!groups[1].length) groups[1] = groups[0];
+  const split = days => {
+    const out = { push: [], pull: [], legs: [] };
+    days.forEach(d => d.exercises.forEach(e => { if (String(e.name || '').trim()) out[exerciseSide(e.name)].push(e); }));
+    return out;
+  };
+  const A = split(groups[0]), B = split(groups[1]);
+  const legs = A.legs.length ? A.legs : B.legs;
+  const mk = (id, name, list) => ({ id, name, exercises: list.map((e, i) => ({
+    id: `${id}-${i + 1}`, name: e.name, sets: e.sets, ...(e.bilateral ? { bilateral: true } : {}),
+  })) });
+  return [
+    mk('push-a', 'Push A', A.push),
+    mk('pull-a', 'Pull A', A.pull),
+    mk('push-b', 'Push B', B.push),
+    mk('pull-b', legs.length ? 'Pull B + Bacak' : 'Pull B', [...B.pull, ...legs]),
+  ].filter(d => d.exercises.length);
+}
+// Hareket başına toplam set (döngü başına)
+function setTotals(days, filter) {
+  const m = {};
+  days.forEach(d => d.exercises.forEach(e => {
+    if (filter && !filter(e)) return;
+    const k = normName(e.name);
+    m[k] = (m[k] || 0) + (e.sets || 0);
+  }));
+  return m;
+}
+
+function programTemplates() {
+  const src = pushPullSource();
+  const pp = buildPushPull(src.days);
+  const notLeg = e => exerciseSide(e.name) !== 'legs';
+  const a = setTotals(src.days, notLeg), b = setTotals(pp, notLeg);
+  const same = Object.keys(a).length === Object.keys(b).length && Object.keys(a).every(k => a[k] === b[k]);
+  const srcTxt = src.from === 'current' ? 'şu anki programındaki' : src.from === 'history' ? "Push/Pull'a geçmeden önceki programındaki" : 'varsayılan programdaki';
+  return [
+    { id: 'push-pull', name: 'Push / Pull + Bacak', check: same ? `Üst vücut hareketleri ve set sayıları ${srcTxt} ile aynı` : '',
+      desc: `Push A → Pull A → dinlenme → Push B → Pull B + Bacak → dinlenme. ${srcTxt[0].toLocaleUpperCase('tr') + srcTxt.slice(1)} hareketlerden oluşturuldu; bacak haftada bir, Pull B'nin sonunda. Dinlenme günlerini uygulamaya girmen gerekmez.`,
+      days: pp },
+    { id: 'torso-limbs', name: 'Torso / Limbs (varsayılan)',
+      desc: 'Uygulamanın varsayılan programı: üst ve alt vücut günleri dönüşümlü, bacak haftada iki kez.',
+      days: DEFAULT_DAYS },
+  ];
 }
 function currentTemplate() {
   const sig = programSignature(DB.workoutDays);
-  return PROGRAM_TEMPLATES.find(t => programSignature(t.days) === sig) || null;
+  return programTemplates().find(t => programSignature(t.days) === sig) || null;
 }
 function programSummary(days) {
   const sets = days.reduce((a, d) => a + d.exercises.reduce((x, e) => x + e.sets, 0), 0);
@@ -596,64 +646,63 @@ function openTemplateSheet() {
 }
 function closeTemplateSheet() { closeLayer('templateSheet'); }
 
+let templateCandidates = {};
 function renderTemplateList() {
   const cur = programSignature(DB.workoutDays);
-  const card = (key, name, desc, days, extraCls) => {
+  templateCandidates = {};
+  const card = (key, name, desc, days, opts = {}) => {
+    templateCandidates[key] = { name, days, order: opts.order || null };
     const isCur = programSignature(days) === cur;
     const dayLines = days.map(d => {
       const n = d.exercises.reduce((a, e) => a + e.sets, 0);
-      return `<div class="tpl-day"><b>${escapeHtml(d.name)}</b><span>${d.exercises.length} hareket · ${n} set</span></div>`;
+      const exs = d.exercises.map(e => `${escapeHtml(e.name)} <b>${e.sets}</b>`).join(' · ');
+      return `<div class="tpl-day"><div class="tpl-day-head"><b>${escapeHtml(d.name)}</b><span>${d.exercises.length} hareket · ${n} set</span></div><div class="tpl-day-ex">${exs}</div></div>`;
     }).join('');
-    return `<div class="tpl-card${isCur ? ' current' : ''}${extraCls || ''}">
+    return `<div class="tpl-card${isCur ? ' current' : ''}${opts.cls || ''}">
       <div class="tpl-head"><span class="tpl-name">${escapeHtml(name)}</span>${isCur ? `<span class="tpl-badge">${icon('check')}Kullanılıyor</span>` : `<span class="tpl-meta">${programSummary(days)}</span>`}</div>
       <div class="tpl-desc">${escapeHtml(desc)}</div>
+      ${opts.check ? `<div class="tpl-check">${icon('check-circle')}${escapeHtml(opts.check)}</div>` : ''}
       <div class="tpl-days">${dayLines}</div>
       ${isCur ? '' : `<button class="btn-primary tpl-apply" onclick="applyTemplate(${jsArg(key)})">Bu programa geç</button>`}
     </div>`;
   };
-  let html = PROGRAM_TEMPLATES.map(t => card(t.id, t.name, t.desc, t.days)).join('');
-  const backup = getProgramBackup();
-  if (backup && !PROGRAM_TEMPLATES.some(t => programSignature(t.days) === programSignature(backup.days))) {
-    html += card('backup', 'Önceki programım', `${fmtDate(backup.date)} tarihinde değiştirdiğin program. Günleri elle düzenlediysen o hâli.`, backup.days, ' backup');
-  }
+  const tpls = programTemplates();
+  const tplSigs = new Set(tpls.map(t => programSignature(t.days)));
+  let html = '';
+  // Kullanıcının kendi önceki programları önce (şablonlarla aynı olanlar hariç)
+  getProgramHistory().forEach((h, i) => {
+    if (tplSigs.has(programSignature(h.days))) return;
+    html += card(`history:${i}`, 'Önceki programın', `${fmtDate(h.date)} tarihinde değiştirdiğin program: ${h.days.map(d => d.name).join(', ')}.`, h.days, { cls: ' backup', order: h.order });
+  });
+  html = tpls.map(t => card(t.id, t.name, t.desc, t.days, { check: t.check })).join('') + html;
   document.getElementById('template-list').innerHTML = html;
 }
 
 function applyTemplate(key) {
   if (active) { toast('Önce devam eden antrenmanı bitir ya da iptal et.', 3000); return; }
-  let name, days, order = null;
-  if (key === 'backup') {
-    const b = getProgramBackup();
-    if (!b) return;
-    name = 'Önceki programım'; days = b.days; order = b.order;
-  } else {
-    const t = PROGRAM_TEMPLATES.find(t => t.id === key);
-    if (!t) return;
-    name = t.name; days = t.days;
-  }
-  if (!confirm(`Programın "${name}" ile değiştirilecek.\n\nGeçmiş kayıtların ve grafiklerin korunur. Şu anki programın saklanır, istediğin zaman buradan geri dönebilirsin.`)) return;
+  const cand = templateCandidates[key];
+  if (!cand) return;
+  if (!confirm(`Programın "${cand.name}" ile değiştirilecek.\n\nGeçmiş kayıtların ve grafiklerin korunur. Şu anki programın saklanır, istediğin zaman buradan geri dönebilirsin.`)) return;
 
-  // Şu anki programı sakla (bir şablonla aynıysa da saklanır; geri dönüş tek dokunuş)
-  const prev = { days: deepCopy(DB.workoutDays), order: [...DB.workoutOrder], date: today() };
+  // Şu anki programı sakla; hiçbir program kaybolmaz
+  saveProgramToHistory({ days: deepCopy(DB.workoutDays), order: [...DB.workoutOrder], date: today() });
 
   // Sağ/sol ayrı tekrar ayarı hareket adına göre korunur
   const bilateral = new Set();
   DB.workoutDays.forEach(d => d.exercises.forEach(e => { if (e.bilateral) bilateral.add(normName(e.name)); }));
-  const newDays = normalizeDays(deepCopy(days)).map(d => ({
-    ...d,
-    exercises: d.exercises.map(e => ({ ...e, bilateral: e.bilateral || bilateral.has(normName(e.name)) || undefined })),
+  const newDays = normalizeDays(deepCopy(cand.days));
+  newDays.forEach(d => d.exercises.forEach(e => {
+    if (e.bilateral || bilateral.has(normName(e.name))) e.bilateral = true; else delete e.bilateral;
   }));
-  newDays.forEach(d => d.exercises.forEach(e => { if (!e.bilateral) delete e.bilateral; }));
 
   DB.workoutDays = newDays;
-  DB.workoutOrder = Array.isArray(order) ? order.map(String) : newDays.map(d => d.id);
+  DB.workoutOrder = Array.isArray(cand.order) ? cand.order.map(String) : newDays.map(d => d.id);
   syncOrder();
   saveData('workoutDays', DB.workoutDays);
   saveData('workoutOrder', DB.workoutOrder);
-  lsSet('programBackup', JSON.stringify(prev));
 
   closeTemplateSheet();
   renderHome();
   renderSettings();
-  toast(`✅ Program değişti: ${name}`, 2600);
+  toast(`✅ Program değişti: ${cand.name}`, 2600);
 }

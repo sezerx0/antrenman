@@ -863,6 +863,12 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .tpl-badge .ic { width: 12px; height: 12px; }
 .tpl-desc { font-size: 13px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; }
 .tpl-days { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
-.tpl-day { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding: 6px 10px; background: var(--bg-primary); border-radius: 9px; }
-.tpl-day span { color: var(--text-secondary); white-space: nowrap; }
+.tpl-day { font-size: 13px; padding: 7px 10px; background: var(--bg-primary); border-radius: 9px; }
+.tpl-day-head { display: flex; justify-content: space-between; gap: 8px; }
+.tpl-day-head span { color: var(--text-secondary); white-space: nowrap; }
+.tpl-day-ex { font-size: 12px; color: var(--text-secondary); margin-top: 3px; line-height: 1.45; }
+.tpl-day-ex b { color: var(--text-primary); font-weight: 700; }
+.tpl-check { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--green); }
+[data-palette="lime"]:not([data-theme="dark"]) .tpl-check { color: #5E8A12; }
+.tpl-check .ic { width: 14px; height: 14px; flex-shrink: 0; }
 .tpl-apply { margin-top: 12px; }
