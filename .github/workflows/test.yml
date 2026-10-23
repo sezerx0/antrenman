@@ -6,7 +6,8 @@ on:
 
 jobs:
   e2e:
-    runs-on: ubuntu-latest
+    # Playwright 1.56 kurulumu Ubuntu 26'yı tanımıyor; desteklenen sürüme sabit
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
