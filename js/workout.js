@@ -406,8 +406,109 @@ function renderExerciseCards() {
         <textarea class="ex-note-input" placeholder="Bu hareket için not…" id="note-${ei}" oninput="onNoteInput(${ei})" rows="2"></textarea>
       </div>
     </div>`;
-  }).join('');
+  }).join('') + renderCardioCard();
   updateProgress();
+}
+
+// ═══════════════════════════════════════════════
+//  KARDİYO (antrenmanın sonunda)
+// ═══════════════════════════════════════════════
+// active.cardio: [{ type, min, km, kcal }] (girilen ham metin; kayıtta sayıya çevrilir)
+const CARDIO_TYPES = ['Koşu bandı', 'Eliptik', 'Bisiklet', 'Merdiven', 'Kürek', 'Yürüyüş', 'Diğer'];
+
+// Son kaydedilen kardiyo (düzenlenen kayıt hariç)
+function lastCardio(type) {
+  const exclude = active && active.mode === 'edit' ? DB.workoutLogs[active.editIdx] : null;
+  for (let i = DB.workoutLogs.length - 1; i >= 0; i--) {
+    const l = DB.workoutLogs[i];
+    if (l === exclude || !Array.isArray(l.cardio) || !l.cardio.length) continue;
+    if (!type) return { log: l, entry: l.cardio[l.cardio.length - 1] };
+    const e = l.cardio.find(c => c.type === type);
+    if (e) return { log: l, entry: e };
+  }
+  return null;
+}
+function fmtCardio(c) {
+  const parts = [`${c.type} ${c.min} dk`];
+  if (c.km) parts.push(`${String(c.km).replace('.', ',')} km`);
+  if (c.kcal) parts.push(`${c.kcal} kcal`);
+  return parts.join(' · ');
+}
+function cardioMinutes(log) {
+  return (log.cardio || []).reduce((a, c) => a + (Number(c.min) || 0), 0);
+}
+function renderCardioCard() {
+  if (!active) return '';
+  const list = active.cardio || [];
+  const last = lastCardio();
+  const hint = last ? `<div class="ex-prev-hint">Önceki: ${fmtDateShort(last.log.date)} — <b>${escapeHtml(last.log.cardio.map(fmtCardio).join(', '))}</b></div>` : '';
+  const rows = list.map((c, i) => {
+    const prev = lastCardio(c.type);
+    const ph = (k, d) => escapeHtml(prev && prev.entry[k] ? String(prev.entry[k]).replace('.', ',') : d);
+    return `<div class="cardio-row">
+      <div class="cardio-top">
+        <select class="cardio-type" onchange="setCardio(${i},'type',this.value)" aria-label="Kardiyo türü">
+          ${CARDIO_TYPES.map(t => `<option${t === c.type ? ' selected' : ''}>${t}</option>`).join('')}
+        </select>
+        <button class="cardio-remove" onclick="removeCardio(${i})" aria-label="Kardiyoyu sil">${icon('x')}</button>
+      </div>
+      <div class="cardio-fields">
+        <label class="cardio-field"><input type="text" inputmode="numeric" value="${escapeHtml(c.min || '')}" placeholder="${ph('min', '20')}" oninput="setCardio(${i},'min',this.value)" data-cardio="min"><span>dk</span></label>
+        <label class="cardio-field"><input type="text" inputmode="decimal" value="${escapeHtml(c.km || '')}" placeholder="${ph('km', '—')}" oninput="setCardio(${i},'km',this.value)" data-cardio="km"><span>km</span></label>
+        <label class="cardio-field"><input type="text" inputmode="numeric" value="${escapeHtml(c.kcal || '')}" placeholder="${ph('kcal', '—')}" oninput="setCardio(${i},'kcal',this.value)" data-cardio="kcal"><span>kcal</span></label>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="ex-card cardio-card" id="cardio-card">
+    <div class="ex-card-header">
+      <div class="ex-card-top"><span class="ex-name cardio-title">${icon('heart')}Kardiyo</span></div>
+      ${hint}
+    </div>
+    ${rows ? `<div class="cardio-list">${rows}</div>` : ''}
+    <button class="cardio-add" onclick="addCardio()">${icon('plus')}${list.length ? 'Bir kardiyo daha ekle' : 'Kardiyo ekle'}</button>
+  </div>`;
+}
+function rerenderCardio(focusIdx) {
+  const el = document.getElementById('cardio-card');
+  if (!el) return;
+  el.outerHTML = renderCardioCard();
+  if (focusIdx != null) {
+    const rows = document.querySelectorAll('#cardio-card .cardio-row');
+    rows[focusIdx]?.querySelector('[data-cardio="min"]')?.focus();
+  }
+}
+function addCardio() {
+  if (!active) return;
+  active.cardio = active.cardio || [];
+  const last = lastCardio();
+  const used = new Set(active.cardio.map(c => c.type));
+  const type = last && !used.has(last.entry.type) ? last.entry.type : (CARDIO_TYPES.find(t => !used.has(t)) || 'Diğer');
+  active.cardio.push({ type, min: '', km: '', kcal: '' });
+  saveActive();
+  rerenderCardio(active.cardio.length - 1);
+}
+function removeCardio(i) {
+  if (!active || !active.cardio) return;
+  active.cardio.splice(i, 1);
+  saveActive();
+  rerenderCardio();
+}
+function setCardio(i, field, val) {
+  if (!active || !active.cardio || !active.cardio[i]) return;
+  active.cardio[i][field] = val;
+  saveActive();
+  if (field === 'type') rerenderCardio();   // önceki değer ipuçları türe göre değişir
+}
+// Süresi girilmiş satırlar kaydedilir
+function collectCardio() {
+  return (active && active.cardio || []).map(c => {
+    const min = Math.round(num(c.min));
+    if (!(min > 0)) return null;
+    const out = { type: c.type || 'Diğer', min };
+    const km = num(c.km); if (km > 0) out.km = round2(km);
+    const kcal = Math.round(num(c.kcal)); if (kcal > 0) out.kcal = kcal;
+    return out;
+  }).filter(Boolean);
 }
 
 function toggleNote(ei) {
@@ -815,7 +916,8 @@ function finishWorkout() {
   const day = active.day;
   const duration = Math.floor((Date.now() - active.startTime) / 1000);
   const allSets = collectWorkoutSets();
-  if (!allSets.length && !confirm('Hiç set girilmedi. Yine de bitirilsin mi?')) return;
+  const cardio = collectCardio();
+  if (!allSets.length && !cardio.length && !confirm('Hiç set girilmedi. Yine de bitirilsin mi?')) return;
 
   const notes = {}, exNotes = {};
   day.exercises.forEach((ex, ei) => {
@@ -824,6 +926,7 @@ function finishWorkout() {
   });
   const totalVol = Math.round(allSets.reduce((a, s) => a + setVolume(s), 0));
   pendingWorkoutData = { date: today(), dayId: active.dayId, dayName: day.name, sets: allSets, notes, exNotes, duration };
+  if (cardio.length) pendingWorkoutData.cardio = cardio;
 
   document.getElementById('sum-sub').textContent = `${day.name} · ${fmtDate(today())}`;
   document.getElementById('sum-dur').textContent = fmtMins(duration);
@@ -853,7 +956,10 @@ function finishWorkout() {
       <div class="sum-ex-name">${escapeHtml(ex.name)}</div>
       <div class="sum-ex-detail">${escapeHtml(detail)} · ${vol} kg</div>
     </div>`;
-  }).join('');
+  }).join('') + (cardio.length ? `<div class="sum-ex-item">
+      <div class="sum-ex-name">Kardiyo</div>
+      <div class="sum-ex-detail">${escapeHtml(cardio.map(fmtCardio).join(', '))}</div>
+    </div>` : '');
 
   document.getElementById('summary-overlay').classList.add('open');
   pushLayer('summary');
@@ -946,6 +1052,7 @@ function startEditLog(idx) {
     day: { id: log.dayId, name: dayDisplayName(log), exercises },
     startTime: Date.now(),
     sets, values, done,
+    cardio: (log.cardio || []).map(c => ({ type: c.type, min: String(c.min || ''), km: c.km ? String(c.km) : '', kcal: c.kcal ? String(c.kcal) : '' })),
     screenOpen: true,
   };
   renderExerciseCards();
@@ -962,14 +1069,16 @@ function saveEditedLog() {
     return;
   }
   const allSets = collectWorkoutSets();
-  if (!allSets.length && !confirm('Hiç set kalmadı. Antrenman setsiz kaydedilsin mi?')) return;
+  const cardio = collectCardio();
+  if (!allSets.length && !cardio.length && !confirm('Hiç set kalmadı. Antrenman setsiz kaydedilsin mi?')) return;
   const notes = {}, exNotes = {};
   active.day.exercises.forEach((ex, ei) => {
     const val = document.getElementById(`note-${ei}`)?.value?.trim();
     if (val) { notes[ex.id] = val; exNotes[normName(ex.name)] = val; }
   });
-  const backup = { sets: log.sets, notes: log.notes, exNotes: log.exNotes };
+  const backup = { sets: log.sets, notes: log.notes, exNotes: log.exNotes, cardio: log.cardio };
   log.sets = allSets; log.notes = notes; log.exNotes = exNotes;
+  if (cardio.length) log.cardio = cardio; else delete log.cardio;
   if (!saveData('workoutLogs', DB.workoutLogs)) { Object.assign(log, backup); return; }
   discardActive();
   closeAllLayers();

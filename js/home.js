@@ -189,7 +189,7 @@ function renderRecentList() {
       <div class="recent-dot" style="${dayBadgeStyle(log.dayId)}"><span style="color:inherit;">${escapeHtml(initial)}</span></div>
       <div class="recent-info">
         <div class="recent-name">${escapeHtml(name)}</div>
-        <div class="recent-date">${fmtDate(log.date)}${vol ? ' · ' + vol + ' kg hacim' : ''}</div>
+        <div class="recent-date">${fmtDate(log.date)}${vol ? ' · ' + vol + ' kg hacim' : ''}${cardioMinutes(log) ? ' · ' + cardioMinutes(log) + ' dk kardiyo' : ''}</div>
       </div>
       ${dur ? `<div class="recent-dur">${dur}</div>` : ''}
       <span style="color:var(--text-secondary);font-size:18px;margin-left:2px;">›</span>
@@ -235,7 +235,13 @@ function openHistoryModal(idx) {
       ${rows}
       ${note ? `<div class="ex-note-prev hm-note">${icon('note')}${escapeHtml(note)}</div>` : ''}
     </div>`;
-  }).join('') : '<div style="padding:12px 0;color:var(--text-secondary);font-size:14px;text-align:center;">Bu antrenmanda set kaydı yok.</div>';
+  }).join('') : (log.cardio && log.cardio.length ? '' : '<div style="padding:12px 0;color:var(--text-secondary);font-size:14px;text-align:center;">Bu antrenmanda set kaydı yok.</div>');
+  if (log.cardio && log.cardio.length) {
+    body.innerHTML += `<div class="hm-ex-block">
+      <div class="hm-ex-name">Kardiyo</div>
+      ${log.cardio.map((c, i) => `<div class="hm-set-row"><span class="hm-set-num">${i + 1}</span><span class="hm-set-val">${escapeHtml(fmtCardio(c))}</span></div>`).join('')}
+    </div>`;
+  }
 
   document.getElementById('history-modal').classList.add('open');
   pushLayer('historyModal');
@@ -302,6 +308,12 @@ function renderWeeklyGoal() {
   const monthStr = today().slice(0, 7);
   document.getElementById('hero-month').textContent = DB.workoutLogs.filter(l => String(l.date).startsWith(monthStr)).length;
   document.getElementById('hero-total').textContent = DB.workoutLogs.length;
+  const weekCardio = DB.workoutLogs.filter(l => weekSet.has(l.date)).reduce((a, l) => a + cardioMinutes(l), 0);
+  const hc = document.getElementById('hero-cardio');
+  hc.innerHTML = weekCardio ? `${icon('heart')}Bu hafta <b>${weekCardio} dk</b> kardiyo` : '';
+  hc.style.display = weekCardio ? 'flex' : 'none';
+  const wc = document.getElementById('week-cardio');
+  wc.innerHTML = weekCardio ? ` · Bu hafta <b>${weekCardio} dk</b> kardiyo` : '';
   document.getElementById('hero-days').innerHTML = weekDays.map(d => {
     const cls = loggedDates.has(d.str) ? 'done' : d.str === todayStr ? 'today' : '';
     return `<div class="hero-day ${cls}">${d.label}</div>`;
