@@ -179,8 +179,8 @@
   <!-- TAB: Ölçümler -->
   <div class="screen" id="tab-meas" style="display:none;flex-direction:column;">
     <div class="nav-header">
-      <h1>Ölçümler & Yağ Oranı</h1>
-      <p>US Navy formülü</p>
+      <h1>Ölçümler</h1>
+      <p>Kilo trendi, çevre ölçüleri ve tahmini yağ oranı</p>
     </div>
 
     <div class="section" style="margin-top:14px;">
@@ -231,8 +231,18 @@
 
         <div class="meas-section-title">Çevre Ölçüleri</div>
         <div class="form-row">
-          <span class="form-label">Boyun</span>
+          <span class="form-label">Bel</span>
+          <input class="form-input" type="text" inputmode="decimal" id="m-waist" placeholder="85" min="40" max="200">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Boyun <small class="form-sub">yağ tahmini için</small></span>
           <input class="form-input" type="text" inputmode="decimal" id="m-neck" placeholder="38" min="20" max="70">
+          <span class="form-unit">cm</span>
+        </div>
+        <div class="form-row" id="hip-row">
+          <span class="form-label">Kalça</span>
+          <input class="form-input" type="text" inputmode="decimal" id="m-hip" placeholder="95" min="40" max="200">
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
@@ -241,26 +251,16 @@
           <span class="form-unit">cm</span>
         </div>
         <div class="form-row">
-          <span class="form-label">Omuz</span>
-          <input class="form-input" type="text" inputmode="decimal" id="m-shoulder" placeholder="115" min="40" max="200">
-          <span class="form-unit">cm</span>
-        </div>
-        <div class="form-row">
-          <span class="form-label">Bel</span>
-          <input class="form-input" type="text" inputmode="decimal" id="m-waist" placeholder="85" min="40" max="200">
-          <span class="form-unit">cm</span>
-        </div>
-        <div class="form-row" id="hip-row">
-          <span class="form-label">Kalça</span>
-          <input class="form-input" type="text" inputmode="decimal" id="m-hip" placeholder="95" min="40" max="200">
+          <span class="form-label">Kol</span>
+          <input class="form-input" type="text" inputmode="decimal" id="m-arm-r" placeholder="38" min="10" max="80">
           <span class="form-unit">cm</span>
         </div>
 
-        <button class="meas-section-title meas-collapse" onclick="toggleLimbRows()" aria-expanded="false" id="limb-toggle">Kol & Bacak <span class="meas-chevron">›</span></button>
+        <button class="meas-section-title meas-collapse" onclick="toggleLimbRows()" aria-expanded="false" id="limb-toggle">Diğer ölçüler <span class="meas-chevron">›</span></button>
         <div id="limb-rows" style="display:none;">
           <div class="form-row">
-            <span class="form-label">Sağ Kol</span>
-            <input class="form-input" type="text" inputmode="decimal" id="m-arm-r" placeholder="38" min="10" max="80">
+            <span class="form-label">Omuz</span>
+            <input class="form-input" type="text" inputmode="decimal" id="m-shoulder" placeholder="115" min="40" max="200">
             <span class="form-unit">cm</span>
           </div>
           <div class="form-row">
@@ -298,11 +298,10 @@
             <input class="form-input" type="text" inputmode="decimal" id="m-calf-l" placeholder="38" min="10" max="80">
             <span class="form-unit">cm</span>
           </div>
-
         </div>
       </div>
       <button class="btn-primary" style="margin-top:10px;" onclick="calculateFat()">Kaydet</button>
-      <div class="meas-hint">Sadece ölçtüklerini gir, boş bıraktıkların kaydedilmez. Yağ oranı için boyun ve bel (kadınlarda kalça da) gerekli; boy profilden alınır.</div>
+      <div class="meas-hint">Sadece ölçtüklerini gir, boş bıraktıkların kaydedilmez. Tahmini yağ oranı için boyun ve bel (kadınlarda kalça da) gerekli; boy profilden alınır.</div>
     </div>
     <div class="section" style="margin-top:12px;">
       <div id="fat-result-card" style="display:none;"></div>
@@ -311,12 +310,11 @@
       <div class="section-label">Trend</div>
       <div class="card meas-chart-card">
         <div class="trend-tabs" id="trend-tabs">
-          <button class="trend-tab active" onclick="switchTrend('fat',this)">Yağ %</button>
-          <button class="trend-tab" onclick="switchTrend('weight',this)">Ağırlık</button>
-          <button class="trend-tab" onclick="switchTrend('armR',this)">Kol</button>
-          <button class="trend-tab" onclick="switchTrend('chest',this)">Göğüs</button>
-          <button class="trend-tab" onclick="switchTrend('waist',this)">Bel</button>
-          <button class="trend-tab" onclick="switchTrend('thighR',this)">Uyluk</button>
+          <button class="trend-tab active" data-key="weight" onclick="switchTrend('weight')">Ağırlık</button>
+          <button class="trend-tab" data-key="waist" onclick="switchTrend('waist')">Bel</button>
+          <button class="trend-tab" data-key="fat" onclick="switchTrend('fat')">Tahmini yağ</button>
+          <button class="trend-tab" data-key="chest" onclick="switchTrend('chest')">Göğüs</button>
+          <button class="trend-tab" data-key="armR" onclick="switchTrend('armR')">Kol</button>
         </div>
         <div class="chart-container" style="height:180px;margin-top:10px;">
           <canvas id="fat-chart"></canvas>

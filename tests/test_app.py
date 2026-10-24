@@ -348,9 +348,18 @@ with sync_playwright() as p:
     page.evaluate("calculateFat()")
     m = page.evaluate("DB.measurements")
     check('sadece göğüs girilince diğerleri korundu', m[0].get('chest') == 102 and m[0].get('fat') and m[0].get('waist') == 84, m)
-    check('kol-bacak bölümü varsayılan kapalı', not page.is_visible('#m-arm-r'))
+    check('ana alanlar görünür (kilo, bel, boyun, göğüs, kol)', all(page.is_visible(s) for s in ['#m-weight', '#m-waist', '#m-neck', '#m-chest', '#m-arm-r']))
+    check('diğer ölçüler varsayılan kapalı', not page.is_visible('#m-shoulder') and not page.is_visible('#m-thigh-r'))
     page.click('#limb-toggle')
-    check('kol-bacak açılıyor', page.is_visible('#m-arm-r'))
+    check('diğer ölçüler açılıyor', page.is_visible('#m-shoulder'))
+    sc = page.inner_text('#meas-summary-card')
+    check('yağ oranı yuvarlanmış ve "tahmini"', 'Tahmini yağ' in sc and '≈%' in sc and not __import__('re').search(r'%\d+[.,]\d', sc), sc)
+    page.evaluate("""() => { DB.measurements.unshift({date:'2026-08-01', fat: 21.3, weight: 83}); saveData('measurements', DB.measurements); renderMeasurements(); }""")
+    tr = page.evaluate("fatTrend(DB.measurements)")
+    check('yağ trendi: değişim yarım puan hassasiyetinde', tr and tr['diff'] * 2 == round(tr['diff'] * 2), tr)
+    check('özet kartta değişim metni', 'puan' in page.inner_text('#meas-summary-card') or 'değişim yok' in page.inner_text('#meas-summary-card'))
+    check('geçmişte tahmini yağ', 'tahmini yağ' in page.inner_text('#meas-history-list'))
+    page.evaluate("DB.measurements.shift(); saveData('measurements', DB.measurements); renderMeasurements()")
 
     # ── 22. Rutin sekmesi ──
     page.evaluate("switchTab('routine')")
@@ -604,11 +613,12 @@ with sync_playwright() as p:
     page.evaluate("""() => { DB.measurements = [
       {date:'2026-09-20', weight:81.2}, {date:'2026-09-22', weight:80.4}, {date:'2026-09-24', weight:81.6},
       {date:'2026-09-26', weight:80.2}, {date:'2026-09-28', weight:80.9}]; saveData('measurements', DB.measurements);
-      switchTab('meas'); switchTrend('weight', document.querySelectorAll('.trend-tab')[1]); }""")
+      switchTab('meas'); switchTrend('weight'); }""")
     page.wait_for_timeout(300)
     check('kilo grafiği iki seri (tartı + ortalama)', page.evaluate("fatChart && fatChart.data.datasets.length") == 2)
     check('özet kartta 7 gün ortalaması', '7 gün ort.' in page.inner_text('#meas-summary-card'))
-    page.evaluate("switchTrend('fat', document.querySelectorAll('.trend-tab')[0])")
+    page.evaluate("switchTrend('fat')")
+    check('trend sekmesi aktif işaretleniyor', page.evaluate("document.querySelector('.trend-tab.active').dataset.key") == 'fat')
 
 
     # ── 34. "Önceki" sütunu: farklı gün tipinden aynı hareket ──
@@ -970,7 +980,7 @@ with sync_playwright() as p:
     pg2.reload()
     pg2.wait_for_timeout(500)
     check('internet yokken uygulama açılıyor', pg2.evaluate("typeof switchTab") == 'function' and pg2.evaluate("typeof Chart") == 'function')
-    pg2.evaluate("""() => { DB.measurements = [{date:'2026-09-01', weight:80}, {date:'2026-09-08', weight:79}]; switchTab('meas'); switchTrend('weight', document.querySelectorAll('.trend-tab')[1]); }""")
+    pg2.evaluate("""() => { DB.measurements = [{date:'2026-09-01', weight:80}, {date:'2026-09-08', weight:79}]; switchTab('meas'); switchTrend('weight'); }""")
     check('internet yokken grafik çiziliyor', pg2.evaluate("!!fatChart"))
     check('çevrimdışı sayfa hatası yok', not errs2, errs2)
     ctx2.close()

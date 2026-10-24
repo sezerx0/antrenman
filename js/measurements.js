@@ -56,6 +56,25 @@ const MEAS_FIELDS = {
   thighR: 'm-thigh-r', thighL: 'm-thigh-l', calfR: 'm-calf-r', calfL: 'm-calf-l',
 };
 
+// Formül tahmini ±3–4 puan şaşabilir: tam sayıya yuvarla, değişimi yarım puan hassasiyetle göster
+function fmtFat(v) { return '≈%' + Math.round(v); }
+function fatTrend(data) {
+  const pts = data.filter(m => m.fat != null);
+  if (pts.length < 2) return null;
+  const last = pts[pts.length - 1];
+  const lastT = new Date(last.date + 'T00:00:00').getTime();
+  const base = pts.find(p => lastT - new Date(p.date + 'T00:00:00').getTime() <= 90 * 86400000 && p !== last) || pts[pts.length - 2];
+  const days = Math.round((lastT - new Date(base.date + 'T00:00:00').getTime()) / 86400000);
+  const diff = Math.round((last.fat - base.fat) * 2) / 2;
+  return { diff, days, base };
+}
+function fatTrendText(t) {
+  if (!t) return '';
+  const span = t.days >= 1 ? `Son ${t.days} günde` : 'Önceki ölçüme göre';
+  if (Math.abs(t.diff) < 0.5) return `${span} belirgin değişim yok`;
+  return `${span} ${t.diff > 0 ? '+' : '−'}${String(Math.abs(t.diff)).replace('.', ',')} puan`;
+}
+
 function computeFat(gender, height, neck, waist, hip) {
   if (!height || !neck || !waist) return null;
   let fat;
@@ -138,10 +157,11 @@ function calculateFat() {
     const weight = saved.weight;
     rc.style.display = 'block';
     rc.innerHTML = `<div class="result-card">
-      <div class="result-pct">%${fat}</div>
-      <div class="result-label">Vücut Yağ Oranı</div>
+      <div class="result-pct">${fmtFat(fat)}</div>
+      <div class="result-label">Tahmini Yağ Oranı</div>
       <div class="result-cat">${fatCategory(selectedGender, fat)}</div>
-      ${weight ? `<div style="margin-top:8px;font-size:13px;opacity:0.88;">Yağ: ~${Math.round(fat/100*weight)} kg · Yağsız Kütle: ~${Math.round((1-fat/100)*weight)} kg</div>` : ''}
+      ${(t => t ? `<div style="margin-top:8px;font-size:13px;font-weight:600;">${fatTrendText(t)}</div>` : '')(fatTrend(DB.measurements))}
+      <div style="margin-top:8px;font-size:12px;opacity:0.85;">Formül tahminidir, ±3–4 puan şaşabilir. Asıl önemli olan zaman içindeki değişim.</div>
     </div>`;
     toast('✅ Ölçüm kaydedildi!');
   } else {
@@ -190,18 +210,17 @@ function renderMeasSummaryCard() {
     const sign = diff > 0 ? '+' : '';
     return `<span style="font-size:12px;font-weight:600;color:${color};margin-left:6px;">${sign}${Math.round(diff*10)/10}${unit}</span>`;
   };
-  const fatDiff = fLast && fPrev ? fLast.fat - fPrev.fat : null;
   const wDiff = wLast && wPrev ? wLast.weight - wPrev.weight : null;
   const lastDate = data[data.length - 1].date;
-  const leanW = fLast && wLast ? wLast.weight : null;
 
   card.style.display = 'block';
   card.innerHTML = `<div class="card meas-summary-card">
     <div class="meas-sum-date">${fmtDate(lastDate)} · Son ölçüm</div>
     <div class="meas-sum-row">
       ${fLast ? `<div class="meas-sum-item">
-        <div class="meas-sum-val">%${escapeHtml(fLast.fat)}</div>
-        <div class="meas-sum-lbl">Yağ Oranı ${diffBadge(fatDiff, '%')}</div>
+        <div class="meas-sum-val">${fmtFat(fLast.fat)}</div>
+        <div class="meas-sum-lbl">Tahmini yağ</div>
+        ${(t => t ? `<div class="meas-sum-avg">${fatTrendText(t)}</div>` : '')(fatTrend(data))}
       </div>` : ''}
       ${fLast && wLast ? '<div class="meas-sum-divider"></div>' : ''}
       ${wLast ? `<div class="meas-sum-item">
@@ -210,27 +229,22 @@ function renderMeasSummaryCard() {
         ${(() => { const av = weightAverages(data); const n = data.filter(m => m.weight != null).length; return n >= 3 ? `<div class="meas-sum-avg">7 gün ort. ${av[av.length - 1]} kg</div>` : ''; })()}
       </div>` : ''}
     </div>
-    ${leanW ? `<div class="meas-sum-sub">
-      Yağ kütlesi: ~${Math.round(fLast.fat/100*leanW)} kg &nbsp;·&nbsp; Yağsız kütle: ~${Math.round((1-fLast.fat/100)*leanW)} kg
-    </div>` : ''}
   </div>`;
 }
 
-let currentTrendKey = 'fat';
-function switchTrend(key, btn) {
+let currentTrendKey = 'weight';
+function switchTrend(key) {
   currentTrendKey = key;
-  document.querySelectorAll('.trend-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelectorAll('.trend-tab').forEach(b => b.classList.toggle('active', b.dataset.key === key));
   renderFatChart();
 }
 
 const trendMeta = {
-  fat:    { label: 'Yağ Oranı', color: '#007AFF', suffix: v => '%' + v },
+  fat:    { label: 'Tahmini yağ', color: '#007AFF', suffix: v => '%' + Math.round(v) },
   weight: { label: 'Ağırlık',   color: '#34c759', suffix: v => v + ' kg' },
   armR:   { label: 'Kol',       color: '#ff9f0a', suffix: v => v + ' cm' },
   chest:  { label: 'Göğüs',     color: '#ff3b30', suffix: v => v + ' cm' },
   waist:  { label: 'Bel',       color: '#af52de', suffix: v => v + ' cm' },
-  thighR: { label: 'Uyluk',     color: '#5ac8fa', suffix: v => v + ' cm' },
 };
 
 // Her tartı günü için o gün dahil son 7 günün ortalaması
@@ -245,8 +259,8 @@ function weightAverages(data) {
 function renderFatChart() {
   const canvas = document.getElementById('fat-chart');
   if (fatChart) { fatChart.destroy(); fatChart = null; }
-  const meta = trendMeta[currentTrendKey] || trendMeta.fat;
-  const key = trendMeta[currentTrendKey] ? currentTrendKey : 'fat';
+  const meta = trendMeta[currentTrendKey] || trendMeta.weight;
+  const key = trendMeta[currentTrendKey] ? currentTrendKey : 'weight';
   const data = DB.measurements.filter(m => m[key] != null);
   const empty = document.getElementById('fat-chart-empty');
   if (empty) empty.style.display = data.length < 2 ? 'flex' : 'none';
@@ -275,7 +289,7 @@ function renderFatChart() {
       plugins: { legend: { display: isWeight, position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, color: textColor, font: { size: 11 } } } },
       scales: {
         x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } },
-        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: meta.suffix }, ...(key === 'fat' ? { min: 0 } : {}) }
+        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: meta.suffix }, ...(key === 'fat' ? { grace: 2, ticks: { color: textColor, font: { size: 11 }, callback: meta.suffix, precision: 0 } } : {}) }
       }
     }
   });
@@ -304,7 +318,7 @@ function renderMeasHistory() {
       <div style="display:flex;align-items:center;gap:10px;">
         <div class="meas-date-badge"><span>${day}<br>${escapeHtml(mo)}</span></div>
         <div style="flex:1;">
-          <div style="font-size:14px;font-weight:600;">${m.fat != null ? `%${escapeHtml(m.fat)} yağ oranı` : m.weight ? `${escapeHtml(m.weight)} kg` : 'Ölçüm'}</div>
+          <div style="font-size:14px;font-weight:600;">${m.fat != null ? `${fmtFat(m.fat)} tahmini yağ` : m.weight ? `${escapeHtml(m.weight)} kg` : 'Ölçüm'}</div>
           <div style="font-size:12px;color:var(--text-secondary);">${m.fat != null ? (m.weight ? escapeHtml(m.weight) + ' kg · ' : '') + (m.gender === 'female' ? 'Kadın' : 'Erkek') : (m.weight ? 'Tartı' : '')}</div>
         </div>
         <button class="delete-btn" onclick="deleteMeasurement(${idx})" aria-label="Ölçümü sil">${icon('x')}</button>

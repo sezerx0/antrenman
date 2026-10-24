@@ -391,6 +391,7 @@ body {
 .form-row:last-child { border-bottom: none; }
 .meas-section-title { font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; padding: 10px 16px 4px; background: var(--bg-secondary); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); text-transform: uppercase; }
 .form-label { font-size: 15px; flex: 1; }
+.form-sub { display: block; font-size: 11px; color: var(--text-tertiary); font-weight: 400; margin-top: 1px; }
 .form-input { background: var(--bg-secondary); border: none; border-radius: 8px; padding: 7px 10px; font-size: 15px; font-weight: 500; color: var(--text-primary); text-align: right; width: 90px; outline: none; font-family: inherit; }
 .form-input::placeholder { color: var(--text-tertiary); font-weight: 400; }
 .form-unit { font-size: 13px; color: var(--text-secondary); width: 30px; }
