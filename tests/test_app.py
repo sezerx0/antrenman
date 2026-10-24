@@ -845,6 +845,48 @@ with sync_playwright() as p:
     check('ayarlardan artış koşulu değişiyor', page.evaluate("DB.settings.progressMode") == 'perSet' and 'kendi başına' in page.inner_text('#pmode-note'))
     page.click('#pmode-all-btn')
 
+
+    # ── 42. Rekor türleri ──
+    H = "[{kg:60,reps:12,date:'x'},{kg:62.5,reps:8,date:'x'},{kg:50,reps:15,date:'x'}]"
+    t = lambda st: page.evaluate(f"prsForSet({st}, {H}).map(p => p.type).join(',')")
+    check('en ağır rekoru', t("{kg:65,reps:5}") == 'weight,e1rm' or t("{kg:65,reps:5}") == 'weight', t("{kg:65,reps:5}"))
+    check('aynı kiloda daha çok tekrar = tekrar rekoru', t("{kg:62.5,reps:9}") == 'e1rm,reps' or 'reps' in t("{kg:62.5,reps:9}"), t("{kg:62.5,reps:9}"))
+    check('60×12 → 62,5×6 rekor değil', t("{kg:62.5,reps:6}") == '')
+    check('ilk kez yapılan harekette rekor yok', page.evaluate("prsForSet({kg:100,reps:10}, []).length") == 0)
+    check('vücut ağırlığında tekrar rekoru', page.evaluate("prsForSet({kg:0,reps:15}, [{kg:0,reps:12}]).map(p=>p.type).join()") == 'reps')
+    # Ara sonrası plato
+    page.evaluate("""() => { discardActive();
+      const mk = (d, kg, r) => ({date: d, dayId:'push-a', dayName:'Push A', __test:1, sets:[{exId:'q', exName:'Ara Testi', setIdx:0, kg, reps:r}], notes:{}});
+      DB.workoutLogs.push(mk('2097-01-01', 100, 5), mk('2097-06-01', 40, 6), mk('2097-06-05', 40, 5), mk('2097-06-09', 40, 6));
+      saveData('workoutLogs', DB.workoutLogs); }""")
+    check('uzun aradan sonra eski rekor plato saydırmıyor', page.evaluate("plateauInfo('Ara Testi')") is None)
+    page.evaluate("""() => { DB.workoutLogs.push({date:'2097-06-13', dayId:'push-a', __test:1, sets:[{exId:'q', exName:'Ara Testi', setIdx:0, kg:40, reps:5}], notes:{}}, {date:'2097-06-17', dayId:'push-a', __test:1, sets:[{exId:'q', exName:'Ara Testi', setIdx:0, kg:40, reps:5}], notes:{}}); saveData('workoutLogs', DB.workoutLogs); }""")
+    check('aradan sonra da ilerlemiyorsa plato', page.evaluate("JSON.stringify(plateauInfo('Ara Testi'))") == '{"stalled":4}', page.evaluate("JSON.stringify(plateauInfo('Ara Testi'))"))
+    # Antrenmanda rekor bildirimi + özet
+    page.evaluate("""() => { DB.workoutDays.push({id:'pr-day', name:'PR Günü', exercises:[{id:'pr1', name:'Ara Testi', sets:2}]}); saveData('workoutDays', DB.workoutDays); syncOrder(); openWorkoutScreen('pr-day'); }""")
+    page.wait_for_timeout(300)
+    page.fill('#kg-0-0', '105'); page.fill('#reps-0-0', '3'); page.click('#set-done-0-0'); page.evaluate("stopRest()"); page.wait_for_timeout(100)
+    check('set sonrası rekor bildirimi türüyle', 'en ağır: 105 kg' in page.inner_text('#toast'), page.inner_text('#toast'))
+    page.evaluate("document.getElementById('toast').textContent = ''")
+    page.fill('#kg-0-1', '105'); page.fill('#reps-0-1', '3'); page.click('#set-done-0-1'); page.evaluate("stopRest()"); page.wait_for_timeout(100)
+    check('aynı antrenmanda tekrar eden set yeniden rekor sayılmıyor', 'en ağır' not in page.inner_text('#toast'))
+    page.evaluate("finishWorkout()"); page.wait_for_timeout(200)
+    check('özette rekor satırı', 'Ara Testi' in page.inner_text('#sum-pr-banner') and 'en ağır: 105 kg' in page.inner_text('#sum-pr-banner'))
+    page.evaluate("closeSummary(); discardActive(); closeAllLayers()"); page.wait_for_timeout(300)
+    # Liste ve detay
+    page.evaluate("switchTab('stats')")
+    check('ayrı 1RM hesaplayıcı kaldırıldı', page.evaluate("!document.getElementById('orm-kg')"))
+    first = page.evaluate("document.querySelector('#pr-list .pr-item').dataset.name")
+    check('en son yapılan hareket listenin başında', first == 'Ara Testi', first)
+    check('listede tek ana değer (tahmini 1RM) + en iyi set', 'tahmini 1RM' in page.inner_text('#pr-list .pr-item >> nth=0') and 'En iyi set' in page.inner_text('#pr-list .pr-item >> nth=0'))
+    page.click('#pr-list .pr-item >> nth=0'); page.wait_for_timeout(400)
+    check('detayda rekor kutuları', 'Tahmini 1RM' in page.inner_text('#modal-records') and 'En ağır' in page.inner_text('#modal-records') and '100 kg' in page.inner_text('#modal-records'))
+    check('detayda ağırlığa göre en çok tekrar', '40 kg' in page.inner_text('#modal-rep-prs') and '6' in page.inner_text('#modal-rep-prs'))
+    check('detayda çalışma ağırlıkları', '%80' in page.inner_text('#modal-pct'))
+    page.evaluate("closeProgressModal()"); page.wait_for_timeout(300)
+    page.evaluate("""() => { DB.workoutDays = DB.workoutDays.filter(d => d.id !== 'pr-day'); saveData('workoutDays', DB.workoutDays); syncOrder();
+      DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); renderStats(); }""")
+
     check('sayfa hatası yok', not errors, errors)
 
     # ── 35. Antrenman bildirimi ──

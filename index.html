@@ -335,8 +335,8 @@
   <!-- TAB: PR & 1RM -->
   <div class="screen" id="tab-stats" style="display:none;flex-direction:column;">
     <div class="nav-header">
-      <h1>PR & 1RM</h1>
-      <p>Kişisel rekorlar ve hesaplayıcı</p>
+      <h1>İlerleme</h1>
+      <p>Haftalık hacim ve kişisel rekorlar</p>
     </div>
 
     <div class="section" style="margin-top:14px;">
@@ -344,38 +344,8 @@
       <div class="card muscle-card" id="muscle-card"></div>
     </div>
 
-    <div class="section" style="margin-top:14px;">
-      <div class="section-label">1RM Hesaplayıcı</div>
-      <div class="card" style="padding:16px;">
-        <div class="orm-row">
-          <div class="orm-field">
-            <div class="orm-label">Ağırlık (kg)</div>
-            <div class="kg-stepper" style="height:44px;width:100%;">
-              <button class="stepper-btn" onclick="stepOrm('kg',-2.5)" type="button">−</button>
-              <input class="kg-val" type="text" inputmode="decimal" id="orm-kg" placeholder="100">
-              <button class="stepper-btn" onclick="stepOrm('kg',2.5)" type="button">+</button>
-            </div>
-          </div>
-          <div class="orm-field">
-            <div class="orm-label">Tekrar</div>
-            <div class="reps-stepper" style="height:44px;width:100%;">
-              <button class="stepper-btn" onclick="stepOrm('reps',-1)" type="button">−</button>
-              <input class="reps-val" type="text" inputmode="numeric" id="orm-reps" placeholder="5">
-              <button class="stepper-btn" onclick="stepOrm('reps',1)" type="button">+</button>
-            </div>
-          </div>
-        </div>
-        <button class="btn-primary" style="margin-top:12px;" onclick="calculateOrm()">Hesapla</button>
-        <div id="orm-result" style="display:none;margin-top:14px;text-align:center;">
-          <div class="orm-result-val" id="orm-result-val">—</div>
-          <div class="orm-result-lbl">Tahmini 1 Tekrar Maksimum</div>
-          <div class="orm-result-grid" id="orm-result-grid"></div>
-        </div>
-      </div>
-    </div>
-
     <div class="section" style="margin-top:14px; padding-bottom:20px;">
-      <div class="section-label">Kişisel Rekorlar</div>
+      <div class="section-label">Kişisel Rekorlar <span class="label-hint">dokun: detay, çalışma ağırlıkları</span></div>
       <input type="search" id="pr-search" placeholder="Hareket ara…" oninput="filterPR(this.value)" style="width:100%;box-sizing:border-box;background:var(--bg-primary);border:none;border-radius:12px;padding:10px 14px;font-size:14px;color:var(--text-primary);margin-bottom:8px;outline:none;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
       <div class="card pr-list" id="pr-list">
         <div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydı yok.</div>
@@ -677,6 +647,11 @@
     <div class="chart-container">
       <canvas id="progress-chart"></canvas>
     </div>
+    <div class="rec-tiles" id="modal-records"></div>
+    <div class="prog-history-title">Ağırlığa göre en çok tekrar</div>
+    <div id="modal-rep-prs" class="prog-block"></div>
+    <div class="prog-history-title">Çalışma ağırlıkları</div>
+    <div id="modal-pct" class="prog-block"></div>
     <div class="prog-history-title">Geçmiş Kayıtlar</div>
     <div id="modal-history-list"></div>
   </div>

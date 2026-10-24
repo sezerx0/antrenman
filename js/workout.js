@@ -328,10 +328,7 @@ function restDefaultFor(exName) {
 //  • RIR'a göre artış (varsayılan açık, kademeli): RIR 0 → aynı kilo (pekiştir),
 //    RIR 1–3 → 1 adım, RIR 4+ → 2 adım. RIR girilmemişse 1 adım.
 //  • Adım = hareketin ağırlık artışı (Hareket ayarları).
-function setReps(ps) {
-  const sides = [ps.repsR, ps.repsL].filter(v => v > 0);
-  return sides.length ? Math.min(...sides) : (ps.reps || 0);   // sağ/sol ayrıysa zayıf taraf
-}
+function setReps(ps) { return repsOf(ps); }   // sağ/sol ayrıysa zayıf taraf
 function progressMode() { return DB.settings.progressMode === 'perSet' ? 'perSet' : 'all'; }
 function rirProgression() { return DB.settings.rirProgression !== false; }
 function rirSteps(rir) {
@@ -966,7 +963,15 @@ function completeSet(ei, s) {
   captureActive();
   updateProgress();
   if (active.mode === 'edit') return;
-  if (cur.kg && reps && isPR(ex.name, cur.kg * reps)) toast('🏆 Yeni kişisel rekor!');
+  // Rekor: geçmiş + bu antrenmanda daha önce tamamlanan setler
+  const sessionSets = [];
+  for (let k = 0; k < active.sets[ei]; k++) {
+    if (k === s || !document.getElementById(`set-done-${ei}-${k}`)?.classList.contains('done')) continue;
+    const o = readSet(ei, k);
+    sessionSets.push({ kg: o.kg, reps: repsOf(ex.bilateral ? o : { reps: o.reps }), date: today() });
+  }
+  const prs = prsForSet(ex.bilateral ? cur : { kg: cur.kg, reps: cur.reps }, [...historySets(ex.name), ...sessionSets]);
+  if (prs.length) toast(`🏆 ${ex.name}: ${prs.map(p => p.label).join(' · ')}`, 3200);
   if (DB.settings.restTimerEnabled) startRest(ex.name, restFor(ex.name));
 }
 
@@ -1093,16 +1098,21 @@ function finishWorkout() {
   document.getElementById('sum-sets').textContent = allSets.length;
   document.getElementById('sum-vol').textContent = totalVol;
 
-  const prList = [];
+  // Rekorlar: hareket başına, türüne göre (en iyisi)
+  const prLines = [];
   day.exercises.forEach(ex => {
-    allSets.filter(s => s.exId === ex.id && s.kg && s.reps).forEach(s => {
-      if (isPR(ex.name, s.kg * s.reps) && !prList.includes(ex.name)) prList.push(ex.name);
-    });
+    const hist = historySets(ex.name);
+    const found = {};
+    allSets.filter(s => s.exId === ex.id).forEach(s => prsForSet(s, hist).forEach(p => {
+      if (p.type !== 'reps' || !found.reps) found[p.type] = p;   // her türden bir tane
+    }));
+    const list = ['weight', 'e1rm', 'reps'].map(t => found[t]).filter(Boolean);
+    if (list.length) prLines.push(`<b>${escapeHtml(ex.name)}</b> — ${escapeHtml(list.map(p => p.label).join(' · '))}`);
   });
   const prSection = document.getElementById('sum-pr-section');
-  if (prList.length) {
+  if (prLines.length) {
     prSection.style.display = 'block';
-    document.getElementById('sum-pr-banner').innerHTML = icon('trophy') + `<span>${escapeHtml(prList.join(', '))} — Yeni kişisel rekor!</span>`;
+    document.getElementById('sum-pr-banner').innerHTML = icon('trophy') + `<div><div class="sum-pr-title">Yeni rekor${prLines.length > 1 ? 'lar' : ''}</div>${prLines.map(l => `<div class="sum-pr-line">${l}</div>`).join('')}</div>`;
   } else {
     prSection.style.display = 'none';
   }

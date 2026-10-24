@@ -163,7 +163,13 @@ body {
 .orm-pct-label { color: var(--text-secondary); }
 .orm-pct-val { font-weight: 700; color: var(--text-primary); }
 .pr-list { overflow: hidden; }
-.pr-item { padding: 14px 16px; border-bottom: 0.5px solid var(--border); }
+.pr-item { display: block; width: 100%; text-align: left; background: none; border: none; font-family: inherit; color: inherit; cursor: pointer; padding: 13px 16px; border-bottom: 0.5px solid var(--border); }
+.pr-item:active { background: var(--bg-secondary); }
+.pr-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.pr-row .pr-name { margin-bottom: 0; min-width: 0; }
+.pr-main { font-size: 17px; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pr-row2 { margin-top: 3px; font-size: 12px; color: var(--text-secondary); align-items: center; }
+.pr-main-lbl { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
 .pr-item:last-child { border-bottom: none; }
 .pr-name { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
 .pr-stats { display: flex; gap: 8px; }
@@ -917,3 +923,16 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .link-btn { border: none; background: none; padding: 0; color: var(--accent); font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; }
 #ex-sheet .progress-sheet { max-height: 88vh; }
 .ex-sug-why { font-size: 11px; color: var(--text-tertiary); margin: 1px 0 0 18px; line-height: 1.35; }
+/* ── Rekorlar ── */
+.label-hint { text-transform: none; font-weight: 500; font-size: 12px; color: var(--text-tertiary); margin-left: 6px; letter-spacing: 0; }
+.rec-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.rec-tile { background: var(--bg-secondary); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; }
+.rec-lbl { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+.rec-val { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-top: 2px; }
+.rec-sub { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.rec-date { font-size: 11px; color: var(--text-tertiary); margin-left: 6px; font-weight: 400; }
+.rec-note { font-size: 11px; color: var(--text-tertiary); padding: 6px 0 0; }
+.prog-block { margin-bottom: 16px; }
+.sum-pr-banner { align-items: flex-start !important; }
+.sum-pr-title { font-weight: 700; margin-bottom: 2px; }
+.sum-pr-line { font-weight: 500; font-size: 13px; line-height: 1.4; }

@@ -386,8 +386,19 @@ function sessionBest(sets) {
   if (withKg.length) return Math.max(...withKg.map(s => calcEpley(s.kg, s.reps)));
   return Math.max(0, ...sets.map(s => s.reps || 0)) / 1000; // vücut ağırlığı: tekrar
 }
+// Uzun aradan (28+ gün) sonra yalnızca aradan sonraki antrenmanlara bakılır:
+// ara öncesi rekorlar, geri dönüşte yanlış "plato" uyarısı üretmesin.
+const COMEBACK_GAP_DAYS = 28;
+function sinceLastBreak(entries) {
+  let start = 0;
+  for (let i = 1; i < entries.length; i++) {
+    const gap = (new Date(entries[i].log.date) - new Date(entries[i - 1].log.date)) / 86400000;
+    if (gap > COMEBACK_GAP_DAYS) start = i;
+  }
+  return entries.slice(start);
+}
 function plateauInfo(exName, excludeLog) {
-  const vals = getLogsByExName(exName).filter(e => e.log !== excludeLog).map(e => sessionBest(e.sets)).filter(v => v > 0);
+  const vals = sinceLastBreak(getLogsByExName(exName).filter(e => e.log !== excludeLog)).map(e => sessionBest(e.sets)).filter(v => v > 0);
   if (vals.length < 4) return null;
   let best = vals[0], lastImprove = 0;
   for (let i = 1; i < vals.length; i++) if (vals[i] > best + 1e-9) { best = vals[i]; lastImprove = i; }
@@ -395,11 +406,60 @@ function plateauInfo(exName, excludeLog) {
   return stalled >= 3 ? { stalled } : null;
 }
 
-function isPR(exName, volume) {
-  const all = getLogsByExName(exName);
-  if (!all.length) return false;
-  const maxVol = Math.max(...all.flatMap(r => r.sets.map(setVolume)));
-  return volume > maxVol;
+// ── Rekorlar: üç ayrı başarı türü ──
+//  weight: en ağır kilo · e1rm: en yüksek tahmini 1RM ·
+//  reps:   bu kiloda (ya da daha ağırında) yapılmış en çok tekrar
+// Sağ/sol ayrı tekrarlı setlerde zayıf taraf esas alınır.
+function repsOf(s) {
+  const sides = [s.repsR, s.repsL].filter(v => v > 0);
+  return sides.length ? Math.min(...sides) : (s.reps || 0);
+}
+function historySets(exName, excludeLog) {
+  return getLogsByExName(exName).filter(e => e.log !== excludeLog)
+    .flatMap(e => e.sets.map(s => ({ kg: s.kg || 0, reps: repsOf(s), date: e.log.date })))
+    .filter(s => s.reps > 0);
+}
+// Bir setin geçmişe göre kırdığı rekorlar (ilk kez yapılan harekette rekor yok)
+function prsForSet(set, history) {
+  const kg = set.kg || 0, r = repsOf(set);
+  if (!r || !history.length) return [];
+  const out = [];
+  if (kg > 0) {
+    const weighted = history.filter(h => h.kg > 0);
+    const maxKg = Math.max(0, ...weighted.map(h => h.kg));
+    if (kg > maxKg) out.push({ type: 'weight', label: `en ağır: ${fmtKgTr(kg)} kg` });
+    const e = calcEpley(kg, r);
+    if (e > Math.max(0, ...weighted.map(h => calcEpley(h.kg, h.reps)))) out.push({ type: 'e1rm', label: `tahmini 1RM: ${fmtKgTr(e)} kg` });
+    if (kg <= maxKg) {
+      const atLeast = weighted.filter(h => h.kg >= kg);
+      if (atLeast.length && r > Math.max(...atLeast.map(h => h.reps))) out.push({ type: 'reps', label: `${fmtKgTr(kg)} kg ile en çok tekrar: ${r}` });
+    }
+  } else {
+    const bw = history.filter(h => !h.kg);
+    if (bw.length && r > Math.max(...bw.map(h => h.reps))) out.push({ type: 'reps', label: `en çok tekrar: ${r}` });
+  }
+  return out;
+}
+function fmtKgTr(v) { return String(Math.round(v * 10) / 10).replace('.', ','); }
+// Bir hareketin tüm rekor özeti (detay ekranı ve liste için)
+function exerciseRecords(exName) {
+  const entries = getLogsByExName(exName);
+  const sets = entries.flatMap(e => e.sets.map(s => ({ kg: s.kg || 0, reps: repsOf(s), date: e.log.date }))).filter(s => s.reps > 0);
+  if (!sets.length) return null;
+  const weighted = sets.filter(s => s.kg > 0);
+  let heaviest = null, best = null;
+  weighted.forEach(s => {
+    if (!heaviest || s.kg > heaviest.kg || (s.kg === heaviest.kg && s.reps > heaviest.reps)) heaviest = s;
+    const e = calcEpley(s.kg, s.reps);
+    if (!best || e > best.e1rm) best = { ...s, e1rm: e };
+  });
+  // Ağırlığa göre en çok tekrar (en ağır 6 ağırlık)
+  const byKg = {};
+  weighted.forEach(s => { if (!byKg[s.kg] || s.reps > byKg[s.kg].reps) byKg[s.kg] = s; });
+  const repsByKg = Object.values(byKg).sort((a, b) => b.kg - a.kg).slice(0, 6);
+  const bw = sets.filter(s => !s.kg);
+  const bwBest = bw.length ? bw.reduce((a, s) => s.reps > a.reps ? s : a) : null;
+  return { heaviest, best, repsByKg, bwBest, sessions: entries.length, last: entries[entries.length - 1].log.date };
 }
 
 let toastTimer = null;

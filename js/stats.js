@@ -1,4 +1,4 @@
-// Antrenman Takip — İlerleme grafiği, PR listesi, 1RM hesaplayıcı, kas grubu dağılımı, plato tespiti.
+// Antrenman Takip — Hareket detayı (grafik, rekorlar, çalışma ağırlıkları), rekor listesi, kas grubu hacmi.
 
 // ═══════════════════════════════════════════════
 //  PROGRESS MODAL
@@ -51,6 +51,8 @@ function openProgressModal(exName) {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
   }
 
+  renderExerciseRecords(exName);
+
   const histEl = document.getElementById('modal-history-list');
   if (!entries.length) {
     histEl.innerHTML = '<div style="padding:12px 0;color:var(--text-secondary);font-size:14px;text-align:center;">Henüz kayıt yok</div>';
@@ -72,31 +74,35 @@ function openProgressModal(exName) {
 }
 function closeProgressModal() { closeLayer('progressModal'); }
 
-// ═══════════════════════════════════════════════
-//  PR & 1RM
-// ═══════════════════════════════════════════════
-function stepOrm(field, delta) {
-  const input = document.getElementById(`orm-${field}`);
-  const base = num(input.value) || 0;
-  if (field === 'kg') input.value = Math.max(0, Math.round((base + delta) * 100) / 100) || '';
-  else input.value = Math.max(1, Math.round(base + delta)) || '';
+// Detay: üç rekor türü + tahmini 1RM'den çalışma ağırlıkları
+function renderExerciseRecords(exName) {
+  const rec = exerciseRecords(exName);
+  const recEl = document.getElementById('modal-records');
+  const repEl = document.getElementById('modal-rep-prs');
+  const pctEl = document.getElementById('modal-pct');
+  const show = (el, on) => { el.style.display = on ? '' : 'none'; if (el.previousElementSibling && el.previousElementSibling.classList.contains('prog-history-title')) el.previousElementSibling.style.display = on ? '' : 'none'; };
+  if (!rec || (!rec.best && !rec.bwBest)) { recEl.innerHTML = ''; show(repEl, false); show(pctEl, false); return; }
+  const tile = (lbl, val, sub) => `<div class="rec-tile"><span class="rec-lbl">${lbl}</span><span class="rec-val">${val}</span><span class="rec-sub">${sub}</span></div>`;
+  if (rec.best) {
+    recEl.innerHTML = tile('Tahmini 1RM', `${fmtKgTr(rec.best.e1rm)} kg`, `${fmtKgTr(rec.best.kg)}×${rec.best.reps} · ${fmtDateShort(rec.best.date)}`)
+      + tile('En ağır', `${fmtKgTr(rec.heaviest.kg)} kg`, `×${rec.heaviest.reps} · ${fmtDateShort(rec.heaviest.date)}`);
+    repEl.innerHTML = rec.repsByKg.map(s => `<div class="prog-history-item"><span class="prog-date">${fmtKgTr(s.kg)} kg</span><span class="prog-vals"><b>${s.reps}</b> tekrar <span class="rec-date">${fmtDateShort(s.date)}</span></span></div>`).join('');
+    const inc = incFor(exName);
+    const roundTo = v => Math.round(v / inc) * inc;
+    pctEl.innerHTML = [90, 85, 80, 75, 70].map(p => {
+      const reps = Math.round(30 * (100 / p - 1));
+      return `<div class="prog-history-item"><span class="prog-date">%${p} · ~${reps} tekrar</span><span class="prog-vals"><b>${fmtKgTr(roundTo(rec.best.e1rm * p / 100))} kg</b></span></div>`;
+    }).join('') + `<div class="rec-note">Tahmini 1RM'den hesaplanır; 12+ tekrarda tahmin daha az güvenilir.</div>`;
+    show(repEl, true); show(pctEl, true);
+  } else {
+    recEl.innerHTML = tile('En çok tekrar', `${rec.bwBest.reps}`, `vücut ağırlığı · ${fmtDateShort(rec.bwBest.date)}`);
+    show(repEl, false); show(pctEl, false);
+  }
 }
 
-function calculateOrm() {
-  const kg = num(document.getElementById('orm-kg').value);
-  const reps = int(document.getElementById('orm-reps').value);
-  if (!(kg > 0) || !(reps > 0)) { toast('Ağırlık ve tekrar girin.'); return; }
-  const orm = calcEpley(kg, reps);
-  document.getElementById('orm-result').style.display = 'block';
-  document.getElementById('orm-result-val').textContent = orm + ' kg';
-  const pcts = [100,95,90,85,80,75,70];
-  document.getElementById('orm-result-grid').innerHTML = pcts.map(p => {
-    const w = Math.round(orm * p / 100 * 10) / 10;
-    const r = p === 100 ? 1 : p >= 95 ? 2 : p >= 90 ? 3 : p >= 85 ? 4 : p >= 80 ? 5 : p >= 75 ? 7 : 10;
-    return `<div class="orm-pct-row"><span class="orm-pct-label">%${p} · ~${r} tk</span><span class="orm-pct-val">${w} kg</span></div>`;
-  }).join('');
-}
-
+// ═══════════════════════════════════════════════
+//  REKORLAR
+// ═══════════════════════════════════════════════
 function filterPR(query) {
   const q = normName(query);
   document.querySelectorAll('#pr-list .pr-item').forEach(el => {
@@ -192,42 +198,25 @@ function renderStats() {
 
 function renderPrList() {
   const list = document.getElementById('pr-list');
-  if (!DB.workoutLogs.length) {
+  const names = {};
+  DB.workoutLogs.forEach(log => (log.sets || []).forEach(s => {
+    if (s.exName && hasValue(s)) names[normName(s.exName)] = names[normName(s.exName)] || s.exName.trim();
+  }));
+  const items = Object.values(names).map(n => ({ name: n, rec: exerciseRecords(n) })).filter(x => x.rec);
+  if (!items.length) {
     list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Henüz antrenman kaydı yok.</div>';
     return;
   }
-
-  // Aynı hareket büyük/küçük harf farkıyla yazılmış olsa da tek satırda toplanır
-  const prMap = {};
-  DB.workoutLogs.forEach(log => {
-    (log.sets || []).forEach(s => {
-      if (!s.exName || !hasValue(s)) return;
-      const key = normName(s.exName);
-      if (!prMap[key]) prMap[key] = { name: s.exName.trim(), bestKg: 0, bestKgReps: 0, best1RM: 0, bestVol: 0, best1RMDate: '' };
-      const pr = prMap[key];
-      const kg = s.kg || 0, reps = s.reps || 0;
-      if (kg > pr.bestKg || (kg === pr.bestKg && reps > pr.bestKgReps)) { pr.bestKg = kg; pr.bestKgReps = reps; }
-      const orm = calcEpley(kg, reps);
-      if (orm > pr.best1RM) { pr.best1RM = orm; pr.best1RMDate = log.date; }
-      pr.bestVol = Math.max(pr.bestVol, Math.round(kg * reps * 10) / 10);
-    });
-  });
-
-  const entries = Object.values(prMap).sort((a,b) => a.name.localeCompare(b.name, 'tr'));
-  if (!entries.length) {
-    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:14px;">Kayıtlı set bulunamadı.</div>';
-    return;
-  }
-
-  list.innerHTML = entries.map(pr => `
-    <div class="pr-item" data-name="${escapeHtml(pr.name)}">
-      <div class="pr-name">${escapeHtml(pr.name)}${(() => { const pl = plateauInfo(pr.name); return pl ? `<span class="pr-plateau">${icon('alert')}Plato · ${pl.stalled} antrenman</span>` : ''; })()}</div>
-      <div class="pr-stats">
-        <div class="pr-stat"><span class="pr-stat-val">${pr.bestKg} kg</span><span class="pr-stat-sub">${pr.bestKgReps} tekrar</span><span class="pr-stat-lbl">Max ağırlık</span></div>
-        <div class="pr-stat"><span class="pr-stat-val">${pr.best1RM} kg</span><span class="pr-stat-sub">&nbsp;</span><span class="pr-stat-lbl">Tahmini 1RM</span></div>
-        <div class="pr-stat"><span class="pr-stat-val">${pr.bestVol} kg</span><span class="pr-stat-sub">&nbsp;</span><span class="pr-stat-lbl">Max hacim/set</span></div>
-      </div>
-      ${pr.best1RMDate ? `<div class="pr-date">1RM rekoru: ${fmtDate(pr.best1RMDate)}</div>` : ''}
-    </div>
-  `).join('');
+  // En son yapılan hareketler üstte
+  items.sort((a, b) => String(b.rec.last).localeCompare(String(a.rec.last)) || a.name.localeCompare(b.name, 'tr'));
+  list.innerHTML = items.map(({ name, rec }) => {
+    const pl = plateauInfo(name);
+    const main = rec.best
+      ? { val: `${fmtKgTr(rec.best.e1rm)} kg`, lbl: 'tahmini 1RM', sub: `En iyi set ${fmtKgTr(rec.best.kg)}×${rec.best.reps} · ${fmtDateShort(rec.best.date)}` }
+      : { val: `${rec.bwBest.reps} tekrar`, lbl: 'en çok', sub: `Vücut ağırlığı · ${fmtDateShort(rec.bwBest.date)}` };
+    return `<button class="pr-item" data-name="${escapeHtml(name)}" onclick="openProgressModal(this.dataset.name)">
+      <div class="pr-row"><span class="pr-name">${escapeHtml(name)}</span><span class="pr-main">${main.val}</span></div>
+      <div class="pr-row pr-row2"><span>${main.sub}${pl ? ` <span class="pr-plateau">${icon('alert')}Plato · ${pl.stalled} antrenman</span>` : ''}</span><span class="pr-main-lbl">${main.lbl}</span></div>
+    </button>`;
+  }).join('');
 }
