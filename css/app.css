@@ -900,3 +900,19 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .rir-btn.on { background: var(--accent-fill); color: var(--on-accent); }
 .rir-prev { margin-left: auto; font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
 .hm-rir { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-left: 4px; }
+/* ── Hareket ayarları ── */
+.sheet-section { font-size: 13px; font-weight: 700; color: var(--text-primary); margin: 16px 2px 8px; }
+.sheet-section span { font-weight: 500; color: var(--text-secondary); margin-left: 6px; font-size: 12px; }
+.sheet-row-col { flex-direction: column; align-items: stretch; gap: 10px; cursor: default; }
+.sheet-row-col:active { background: none; }
+.sheet-row-head { display: flex; align-items: center; gap: 12px; }
+.range-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.range-chip { border: none; border-radius: 14px; padding: 6px 11px; background: var(--bg-primary); color: var(--text-secondary); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; font-variant-numeric: tabular-nums; }
+.range-chip.on { background: var(--accent-fill); color: var(--on-accent); }
+.sheet-stepper { margin-left: auto; background: var(--bg-primary); }
+.sheet-stepper span { min-width: 58px; font-size: 14px; }
+.ex-settings .sheet-row { cursor: default; }
+.ex-settings .sheet-row:active { background: none; }
+.sheet-note { font-size: 12px; color: var(--text-secondary); padding: 0 16px 10px 47px; margin-top: -6px; }
+.link-btn { border: none; background: none; padding: 0; color: var(--accent); font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; }
+#ex-sheet .progress-sheet { max-height: 88vh; }

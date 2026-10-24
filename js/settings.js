@@ -62,7 +62,9 @@ function renderSettings() {
   document.getElementById('rir-toggle').checked = s.rirEnabled !== false;
   document.getElementById('workout-notif-toggle').checked = workoutNotifOn();
   renderNotifStatus();
-  document.getElementById('rest-dur-label').textContent = fmtRest(s.restDuration || 90);
+  document.getElementById('rest-comp-label').textContent = fmtRest(s.restCompound || 150);
+  document.getElementById('rest-iso-label').textContent = fmtRest(s.restIsolation || s.restDuration || 90);
+  document.getElementById('default-inc-label').textContent = fmtKg(kgStep()) + ' kg';
   document.getElementById('day-count-label').textContent = DB.workoutDays.length + ' gün';
   const curTpl = currentTemplate();
   document.getElementById('program-label').textContent = curTpl ? curTpl.name : 'Özel';
@@ -203,17 +205,23 @@ function toggleRestTimer(val) {
   DB.settings.restTimerEnabled = val;
   saveData('settings', DB.settings);
 }
-function stepRestDuration(dir) {
-  const cur = DB.settings.restDuration || 90;
-  let i = REST_OPTIONS.indexOf(cur);
-  if (i === -1) i = REST_OPTIONS.findIndex(v => v > cur) - (dir > 0 ? 1 : 0);
-  const next = REST_OPTIONS[Math.max(0, Math.min(REST_OPTIONS.length - 1, i + dir))];
-  setRestDuration(next);
-}
-function setRestDuration(dur) {
-  DB.settings.restDuration = dur;
+// Varsayılan dinlenme: çok eklemli (press, row, pulldown…) ve izolasyon ayrı
+function stepRestDefault(kind, dir) {
+  const key = kind === 'compound' ? 'restCompound' : 'restIsolation';
+  const cur = kind === 'compound' ? (DB.settings.restCompound || 150) : (DB.settings.restIsolation || DB.settings.restDuration || 90);
+  DB.settings[key] = Math.max(REST_MIN, Math.min(REST_MAX, cur + dir * REST_STEP));
   saveData('settings', DB.settings);
   renderSettings();
+  if (active) refreshCardsAfterSetting();
+}
+function stepDefaultInc(dir) {
+  const cur = kgStep();
+  let i = INC_OPTIONS.indexOf(cur);
+  if (i === -1) i = INC_OPTIONS.findIndex(v => v > cur) - (dir > 0 ? 1 : 0);
+  DB.settings.kgStep = INC_OPTIONS[Math.max(0, Math.min(INC_OPTIONS.length - 1, i + dir))];
+  saveData('settings', DB.settings);
+  renderSettings();
+  if (active) refreshCardsAfterSetting();
 }
 
 // ═══════════════════════════════════════════════

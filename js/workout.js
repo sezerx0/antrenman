@@ -235,9 +235,9 @@ function buildSetRow(ei, s, ex, ps, sug) {
     <span class="set-num">${s+1}</span>
     ${prevCell(ei, s, ps)}
     <div class="kg-stepper">
-      <button class="stepper-btn" onclick="stepKg(${ei},${s},-2.5)" type="button">−</button>
+      <button class="stepper-btn" onclick="stepKg(${ei},${s},-1)" type="button">−</button>
       <input class="kg-val" type="text" inputmode="decimal" placeholder="${escapeHtml(phKg || 'kg')}" data-prev="${escapeHtml(prevKg)}"${sugAttr(sug && sug.kg)} id="kg-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'kg',${ei},${s})">
-      <button class="stepper-btn" onclick="stepKg(${ei},${s},2.5)" type="button">+</button>
+      <button class="stepper-btn" onclick="stepKg(${ei},${s},1)" type="button">+</button>
     </div>
     ${repsHtml}
     <button class="set-done-btn" onclick="completeSet(${ei},${s})" id="set-done-${id}" aria-label="Seti tamamla">${icon('check')}</button>
@@ -290,12 +290,36 @@ function fillFromPrev(ei, s) {
 //  üst sınıra ulaşıldıysa → kilo + artış, tekrar = alt sınır
 //  aralıktaysa           → aynı kilo, tekrar + 1
 //  alt sınırın altındaysa → aynı kilo, tekrar = alt sınır
-const REP_RANGES = [null, [6, 8], [8, 10], [8, 12], [10, 15], [12, 20]];
+const REP_RANGES = [null, [4, 6], [6, 8], [6, 10], [8, 10], [8, 12], [10, 12], [10, 15], [12, 15], [15, 20]];
 function repRangeFor(exName) {
   const r = (DB.settings.repRangeByEx || {})[normName(exName)];
   return Array.isArray(r) && r.length === 2 ? r : null;
 }
+function setRepRangeFor(exName, range) {
+  DB.settings.repRangeByEx = DB.settings.repRangeByEx || {};
+  if (range) DB.settings.repRangeByEx[normName(exName)] = range;
+  else delete DB.settings.repRangeByEx[normName(exName)];
+  saveData('settings', DB.settings);
+}
+
+// Ağırlık artışı: hareket bazlı, yoksa genel varsayılan
+const INC_OPTIONS = [0.5, 1, 1.25, 2, 2.5, 5];
 function kgStep() { return DB.settings.kgStep || 2.5; }
+function incFor(exName) {
+  const v = (DB.settings.incByEx || {})[normName(exName)];
+  return v > 0 ? v : kgStep();
+}
+function fmtKg(v) { return String(round2(v)).replace('.', ','); }
+
+// Dinlenme: hareket bazlı, yoksa çok eklemli / izolasyon varsayılanı
+function isCompound(exName) {
+  return /press|\brows?\b|pulldown|pull ?-?ups?|chin ?-?ups?|squat|hack|deadlift|\brdl\b|\bdips?\b|lunge|hip thrust|bench press/.test(normName(exName));
+}
+function restDefaultFor(exName) {
+  return isCompound(exName)
+    ? (DB.settings.restCompound || 150)
+    : (DB.settings.restIsolation || DB.settings.restDuration || 90);
+}
 function suggestSet(ex, ps, range) {
   if (!range || !ps || !hasValue(ps)) return null;
   const [lo, hi] = range;
@@ -317,28 +341,12 @@ function suggestionFor(ei, s) {
   const pc = prevCache[ei];
   return pc ? suggestSet(ex, pc.bySet[s], repRangeFor(ex.name)) : null;
 }
-function cycleRepRange(ei) {
-  if (!active) return;
-  const ex = active.day.exercises[ei];
-  const cur = repRangeFor(ex.name);
-  const idx = REP_RANGES.findIndex(r => (r && cur) ? r[0] === cur[0] && r[1] === cur[1] : r === cur);
-  const next = REP_RANGES[(idx + 1) % REP_RANGES.length];
-  DB.settings.repRangeByEx = DB.settings.repRangeByEx || {};
-  if (next) DB.settings.repRangeByEx[normName(ex.name)] = next;
-  else delete DB.settings.repRangeByEx[normName(ex.name)];
-  saveData('settings', DB.settings);
-  captureActive();
-  renderExerciseCards();
-  applyActiveValues();
-  toast(next ? `🎯 ${ex.name}: ${next[0]}–${next[1]} tekrar hedefi` : `🎯 ${ex.name}: hedef kapalı`, 1800);
-}
-
-const REST_OPTIONS = [60, 90, 120, 150, 180, 240];
 function fmtRest(sec) { return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; }
 function restFor(exName) {
   const map = DB.settings.restByEx || {};
-  return map[normName(exName)] || DB.settings.restDuration || 90;
+  return map[normName(exName)] || restDefaultFor(exName);
 }
+const REST_MIN = 30, REST_MAX = 360, REST_STEP = 15;
 function fmtSetShort(s) {
   return s.repsR != null || s.repsL != null ? `${s.kg || 0}×${s.repsR || 0}/${s.repsL || 0}` : `${s.kg || 0}×${s.reps || 0}`;
 }
@@ -373,7 +381,7 @@ function renderExerciseCards() {
     const prevNote = noteVal ? `<div class="ex-prev-note">${icon('note')}${escapeHtml(noteVal)}</div>` : '';
     const rest = restFor(ex.name);
     const restChip = restOn
-      ? `<button class="ex-chip${restMap[normName(ex.name)] ? ' custom' : ''}" id="rest-chip-${ei}" onclick="cycleRest(${ei})" aria-label="Dinlenme süresi">${icon('timer')}${fmtRest(rest)}</button>`
+      ? `<button class="ex-chip${restMap[normName(ex.name)] ? ' custom' : ''}" id="rest-chip-${ei}" onclick="openExSheet(${ei})" aria-label="Dinlenme süresi">${icon('timer')}${fmtRest(rest)}</button>`
       : '';
 
     const range = repRangeFor(ex.name);
@@ -388,7 +396,7 @@ function renderExerciseCards() {
     const sugLine = sugList.length
       ? `<div class="ex-sug">${icon('trend-up')}<span>Bugün: ${sugList.map(g => `<b>${escapeHtml(g.kg ? g.kg + '×' + g.reps : g.reps + ' tk')}${g.up ? icon('arrow-up', 'up') : ''}</b>`).join(', ')}</span></div>`
       : '';
-    const rangeChip = isEdit ? '' : `<button class="ex-chip${range ? ' custom' : ''}" id="range-chip-${ei}" onclick="cycleRepRange(${ei})" aria-label="Hedef tekrar aralığı">${icon('target')}${range ? `${range[0]}–${range[1]}` : 'Hedef'}</button>`;
+    const rangeChip = isEdit ? '' : `<button class="ex-chip${range ? ' custom' : ''}" id="range-chip-${ei}" onclick="openExSheet(${ei})" aria-label="Hedef tekrar aralığı">${icon('target')}${range ? `${range[0]}–${range[1]}` : 'Hedef'}</button>`;
 
     const skipped = (active.skipped || []).includes(ei);
     return `<div class="ex-card${skipped ? ' skipped' : ''}" id="ex-card-${ei}">
@@ -549,25 +557,6 @@ function onNoteInput(ei) {
   if (chip) chip.classList.toggle('has-note', !!document.getElementById(`note-${ei}`).value.trim());
   captureActive();
 }
-function cycleRest(ei) {
-  if (!active) return;
-  const ex = active.day.exercises[ei];
-  const cur = restFor(ex.name);
-  const next = REST_OPTIONS[(REST_OPTIONS.indexOf(cur) + 1) % REST_OPTIONS.length] || REST_OPTIONS[0];
-  DB.settings.restByEx = DB.settings.restByEx || {};
-  if (next === (DB.settings.restDuration || 90)) delete DB.settings.restByEx[normName(ex.name)];
-  else DB.settings.restByEx[normName(ex.name)] = next;
-  saveData('settings', DB.settings);
-  // Aynı isimli tüm kartları güncelle
-  active.day.exercises.forEach((e, i) => {
-    if (normName(e.name) !== normName(ex.name)) return;
-    const chip = document.getElementById(`rest-chip-${i}`);
-    if (!chip) return;
-    chip.innerHTML = icon('timer') + fmtRest(next);
-    chip.classList.toggle('custom', !!DB.settings.restByEx[normName(ex.name)]);
-  });
-  toast(`⏱ ${ex.name}: ${fmtRest(next)} dinlenme`, 1500);
-}
 function updateProgress() {
   if (!active) return;
   const skipped = active.skipped || [];
@@ -613,12 +602,88 @@ function renderExSheet(view) {
       : `<button class="sheet-row" onclick="renderExSheet('swap')">${icon('swap')}Bu antrenmanda değiştir</button>`);
     rows.push(`<button class="sheet-row" onclick="toggleSkipEx(${ei}); closeExSheet();">${icon(skipped ? 'undo' : 'skip')}${skipped ? 'Atlamayı geri al' : 'Bu antrenmanda atla'}</button>`);
   }
+  body.innerHTML = `<div class="sheet-list">${rows.join('')}</div>` + exSettingsHtml(ex);
+}
+
+// Hareket ayarları: aynı isimli hareketin her yerdeki ayarı
+function exSettingsHtml(ex) {
+  const range = repRangeFor(ex.name);
+  const same = r => (r && range) ? r[0] === range[0] && r[1] === range[1] : r === range;
   const m = muscleFor(ex.name);
-  rows.push(`<label class="sheet-row">${icon('target')}Kas grubu
-    <select onchange="setMuscle(active.day.exercises[exSheetIdx].name, this.value); toast('Kas grubu: ' + MUSCLES[this.value], 1500)">
-      ${Object.entries(MUSCLES).map(([k, v]) => `<option value="${k}"${k === m ? ' selected' : ''}>${v}</option>`).join('')}
-    </select></label>`);
-  body.innerHTML = `<div class="sheet-list">${rows.join('')}</div>`;
+  const restCustom = !!(DB.settings.restByEx || {})[normName(ex.name)];
+  const incCustom = !!(DB.settings.incByEx || {})[normName(ex.name)];
+  return `<div class="sheet-section">Hareket ayarları <span>bu hareket her antrenmanda böyle</span></div>
+    <div class="sheet-list ex-settings">
+      <div class="sheet-row sheet-row-col">
+        <div class="sheet-row-head">${icon('target')}Tekrar aralığı</div>
+        <div class="range-chips">${REP_RANGES.map((r, i) => `<button class="range-chip${same(r) ? ' on' : ''}" onclick="pickRepRange(${i})">${r ? `${r[0]}–${r[1]}` : 'Kapalı'}</button>`).join('')}</div>
+      </div>
+      <div class="sheet-row">${icon('plus')}Ağırlık artışı
+        <div class="dur-stepper sheet-stepper"><button onclick="stepExInc(-1)" aria-label="Azalt">${icon('minus')}</button><span id="ex-inc-label">${fmtKg(incFor(ex.name))} kg</span><button onclick="stepExInc(1)" aria-label="Artır">${icon('plus')}</button></div>
+      </div>
+      ${incCustom ? '' : `<div class="sheet-note">Genel varsayılan (Ayarlar → İlerleme)</div>`}
+      <div class="sheet-row">${icon('timer')}Dinlenme
+        <div class="dur-stepper sheet-stepper"><button onclick="stepExRest(-1)" aria-label="Kısalt">${icon('minus')}</button><span id="ex-rest-label">${fmtRest(restFor(ex.name))}</span><button onclick="stepExRest(1)" aria-label="Uzat">${icon('plus')}</button></div>
+      </div>
+      <div class="sheet-note">${restCustom ? `<button class="link-btn" onclick="resetExRest()">Varsayılana dön (${fmtRest(restDefaultFor(ex.name))})</button>` : `Varsayılan: ${isCompound(ex.name) ? 'çok eklemli hareket' : 'izolasyon hareketi'}`}</div>
+      <label class="sheet-row">${icon('target')}Kas grubu
+        <select onchange="setMuscle(active.day.exercises[exSheetIdx].name, this.value); toast('Kas grubu: ' + MUSCLES[this.value], 1500)">
+          ${Object.entries(MUSCLES).map(([k, v]) => `<option value="${k}"${k === m ? ' selected' : ''}>${v}</option>`).join('')}
+        </select></label>
+    </div>`;
+}
+// Ayar değişince kartları yeniden çiz (girilen değerler korunur)
+function refreshCardsAfterSetting() {
+  captureActive();
+  renderExerciseCards();
+  applyActiveValues();
+}
+function pickRepRange(i) {
+  const ex = active.day.exercises[exSheetIdx];
+  setRepRangeFor(ex.name, REP_RANGES[i]);
+  refreshCardsAfterSetting();
+  renderExSheet('menu');
+}
+function stepExInc(dir) {
+  const ex = active.day.exercises[exSheetIdx];
+  const cur = incFor(ex.name);
+  let i = INC_OPTIONS.indexOf(cur);
+  if (i === -1) i = INC_OPTIONS.findIndex(v => v > cur) - (dir > 0 ? 1 : 0);
+  const next = INC_OPTIONS[Math.max(0, Math.min(INC_OPTIONS.length - 1, i + dir))];
+  DB.settings.incByEx = DB.settings.incByEx || {};
+  if (next === kgStep()) delete DB.settings.incByEx[normName(ex.name)];
+  else DB.settings.incByEx[normName(ex.name)] = next;
+  saveData('settings', DB.settings);
+  refreshCardsAfterSetting();
+  renderExSheet('menu');
+}
+function stepExRest(dir) {
+  const ex = active.day.exercises[exSheetIdx];
+  const next = Math.max(REST_MIN, Math.min(REST_MAX, restFor(ex.name) + dir * REST_STEP));
+  DB.settings.restByEx = DB.settings.restByEx || {};
+  if (next === restDefaultFor(ex.name)) delete DB.settings.restByEx[normName(ex.name)];
+  else DB.settings.restByEx[normName(ex.name)] = next;
+  saveData('settings', DB.settings);
+  updateRestChips(ex.name);
+  renderExSheet('menu');
+}
+function resetExRest() {
+  const ex = active.day.exercises[exSheetIdx];
+  if (DB.settings.restByEx) delete DB.settings.restByEx[normName(ex.name)];
+  saveData('settings', DB.settings);
+  updateRestChips(ex.name);
+  renderExSheet('menu');
+}
+function updateRestChips(name) {
+  if (!active) return;
+  const custom = !!(DB.settings.restByEx || {})[normName(name)];
+  active.day.exercises.forEach((e, i) => {
+    if (normName(e.name) !== normName(name)) return;
+    const chip = document.getElementById(`rest-chip-${i}`);
+    if (!chip) return;
+    chip.innerHTML = icon('timer') + fmtRest(restFor(name));
+    chip.classList.toggle('custom', custom);
+  });
 }
 function exSheetGraph() {
   const name = active.day.exercises[exSheetIdx].name;
@@ -750,9 +815,10 @@ function handleSetNav(e, type, ei, s) {
   if (next) next.focus();
 }
 
-function stepKg(ei, s, delta) {
+function stepKg(ei, s, dir) {
   const input = document.getElementById(`kg-${ei}-${s}`);
-  if (!input) return;
+  if (!input || !active) return;
+  const delta = Math.sign(dir) * incFor(active.day.exercises[ei].name);
   if (input.value === '' && delta > 0) {
     const prev = num(input.dataset.sug || input.dataset.prev);
     if (prev) { input.value = prev; onSetInput(ei, s); return; }

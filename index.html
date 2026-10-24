@@ -456,13 +456,38 @@
             <div class="ios-toggle-thumb"></div>
           </label>
         </div>
-        <div class="settings-row" id="rest-dur-row">
+        <div class="settings-row" id="rest-comp-row">
           <div class="settings-icon" style="background:#007aff20;color:#007aff;"><i data-icon="clock"></i></div>
-          <span class="settings-label">Varsayılan süre</span>
+          <span class="settings-label">Dinlenme: press, row</span>
           <div class="dur-stepper">
-            <button onclick="stepRestDuration(-1)" aria-label="Kısalt"><i data-icon="minus"></i></button>
-            <span id="rest-dur-label">1:30</span>
-            <button onclick="stepRestDuration(1)" aria-label="Uzat"><i data-icon="plus"></i></button>
+            <button onclick="stepRestDefault('compound',-1)" aria-label="Kısalt"><i data-icon="minus"></i></button>
+            <span id="rest-comp-label">2:30</span>
+            <button onclick="stepRestDefault('compound',1)" aria-label="Uzat"><i data-icon="plus"></i></button>
+          </div>
+        </div>
+        <div class="settings-row" id="rest-iso-row">
+          <div class="settings-icon" style="background:#007aff20;color:#007aff;"><i data-icon="clock"></i></div>
+          <span class="settings-label">Dinlenme: izolasyon</span>
+          <div class="dur-stepper">
+            <button onclick="stepRestDefault('isolation',-1)" aria-label="Kısalt"><i data-icon="minus"></i></button>
+            <span id="rest-iso-label">1:30</span>
+            <button onclick="stepRestDefault('isolation',1)" aria-label="Uzat"><i data-icon="plus"></i></button>
+          </div>
+        </div>
+        <div class="settings-note" style="display:block;padding:0 16px 12px 58px;">Bir hareket için farklı süre istersen hareketin ⋯ menüsünden ayarla.</div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:14px;">
+      <div class="section-label">İlerleme</div>
+      <div class="card settings-group" id="progress-settings">
+        <div class="settings-row">
+          <div class="settings-icon" style="background:#34c75920;color:#34c759;"><i data-icon="trend-up"></i></div>
+          <span class="settings-label">Varsayılan ağırlık artışı</span>
+          <div class="dur-stepper">
+            <button onclick="stepDefaultInc(-1)" aria-label="Azalt"><i data-icon="minus"></i></button>
+            <span id="default-inc-label">2,5 kg</span>
+            <button onclick="stepDefaultInc(1)" aria-label="Artır"><i data-icon="plus"></i></button>
           </div>
         </div>
       </div>
