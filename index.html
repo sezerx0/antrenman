@@ -146,7 +146,7 @@
       <div class="section-label">Bugün</div>
       <div class="card suppl-card">
         <div id="suppl-checklist"></div>
-        <div class="suppl-row" style="cursor:default;flex-direction:column;align-items:stretch;gap:8px;">
+        <div class="suppl-row" id="water-block" style="cursor:default;flex-direction:column;align-items:stretch;gap:8px;">
           <div class="water-head">
             <span class="suppl-label">Su</span>
             <span id="water-total" class="water-total"></span>
@@ -161,7 +161,7 @@
         </div>
       </div>
     </div>
-    <div class="section" style="margin-top:12px; padding-bottom:20px;">
+    <div class="section" style="margin-top:12px; padding-bottom:20px;" id="suppl-cal-section">
       <div class="section-label">Takvim</div>
       <div class="card" style="padding:14px 16px;" id="suppl-cal-card">
         <div class="suppl-cal-header">
@@ -486,6 +486,31 @@
     </div>
 
     <div class="section" style="margin-top:14px;">
+      <div class="section-label">Günlük Rutin</div>
+      <div class="card settings-group">
+        <div class="settings-row">
+          <div class="settings-icon" style="background:#5ac8fa20;color:#5ac8fa;"><i data-icon="pill"></i></div>
+          <span class="settings-label">Supplement takibi</span>
+          <label class="ios-toggle">
+            <input type="checkbox" id="mod-suppl-toggle" onchange="toggleModSuppl(this.checked)">
+            <div class="ios-toggle-track"></div>
+            <div class="ios-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-icon" style="background:#007aff20;color:#007aff;"><i data-icon="droplet"></i></div>
+          <span class="settings-label">Su takibi</span>
+          <label class="ios-toggle">
+            <input type="checkbox" id="mod-water-toggle" onchange="toggleModWater(this.checked)">
+            <div class="ios-toggle-track"></div>
+            <div class="ios-toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+      <div class="settings-note" style="display:block;padding:6px 4px 0;">İkisi de kapalıysa Rutin sekmesi gizlenir. Kapatınca eski kayıtlar silinmez.</div>
+    </div>
+
+    <div class="section" style="margin-top:14px;" id="suppl-settings-section">
       <div class="section-label">Supplementler</div>
       <div class="card" style="overflow:hidden;">
         <div id="suppl-settings-list"></div>

@@ -60,6 +60,9 @@ function renderSettings() {
   document.getElementById('rest-toggle').checked = !!s.restTimerEnabled;
   document.getElementById('keep-awake-toggle').checked = s.keepAwake !== false;
   document.getElementById('rir-toggle').checked = s.rirEnabled !== false;
+  document.getElementById('mod-suppl-toggle').checked = supplOn();
+  document.getElementById('mod-water-toggle').checked = waterOn();
+  document.getElementById('suppl-settings-section').style.display = supplOn() ? '' : 'none';
   document.getElementById('workout-notif-toggle').checked = workoutNotifOn();
   renderNotifStatus();
   document.getElementById('rest-comp-label').textContent = fmtRest(s.restCompound || 150);
@@ -196,6 +199,16 @@ async function toggleWorkoutNotif(val) {
   toast('✅ Antrenman bildirimi açık');
 }
 
+function toggleModSuppl(val) {
+  DB.settings.modSuppl = !!val;
+  saveData('settings', DB.settings);
+  applyModules(); renderSettings();
+}
+function toggleModWater(val) {
+  DB.settings.modWater = !!val;
+  saveData('settings', DB.settings);
+  applyModules(); renderSettings();
+}
 function toggleRir(val) {
   DB.settings.rirEnabled = !!val;
   saveData('settings', DB.settings);

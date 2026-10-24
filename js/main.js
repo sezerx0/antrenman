@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════════
 hydrateIcons();
 applyTheme();
+applyModules();
 setGender('male', true);
 loadProfile();
 renderHome();

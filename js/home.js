@@ -61,6 +61,10 @@ function snoozeBackupNudge() {
 
 function renderRoutine() {
   document.getElementById('routine-date').textContent = logicalNow().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long' });
+  const s = supplOn(), w = waterOn();
+  document.getElementById('suppl-checklist').style.display = s ? '' : 'none';
+  document.getElementById('water-block').style.display = w ? 'flex' : 'none';
+  document.getElementById('suppl-cal-section').style.display = s ? '' : 'none';
   renderSuppl();
   renderSupplCalendar();
 }

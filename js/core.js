@@ -528,7 +528,16 @@ window.addEventListener('popstate', e => {
 //  TAB NAVIGATION
 // ═══════════════════════════════════════════════
 let currentTab = 'workout';
+function supplOn() { return DB.settings.modSuppl !== false; }
+function waterOn() { return DB.settings.modWater === true; }
+function routineOn() { return supplOn() || waterOn(); }
+function applyModules() {
+  const btn = document.getElementById('tab-btn-routine');
+  if (btn) btn.style.display = routineOn() ? '' : 'none';
+  if (!routineOn() && typeof currentTab !== 'undefined' && currentTab === 'routine') switchTab('workout');
+}
 function switchTab(tab) {
+  if (tab === 'routine' && !routineOn()) tab = 'workout';
   ['workout','routine','meas','stats','settings'].forEach(t => {
     document.getElementById('tab-' + t).style.display = 'none';
     const btn = document.getElementById('tab-btn-' + t);
