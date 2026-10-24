@@ -587,15 +587,71 @@ function resetData() {
 // ═══════════════════════════════════════════════
 //  PROGRAM ŞABLONLARI
 // ═══════════════════════════════════════════════
-// Push / Pull şablonu sabit değil: kullanıcının kendi programındaki hareketler
-// ve set sayılarından üretilir. Hareket adları aynı kaldığı için geçmiş,
-// "Önceki" sütunu ve grafikler program değişince de devam eder.
-const PUSH_MUSCLES = new Set(['chest', 'shoulders', 'triceps']);
-const LEG_MUSCLES = new Set(['quads', 'hamstrings', 'glutes', 'calves']);
-
-function isPushPullProgram(days) {
-  return Array.isArray(days) && days.length > 0 && days.every(d => /^(push|pull)-/.test(String(d.id)));
+// ── Programın: tek program (Push / Pull + Legs, 5 gün) ──
+// [hareket, set, tekrar aralığı]
+const MY_PROGRAM = {
+  id: 'ppl5', name: 'Push / Pull + Legs',
+  desc: 'Pzt Push A · Sal Pull A · Çar dinlenme · Per Push B · Cum Pull B · Cmt Legs · Paz dinlenme. Uygulama sırayla bir sonraki günü önerir; dinlenme günlerini girmen gerekmez.',
+  days: [
+    ['push-a', 'Push A', [
+      ['Incline Chest Press Machine', 3, [6, 10]], ['Pec Deck Fly', 2, [10, 15]], ['Cable Lateral Raise', 4, [12, 20]],
+      ['Smith Machine JM Press', 2, [8, 12]], ['Cable Overhead Triceps Extension', 2, [10, 15]]]],
+    ['pull-a', 'Pull A', [
+      ['Lat Pulldown', 3, [6, 12]], ['Chest Supported Machine Row', 3, [8, 12]], ['Reverse Pec Deck', 2, [12, 20]],
+      ['Preacher Curl Machine', 2, [8, 12]], ['Bayesian Cable Curl', 2, [10, 15]]]],
+    ['push-b', 'Push B', [
+      ['Horizontal Chest Press Machine', 3, [6, 10]], ['Shoulder Press Machine', 2, [8, 12]], ['Pec Deck Fly', 2, [10, 15]],
+      ['Cable Lateral Raise', 4, [12, 20]], ['Smith Machine JM Press', 2, [8, 12]], ['Cable Overhead Triceps Extension', 2, [10, 15]]]],
+    ['pull-b', 'Pull B', [
+      ['Chest Supported T-Bar Row', 3, [8, 12]], ['Lat Pulldown', 2, [8, 12]], ['Reverse Pec Deck', 2, [12, 20]],
+      ['Incline Dumbbell Curl', 2, [10, 15]], ['Preacher Curl Machine', 2, [8, 12]], ['EZ Bar Reverse Curl (Preacher Pad)', 2, [10, 15]]]],
+    ['legs', 'Legs', [
+      ['Leg Press', 2, [8, 12]], ['Leg Extension', 2, [10, 15]], ['Lying Leg Curl', 2, [10, 15]], ['Romanian Deadlift', 2, [8, 12]]]],
+  ],
+  // Eski adı → yeni adı (aynı hareket; geçmiş, rekor ve ayarlar yeni isme taşınır)
+  renames: {
+    'Incline Chest Press': 'Incline Chest Press Machine',
+    'Horizontal Chest Press': 'Horizontal Chest Press Machine',
+    'Bayesian Curl Cable': 'Bayesian Cable Curl',
+    'Chest Supported T-Bar Row Machine': 'Chest Supported T-Bar Row',
+    'Triceps Overhead Extension': 'Cable Overhead Triceps Extension',
+    'Reverse Curl': 'EZ Bar Reverse Curl (Preacher Pad)',
+  },
+};
+function myProgramDays() {
+  return MY_PROGRAM.days.map(([id, name, list]) => ({ id, name,
+    exercises: list.map(([n, sets, range], i) => ({ id: `${id}-${i + 1}`, name: n, sets, repRange: range })) }));
 }
+// Hareketin adını her yerde değiştir: kayıtlar, notlar, hareket ayarları
+function migrateExName(from, to) {
+  const f = normName(from), t = normName(to);
+  if (f === t) return;
+  DB.workoutLogs.forEach(log => {
+    (log.sets || []).forEach(s => { if (setMatchesName(s, log, f)) s.exName = to; });
+    if (log.exNotes && log.exNotes[f]) { if (!log.exNotes[t]) log.exNotes[t] = log.exNotes[f]; delete log.exNotes[f]; }
+  });
+  ['repRangeByEx', 'restByEx', 'incByEx', 'muscleByEx'].forEach(k => {
+    const m = DB.settings[k];
+    if (m && m[f] != null) { if (m[t] == null) m[t] = m[f]; delete m[f]; }
+  });
+}
+// Tekrar aralıkları: hareket her yerde aynı aralıktaysa hareket ayarına,
+// günden güne farklıysa (Lat Pulldown 6–12 / 8–12) o günün hareketine yazılır
+function applyRepRanges(days) {
+  const byName = {};
+  days.forEach(d => d.exercises.forEach(e => {
+    if (!e.repRange) return;
+    (byName[normName(e.name)] = byName[normName(e.name)] || []).push(e.repRange.join('-'));
+  }));
+  DB.settings.repRangeByEx = DB.settings.repRangeByEx || {};
+  days.forEach(d => d.exercises.forEach(e => {
+    if (!e.repRange) return;
+    const k = normName(e.name), list = byName[k];
+    if (!DB.settings.repRangeByEx[k]) DB.settings.repRangeByEx[k] = e.repRange;
+    if (list.every(r => r === list[0])) { DB.settings.repRangeByEx[k] = e.repRange; delete e.repRange; }
+  }));
+}
+
 function programSignature(days) {
   return JSON.stringify((days || []).map(d => [normName(d.name), d.exercises.map(e => [normName(e.name), e.sets])]));
 }
@@ -618,66 +674,8 @@ function saveProgramToHistory(entry) {
   lsRemove('programBackup');
 }
 
-// Push/Pull'un kaynağı: şu anki program; zaten Push/Pull'daysa ondan önceki program
-function pushPullSource() {
-  if (!isPushPullProgram(DB.workoutDays)) return { days: DB.workoutDays, from: 'current' };
-  const prev = getProgramHistory().find(x => !isPushPullProgram(x.days));
-  return prev ? { days: prev.days, from: 'history' } : { days: DEFAULT_DAYS, from: 'default' };
-}
-function exerciseSide(name) {
-  const m = muscleFor(name);
-  return PUSH_MUSCLES.has(m) ? 'push' : LEG_MUSCLES.has(m) ? 'legs' : 'pull';
-}
-// Günler sırayla iki yarıya bölünür (Torso A + Limbs A → A, Torso B + Limbs B → B);
-// her yarının hareketleri itiş / çekiş / bacak olarak ayrılır, set sayıları aynen kalır.
-// Bacak haftada bir: ilk yarının bacak hareketleri Pull B'nin sonuna eklenir.
-function buildPushPull(src) {
-  const half = Math.ceil(src.length / 2);
-  const groups = [src.slice(0, half), src.slice(half)];
-  if (!groups[1].length) groups[1] = groups[0];
-  const split = days => {
-    const out = { push: [], pull: [], legs: [] };
-    days.forEach(d => d.exercises.forEach(e => { if (String(e.name || '').trim()) out[exerciseSide(e.name)].push(e); }));
-    return out;
-  };
-  const A = split(groups[0]), B = split(groups[1]);
-  const legs = A.legs.length ? A.legs : B.legs;
-  const mk = (id, name, list) => ({ id, name, exercises: list.map((e, i) => ({
-    id: `${id}-${i + 1}`, name: e.name, sets: e.sets, ...(e.bilateral ? { bilateral: true } : {}),
-  })) });
-  return [
-    mk('push-a', 'Push A', A.push),
-    mk('pull-a', 'Pull A', A.pull),
-    mk('push-b', 'Push B', B.push),
-    mk('pull-b', legs.length ? 'Pull B + Bacak' : 'Pull B', [...B.pull, ...legs]),
-  ].filter(d => d.exercises.length);
-}
-// Hareket başına toplam set (döngü başına)
-function setTotals(days, filter) {
-  const m = {};
-  days.forEach(d => d.exercises.forEach(e => {
-    if (filter && !filter(e)) return;
-    const k = normName(e.name);
-    m[k] = (m[k] || 0) + (e.sets || 0);
-  }));
-  return m;
-}
-
 function programTemplates() {
-  const src = pushPullSource();
-  const pp = buildPushPull(src.days);
-  const notLeg = e => exerciseSide(e.name) !== 'legs';
-  const a = setTotals(src.days, notLeg), b = setTotals(pp, notLeg);
-  const same = Object.keys(a).length === Object.keys(b).length && Object.keys(a).every(k => a[k] === b[k]);
-  const srcTxt = src.from === 'current' ? 'şu anki programındaki' : src.from === 'history' ? "Push/Pull'a geçmeden önceki programındaki" : 'varsayılan programdaki';
-  return [
-    { id: 'push-pull', name: 'Push / Pull + Bacak', check: same ? `Üst vücut hareketleri ve set sayıları ${srcTxt} ile aynı` : '',
-      desc: `Push A → Pull A → dinlenme → Push B → Pull B + Bacak → dinlenme. ${srcTxt[0].toLocaleUpperCase('tr') + srcTxt.slice(1)} hareketlerden oluşturuldu; bacak haftada bir, Pull B'nin sonunda. Dinlenme günlerini uygulamaya girmen gerekmez.`,
-      days: pp },
-    { id: 'torso-limbs', name: 'Torso / Limbs (varsayılan)',
-      desc: 'Uygulamanın varsayılan programı: üst ve alt vücut günleri dönüşümlü, bacak haftada iki kez.',
-      days: DEFAULT_DAYS },
-  ];
+  return [{ id: MY_PROGRAM.id, name: MY_PROGRAM.name, desc: MY_PROGRAM.desc, days: myProgramDays(), renames: MY_PROGRAM.renames }];
 }
 function currentTemplate() {
   const sig = programSignature(DB.workoutDays);
@@ -700,11 +698,11 @@ function renderTemplateList() {
   const cur = programSignature(DB.workoutDays);
   templateCandidates = {};
   const card = (key, name, desc, days, opts = {}) => {
-    templateCandidates[key] = { name, days, order: opts.order || null };
+    templateCandidates[key] = { name, days, order: opts.order || null, renames: opts.renames || null };
     const isCur = programSignature(days) === cur;
     const dayLines = days.map(d => {
       const n = d.exercises.reduce((a, e) => a + e.sets, 0);
-      const exs = d.exercises.map(e => `${escapeHtml(e.name)} <b>${e.sets}</b>`).join(' · ');
+      const exs = d.exercises.map(e => { const r = e.repRange || repRangeFor(e.name, e); return `${escapeHtml(e.name)} <b>${e.sets}</b>${r ? `×${r[0]}–${r[1]}` : ''}`; }).join(' · ');
       return `<div class="tpl-day"><div class="tpl-day-head"><b>${escapeHtml(d.name)}</b><span>${d.exercises.length} hareket · ${n} set</span></div><div class="tpl-day-ex">${exs}</div></div>`;
     }).join('');
     return `<div class="tpl-card${isCur ? ' current' : ''}${opts.cls || ''}">
@@ -723,7 +721,7 @@ function renderTemplateList() {
     if (tplSigs.has(programSignature(h.days))) return;
     html += card(`history:${i}`, 'Önceki programın', `${fmtDate(h.date)} tarihinde değiştirdiğin program: ${h.days.map(d => d.name).join(', ')}.`, h.days, { cls: ' backup', order: h.order });
   });
-  html = tpls.map(t => card(t.id, t.name, t.desc, t.days, { check: t.check })).join('') + html;
+  html = tpls.map(t => card(t.id, t.name, t.desc, t.days, { renames: t.renames })).join('') + html;
   document.getElementById('template-list').innerHTML = html;
 }
 
@@ -732,6 +730,13 @@ function applyTemplate(key) {
   const cand = templateCandidates[key];
   if (!cand) return;
   if (!confirm(`Programın "${cand.name}" ile değiştirilecek.\n\nGeçmiş kayıtların ve grafiklerin korunur. Şu anki programın saklanır, istediğin zaman buradan geri dönebilirsin.`)) return;
+
+  // Adı değişen hareketler: geçmişi olanları sor, onaylanırsa her yerde yeni isme taşı
+  const renames = Object.entries(cand.renames || {}).filter(([from]) => getLogsByExName(from).length);
+  if (renames.length && confirm(`Adı değişen hareketler:\n${renames.map(([f, t]) => `• ${f} → ${t}`).join('\n')}\n\nGeçmiş kayıtlar, rekorlar ve hareket ayarları yeni isme taşınsın mı?`)) {
+    renames.forEach(([f, t]) => migrateExName(f, t));
+    saveData('workoutLogs', DB.workoutLogs);
+  }
 
   // Şu anki programı sakla; hiçbir program kaybolmaz
   saveProgramToHistory({ days: deepCopy(DB.workoutDays), order: [...DB.workoutOrder], date: today() });
@@ -744,6 +749,8 @@ function applyTemplate(key) {
     if (e.bilateral || bilateral.has(normName(e.name))) e.bilateral = true; else delete e.bilateral;
   }));
 
+  applyRepRanges(newDays);
+  saveData('settings', DB.settings);
   DB.workoutDays = newDays;
   DB.workoutOrder = Array.isArray(cand.order) ? cand.order.map(String) : newDays.map(d => d.id);
   syncOrder();

@@ -290,8 +290,10 @@ function fillFromPrev(ei, s) {
 //  üst sınıra ulaşıldıysa → kilo + artış, tekrar = alt sınır
 //  aralıktaysa           → aynı kilo, tekrar + 1
 //  alt sınırın altındaysa → aynı kilo, tekrar = alt sınır
-const REP_RANGES = [null, [4, 6], [6, 8], [6, 10], [8, 10], [8, 12], [10, 12], [10, 15], [12, 15], [15, 20]];
-function repRangeFor(exName) {
+const REP_RANGES = [null, [4, 6], [6, 8], [6, 10], [6, 12], [8, 10], [8, 12], [10, 12], [10, 15], [12, 15], [12, 20], [15, 20]];
+// ex verilirse o günün hareketine özel aralık (varsa) önce gelir
+function repRangeFor(exName, ex) {
+  if (ex && Array.isArray(ex.repRange) && ex.repRange.length === 2) return ex.repRange;
   const r = (DB.settings.repRangeByEx || {})[normName(exName)];
   return Array.isArray(r) && r.length === 2 ? r : null;
 }
@@ -393,7 +395,7 @@ function suggestionFor(ei, s) {
   const ex = active.day.exercises[ei];
   const pc = prevCache[ei];
   if (!pc) return null;
-  return progressionPlan(ex, pc.bySet, repRangeFor(ex.name), s + 1).sets[s] || null;
+  return progressionPlan(ex, pc.bySet, repRangeFor(ex.name, ex), s + 1).sets[s] || null;
 }
 function fmtRest(sec) { return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; }
 function restFor(exName) {
@@ -438,7 +440,7 @@ function renderExerciseCards() {
       ? `<button class="ex-chip${restMap[normName(ex.name)] ? ' custom' : ''}" id="rest-chip-${ei}" onclick="openExSheet(${ei})" aria-label="Dinlenme süresi">${icon('timer')}${fmtRest(rest)}</button>`
       : '';
 
-    const range = repRangeFor(ex.name);
+    const range = repRangeFor(ex.name, ex);
     const plan = isEdit ? { sets: [], reason: '' } : progressionPlan(ex, bySet, range, active.sets[ei]);
     let setRows = '';
     for (let s = 0; s < active.sets[ei]; s++) setRows += buildSetRow(ei, s, ex, bySet[s], plan.sets[s] || null);
@@ -658,7 +660,7 @@ function renderExSheet(view) {
 
 // Hareket ayarları: aynı isimli hareketin her yerdeki ayarı
 function exSettingsHtml(ex) {
-  const range = repRangeFor(ex.name);
+  const range = repRangeFor(ex.name, ex);
   const same = r => (r && range) ? r[0] === range[0] && r[1] === range[1] : r === range;
   const m = muscleFor(ex.name);
   const restCustom = !!(DB.settings.restByEx || {})[normName(ex.name)];
@@ -691,7 +693,14 @@ function refreshCardsAfterSetting() {
 }
 function pickRepRange(i) {
   const ex = active.day.exercises[exSheetIdx];
-  setRepRangeFor(ex.name, REP_RANGES[i]);
+  const r = REP_RANGES[i];
+  if (Array.isArray(ex.repRange)) {
+    // Bu güne özel aralık: sadece bu gündeki hareket değişir
+    const real = (getDayById(active.dayId)?.exercises || []).find(e => e.id === ex.id);
+    [ex, real].forEach(e => { if (!e) return; if (r) e.repRange = r; else delete e.repRange; });
+    saveData('workoutDays', DB.workoutDays);
+    if (!r) setRepRangeFor(ex.name, null);
+  } else setRepRangeFor(ex.name, r);
   refreshCardsAfterSetting();
   renderExSheet('menu');
 }
@@ -861,7 +870,7 @@ function checkOverload(ei, s) {
   const cur = ex.bilateral ? { kg: c.kg, repsR: c.repsR, repsL: c.repsL } : { kg: c.kg, reps: c.reps };
   const r = active.rir ? active.rir[`${ei}-${s}`] : undefined;
   if (r != null) cur.rir = r;
-  rowEl.classList.toggle('overload', isProgress(cur, ps && hasValue(ps) ? ps : null, repRangeFor(ex.name)));
+  rowEl.classList.toggle('overload', isProgress(cur, ps && hasValue(ps) ? ps : null, repRangeFor(ex.name, ex)));
 }
 
 function handleSetNav(e, type, ei, s) {

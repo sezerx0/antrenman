@@ -122,7 +122,7 @@ const MUSCLE_RULES = [
   ['hamstrings', /leg curl|hamstring|\brdl\b|romanian|nordic|good ?morning|arka bacak/],
   ['quads', /leg ext|squat|leg press|lunge|hack|sissy|step ?up|ön bacak|bacak pres/],
   ['calves', /calf|baldır/],
-  ['triceps', /tricep|pushdown|push ?down|skull|\bdips?\b|close ?grip|arka kol|french press/],
+  ['triceps', /tricep|pushdown|push ?down|skull|jm press|tate press|\bdips?\b|close ?grip|arka kol|french press/],
   ['glutes', /hip thrust|glute|kick ?back|abduct|kalça/],
   ['shoulders', /lateral raise|shoulder|overhead press|military|\bohp\b|arnold|front raise|upright row|omuz/],
   // Ön kol: "reverse curl" ve "wrist curl" biceps sayılmasın diye biceps'ten önce

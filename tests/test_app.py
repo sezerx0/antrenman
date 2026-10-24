@@ -658,83 +658,51 @@ with sync_playwright() as p:
     page.evaluate("discardActive(); DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs)")
 
 
-    # ── 36. Program şablonları ──
+    # ── 36. Tek program: Push / Pull + Legs ──
     page.evaluate("""() => { discardActive(); localStorage.removeItem('antrenman:programBackup'); localStorage.removeItem('antrenman:programHistory');
       DB.workoutDays = deepCopy(DEFAULT_DAYS); DB.workoutDays[1].exercises[0].bilateral = true;
       saveData('workoutDays', DB.workoutDays); DB.workoutOrder = DB.workoutDays.map(d => d.id); saveData('workoutOrder', DB.workoutOrder);
-      DB.workoutLogs.push({date: today(), dayId:'limbs-b', dayName:'Limbs B', __test:1, sets:[{exId:'hack-squat', exName:'Hack Squat', setIdx:0, kg:80, reps:10}], notes:{}});
-      saveData('workoutLogs', DB.workoutLogs); switchTab('settings'); }""")
-    check('program etiketi "Torso / Limbs (varsayılan)"', page.inner_text('#program-label') == 'Torso / Limbs (varsayılan)', page.inner_text('#program-label'))
+      DB.workoutLogs.push({date: '2099-03-01', dayId:'push-a', dayName:'Push A', __test:1, sets:[
+        {exId:'x1', exName:'Incline Chest Press', setIdx:0, kg:90, reps:8}, {exId:'x2', exName:'Bayesian Curl Cable', setIdx:0, kg:15, reps:12}], notes:{}, exNotes:{'incline chest press':'koltuk 4'}});
+      DB.settings.restByEx = Object.assign({}, DB.settings.restByEx, {'incline chest press': 180});
+      saveData('workoutLogs', DB.workoutLogs); saveData('settings', DB.settings); switchTab('settings'); }""")
+    check('program etiketi "Özel"', page.inner_text('#program-label') == 'Özel', page.inner_text('#program-label'))
     layers_before = page.evaluate("layers.length")
     page.click('#tab-settings .settings-row:has(#program-label)'); page.wait_for_timeout(300)
-    check('şablon ekranı açıldı, mevcut program işaretli', page.is_visible('#template-sheet') and page.evaluate("document.querySelectorAll('#template-list .tpl-card.current').length") == 1)
+    check('program ekranında tek şablon', page.is_visible('#template-sheet') and page.evaluate("document.querySelectorAll('#template-list .tpl-card:not(.backup)').length") == 1)
+    check('kartta set ve tekrar aralığı', 'Lat Pulldown 3×6–12' in page.inner_text('#template-list .tpl-card >> nth=0'), page.inner_text('#template-list .tpl-card >> nth=0')[:300])
     page.click('#template-list .tpl-apply >> nth=0'); page.wait_for_timeout(400)
-    check('Push / Pull programına geçildi', page.evaluate("DB.workoutDays.map(d => d.name).join('|')") == 'Push A|Pull A|Push B|Pull B + Bacak' and not page.is_visible('#template-sheet'))
+    check('programa geçildi', page.evaluate("DB.workoutDays.map(d => d.name).join('|')") == 'Push A|Pull A|Push B|Pull B|Legs' and not page.is_visible('#template-sheet'))
     check('katman kapandı', page.evaluate("layers.length") == layers_before, (layers_before, page.evaluate("layers.join(',')")))
-    upper = page.evaluate("""() => { const tot = days => { const m = {}; days.forEach(d => d.exercises.forEach(e => { m[e.name] = (m[e.name] || 0) + e.sets; })); return m; };
-      const a = tot(DEFAULT_DAYS), b = tot(DB.workoutDays); const legs = ['Lying Leg Curl','Leg Extension','Leg Press','Hack Squat'];
-      return Object.keys(a).filter(k => !legs.includes(k)).filter(k => a[k] !== b[k]); }""")
-    check('üst vücut hareketleri ve set sayıları birebir aynı', upper == [], upper)
-    legs = page.evaluate("getDayById('pull-b').exercises.slice(-3).map(e => e.name + ' ' + e.sets).join(', ')")
-    check('bacak Pull B sonunda, aynı set sayılarıyla', legs == 'Lying Leg Curl 3, Leg Extension 3, Leg Press 3', legs)
+    sets = page.evaluate("DB.workoutDays.map(d => d.exercises.reduce((a, e) => a + e.sets, 0)).join(',')")
+    check('set sayıları (13, 12, 15, 13, 8)', sets == '13,12,15,13,8', sets)
+    check('sıra Push A → … → Legs', page.evaluate("DB.workoutOrder.join(',')") == 'push-a,pull-a,push-b,pull-b,legs')
+    check('ayarlarda program adı', page.inner_text('#program-label') == 'Push / Pull + Legs')
     check('sağ/sol ayarı korundu', page.evaluate("getDayById('pull-a').exercises.find(e => e.name === 'Preacher Curl Machine').bilateral") is True)
-    check('sıradaki gün Push A', page.evaluate("getNextDayId()") == 'push-a')
+    check('eski isim yeni isme taşındı (kayıt, not, dinlenme)', page.evaluate("""getLogsByExName('Incline Chest Press Machine').length === 1 && getLogsByExName('Incline Chest Press').length === 0
+      && DB.workoutLogs.find(l => l.date === '2099-03-01').exNotes['incline chest press machine'] === 'koltuk 4' && restFor('Incline Chest Press Machine') === 180"""))
+    check('Bayesian geçmişi devam ediyor', page.evaluate("exerciseRecords('Bayesian Cable Curl').heaviest") is not None)
+    rr = page.evaluate("[repRangeFor('Cable Lateral Raise'), repRangeFor('Pec Deck Fly'), repRangeFor('Lat Pulldown', getDayById('pull-a').exercises[0]), repRangeFor('Lat Pulldown', getDayById('pull-b').exercises[1])].map(r => r.join('-')).join(',')")
+    check('tekrar aralıkları (gün bazlı Lat Pulldown dahil)', rr == '12-20,10-15,6-12,8-12', rr)
+    check('ortak aralıklar hareket ayarında, günde kopya yok', page.evaluate("getDayById('push-a').exercises.every(e => !e.repRange)") and page.evaluate("!!getDayById('pull-a').exercises[0].repRange"))
+    check('JM Press triceps sayılıyor', page.evaluate("muscleFor('Smith Machine JM Press')") == 'triceps')
     codes = page.evaluate("Object.values(dayCodes())")
-    check('gün kodları ayırt edici', len(set(codes)) == 4 and codes == ['PSA', 'PLA', 'PSB', 'PLB'], codes)
-    check('ayarlarda program adı', page.inner_text('#program-label') == 'Push / Pull + Bacak')
-    page.evaluate("switchTab('workout'); workoutCalOffset = 0; renderHeatmap()")
-    old_bg = page.evaluate("[...document.querySelectorAll('.wcal-day.has-workout')].map(e => e.style.background)")
-    check('eski günlerin kayıtları takvimde renkli kalıyor', old_bg and all('142, 142, 147' not in b for b in old_bg), old_bg)
-    page.evaluate("openWorkoutScreen('push-a')"); page.wait_for_timeout(300)
-    check('yeni günde Pec Deck önceki değerleri geliyor', page.evaluate("document.querySelectorAll('#ex-card-0 .set-prev:not(.empty)').length") >= 1)
+    check('gün kodları ayırt edici', len(set(codes)) == 5, codes)
+    page.evaluate("openWorkoutScreen('pull-b')"); page.wait_for_timeout(300)
+    check('Pull B Lat Pulldown kartında 8–12', '8–12' in page.inner_text('#ex-card-1'))
+    page.evaluate("openExSheet(1)"); page.wait_for_timeout(200)
+    page.click('#ex-sheet .range-chip:has-text("10–12")'); page.wait_for_timeout(200)
+    check('güne özel aralık değişince diğer gün etkilenmiyor', page.evaluate("[repRangeFor('Lat Pulldown', getDayById('pull-b').exercises[1]).join('-'), repRangeFor('Lat Pulldown', getDayById('pull-a').exercises[0]).join('-')].join(',')") == '10-12,6-12')
+    page.evaluate("closeExSheet()"); page.wait_for_timeout(200)
     page.evaluate("switchTab('settings'); openTemplateSheet()"); page.wait_for_timeout(200)
-    page.click('#template-list .tpl-apply >> nth=0'); page.wait_for_timeout(300)
-    check('antrenman sürerken program değişmiyor', page.evaluate("DB.workoutDays[0].name") == 'Push A' and 'bitir' in page.inner_text('#toast'))
-    page.evaluate("closeTemplateSheet(); discardActive()"); page.wait_for_timeout(300)
-    page.evaluate("""() => { DB.workoutDays[0].exercises[0].sets = 4; saveData('workoutDays', DB.workoutDays); renderSettings(); }""")
-    check('elle değişen program "Özel"', page.inner_text('#program-label') == 'Özel')
-    page.evaluate("openTemplateSheet()"); page.wait_for_timeout(200)
-    page.click('#template-list .tpl-card:has-text("Torso / Limbs") .tpl-apply'); page.wait_for_timeout(300)
-    check('Torso / Limbs\'e geri dönüldü', page.evaluate("DB.workoutDays.map(d => d.id).join(',')") == 'torso-a,limbs-a,torso-b,limbs-b')
-    page.evaluate("openTemplateSheet()"); page.wait_for_timeout(200)
-    check('elle düzenlenen program "Önceki programım" olarak duruyor', page.evaluate("document.querySelectorAll('#template-list .tpl-card.backup').length") == 1)
+    check('uygulanan program işaretli', page.evaluate("document.querySelectorAll('#template-list .tpl-card.current').length") == 1)
+    page.evaluate("closeTemplateSheet()"); page.wait_for_timeout(200)
+    page.evaluate("discardActive(); openTemplateSheet()"); page.wait_for_timeout(200)
+    check('önceki program geri dönüş için duruyor', page.evaluate("document.querySelectorAll('#template-list .tpl-card.backup').length") == 1)
     page.click('#template-list .tpl-card.backup .tpl-apply'); page.wait_for_timeout(300)
-    check('önceki programa tek dokunuşla dönüş (elle değişiklik dahil)', page.evaluate("DB.workoutDays[0].name + ' ' + DB.workoutDays[0].exercises[0].sets") == 'Push A 4')
+    check('önceki programa tek dokunuşla dönüş', page.evaluate("DB.workoutDays.map(d => d.id).join(',')") == 'torso-a,limbs-a,torso-b,limbs-b')
     page.evaluate("""() => { DB.workoutDays = deepCopy(DEFAULT_DAYS); saveData('workoutDays', DB.workoutDays); DB.workoutOrder = DB.workoutDays.map(d => d.id); saveData('workoutOrder', DB.workoutOrder);
       localStorage.removeItem('antrenman:programBackup'); localStorage.removeItem('antrenman:programHistory'); DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); renderHome(); renderSettings(); }""")
-
-
-    # ── 37. Push/Pull kullanıcının KENDİ programından üretilir ──
-    page.evaluate("""() => { discardActive(); localStorage.removeItem('antrenman:programHistory');
-      const d = deepCopy(DEFAULT_DAYS);
-      d[0].exercises[0].sets = 4;   // Torso A Pec Deck 4
-      d[0].exercises[3].sets = 3;   // Torso A Lat Pulldown 3
-      d[2].exercises.push({ id: 'x-sp', name: 'Shoulder Press Machine', sets: 3 });   // Torso B'ye omuz presi
-      d[1].exercises[0].sets = 3;   // Limbs A Preacher 3
-      d[1].exercises[6].sets = 4;   // Limbs A Leg Press 4
-      DB.workoutDays = d; saveData('workoutDays', d); DB.workoutOrder = d.map(x => x.id); saveData('workoutOrder', DB.workoutOrder);
-      switchTab('settings'); }""")
-    check('değiştirilmiş program "Özel"', page.inner_text('#program-label') == 'Özel')
-    page.evaluate("openTemplateSheet()"); page.wait_for_timeout(200)
-    check('şablonda "aynı" doğrulaması görünüyor', 'set sayıları şu anki programındaki ile aynı' in page.inner_text('#template-list .tpl-card >> nth=0'))
-    check('şablon kartında hareketler ve set sayıları listeleniyor', 'Pec Deck Fly 4' in page.inner_text('#template-list .tpl-card >> nth=0'))
-    src_tot = page.evaluate("JSON.stringify(setTotals(DB.workoutDays, e => exerciseSide(e.name) !== 'legs'))")
-    page.click('#template-list .tpl-apply >> nth=0'); page.wait_for_timeout(400)
-    new_tot = page.evaluate("JSON.stringify(setTotals(DB.workoutDays, e => exerciseSide(e.name) !== 'legs'))")
-    check('kendi programındaki üst vücut set sayıları birebir korunuyor', json.loads(src_tot) == json.loads(new_tot), (src_tot, new_tot))
-    check('eklenen omuz presi Push B\'de', page.evaluate("getDayById('push-b').exercises.some(e => e.name === 'Shoulder Press Machine' && e.sets === 3)"))
-    check('bacak: kendi programındaki set sayıları (Leg Press 4)', page.evaluate("getDayById('pull-b').exercises.slice(-3).map(e => e.name + ' ' + e.sets).join(', ')") == 'Lying Leg Curl 3, Leg Extension 3, Leg Press 4')
-    # Eski (sabit) Push/Pull'a geçmiş kullanıcı: önceki program geçmişte → şablon ondan üretilir
-    page.evaluate("""() => { DB.workoutDays.forEach(d => d.exercises.forEach(e => { e.sets = 2; })); saveData('workoutDays', DB.workoutDays); renderSettings(); openTemplateSheet(); }""")
-    page.wait_for_timeout(200)
-    check('Push/Pull\'dayken kaynak önceki program', "geçmeden önceki programındaki" in page.inner_text('#template-list .tpl-card >> nth=0') and not page.evaluate("document.querySelector('#template-list .tpl-card').classList.contains('current')"))
-    page.click('#template-list .tpl-apply >> nth=0'); page.wait_for_timeout(400)
-    again = page.evaluate("JSON.stringify(setTotals(DB.workoutDays, e => exerciseSide(e.name) !== 'legs'))")
-    check('yeniden uygulayınca set sayıları önceki programla aynı', json.loads(again) == json.loads(src_tot), (again, src_tot))
-    hist = page.evaluate("getProgramHistory().map(h => h.days.map(d => d.name).join('/'))")
-    check('hiçbir program kaybolmuyor (geçmişte hem Özel hem hatalı Push/Pull)', any('Torso A' in h for h in hist) and any('Push A' in h for h in hist), hist)
-    page.evaluate("""() => { closeTemplateSheet(); DB.workoutDays = deepCopy(DEFAULT_DAYS); saveData('workoutDays', DB.workoutDays); DB.workoutOrder = DB.workoutDays.map(d => d.id); saveData('workoutOrder', DB.workoutOrder);
-      localStorage.removeItem('antrenman:programHistory'); renderHome(); renderSettings(); }""")
     page.wait_for_timeout(300)
 
 
