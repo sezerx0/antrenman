@@ -936,3 +936,22 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .sum-pr-banner { align-items: flex-start !important; }
 .sum-pr-title { font-weight: 700; margin-bottom: 2px; }
 .sum-pr-line { font-weight: 500; font-size: 13px; line-height: 1.4; }
+/* ── Haftalık hacim ── */
+.vol-head { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+.vol-toggle { border: none; border-radius: 12px; padding: 4px 10px; font-size: 11px; font-weight: 700; font-family: inherit; background: var(--bg-secondary); color: var(--text-secondary); cursor: pointer; }
+.vol-toggle.on { background: var(--accent-light); color: var(--accent); }
+.vol-row { display: grid; grid-template-columns: 70px 1fr 48px; align-items: center; gap: 10px; padding: 7px 0; width: 100%; background: none; border: none; font-family: inherit; color: inherit; text-align: left; cursor: pointer; }
+.vol-row.zero .muscle-name, .vol-row.zero .muscle-num { color: var(--text-tertiary); }
+.vol-row .muscle-bar { display: block; }
+.vol-row .muscle-fill { display: block; }
+.vol-ind { position: absolute; top: 0; bottom: 0; background: var(--accent-fill); opacity: 0.35; }
+.vol-target { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--text-primary); border-radius: 1px; z-index: 2; }
+.muscle-num small { font-size: 11px; font-weight: 600; color: var(--text-tertiary); }
+.muscle-num.reached { color: var(--green); }
+[data-palette="lime"]:not([data-theme="dark"]) .muscle-num.reached { color: #5E8A12; }
+.vol-detail { padding: 2px 0 10px 80px; }
+.vol-subs { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.vol-subs b { color: var(--text-primary); }
+.vol-ind-txt { color: var(--text-tertiary); }
+.vol-target-row { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; font-size: 13px; }
+.vol-target-row .dur-stepper span { min-width: 54px; font-size: 13px; }

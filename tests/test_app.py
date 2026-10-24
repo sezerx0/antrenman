@@ -562,9 +562,11 @@ with sync_playwright() as p:
     w = page.evaluate("weeklyMuscleSets()")
     check('son 7 gün set sayımı', w.get('chest', 0) >= 2 and w.get('back', 0) >= 1 and w.get('other', 0) >= 1, w)
     txt = page.inner_text('#muscle-card')
-    check('dağılım kartı: programdaki ama çalışılmayan grup 0 görünüyor', 'Arka bacak' in txt and 'Göğüs' in txt, txt[:200])
-    page.evaluate("setMuscle('Garip Hareket', 'forearms'); renderMuscleCard()")
-    check('elle değiştirilen kas grubu', page.evaluate("muscleFor('garip hareket')") == 'forearms' and 'Ön kol' in page.inner_text('#muscle-card'))
+    check('hacim kartı: programdaki ama çalışılmayan grup 0 görünüyor', 'Bacak' in txt and 'Göğüs' in txt, txt[:200])
+    page.evaluate("volOpen.clear(); toggleVolDetail('legs')")
+    check('gruba dokununca alt kaslar', 'Arka bacak' in page.inner_text('#vol-detail-legs'))
+    page.evaluate("setMuscle('Garip Hareket', 'forearms'); volOpen.add('arms'); renderMuscleCard()")
+    check('elle değiştirilen kas grubu', page.evaluate("muscleFor('garip hareket')") == 'forearms' and 'Ön kol 1' in page.inner_text('#vol-detail-arms'))
     page.evaluate("setMuscle('Garip Hareket', 'other')")
     check('tahminle aynıysa geçersiz kılma silinir', 'garip hareket' not in page.evaluate("Object.keys(DB.settings.muscleByEx || {})"))
     page.evaluate("discardActive(); openWorkoutScreen('torso-a')"); page.wait_for_timeout(300)
@@ -886,6 +888,27 @@ with sync_playwright() as p:
     page.evaluate("closeProgressModal()"); page.wait_for_timeout(300)
     page.evaluate("""() => { DB.workoutDays = DB.workoutDays.filter(d => d.id !== 'pr-day'); saveData('workoutDays', DB.workoutDays); syncOrder();
       DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); renderStats(); }""")
+
+
+    # ── 43. Hacim: direkt / dolaylı / hedef ──
+    page.evaluate("""() => { DB.settings.volumeTargets = {}; DB.settings.showIndirect = false;
+      DB.workoutLogs.push({date: today(), dayId:'push-a', dayName:'Push A', __test:1, sets:[
+        {exId:'a', exName:'Incline Chest Press', setIdx:0, kg:40, reps:8}, {exId:'a', exName:'Incline Chest Press', setIdx:1, kg:40, reps:8},
+        {exId:'b', exName:'Chest Supported T-Bar Row Machine', setIdx:0, kg:40, reps:8}], notes:{}});
+      saveData('workoutLogs', DB.workoutLogs); volOpen.clear(); switchTab('stats'); }""")
+    check('hedef yokken eksik/band yok', page.evaluate("document.querySelectorAll('#muscle-card .vol-target, #muscle-card .muscle-zone').length") == 0)
+    check('dolaylı varsayılan kapalı', page.evaluate("document.querySelectorAll('#muscle-card .vol-ind').length") == 0)
+    page.click('#muscle-card .vol-toggle')
+    ind = page.evaluate("weeklyIndirectSets()")
+    check('dolaylı: presste omuz+triceps, row\'da biceps+arka omuz (yarım)', ind.get('triceps', 0) >= 1 and ind.get('shoulders', 0) >= 1 and ind.get('biceps', 0) >= 0.5 and ind.get('rearDelts', 0) >= 0.5, ind)
+    check('dolaylı açılınca grafikte ayrı gösteriliyor', page.evaluate("document.querySelectorAll('#muscle-card .vol-ind').length") >= 1)
+    page.evaluate("volOpen.add('chest'); renderMuscleCard()")
+    for _ in range(3): page.click('#vol-detail-chest .dur-stepper button >> nth=1')
+    check('göğüs hedefi 12 set', page.evaluate("volumeTargets().chest") == 12 and '/12' in page.inner_text('#muscle-card .vol-row:has-text("Göğüs")'))
+    check('hedef çizgisi görünüyor', page.evaluate("document.querySelectorAll('#muscle-card .vol-target').length") == 1)
+    for _ in range(12): page.click('#vol-detail-chest .dur-stepper button >> nth=0')
+    check('hedef kaldırılabiliyor', 'chest' not in page.evaluate("volumeTargets()"))
+    page.evaluate("DB.settings.showIndirect = false; DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); saveData('settings', DB.settings); volOpen.clear(); renderMuscleCard()")
 
     check('sayfa hatası yok', not errors, errors)
 

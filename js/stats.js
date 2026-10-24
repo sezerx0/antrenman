@@ -167,26 +167,107 @@ function weeklyMuscleSets() {
   });
   return counts;
 }
+// ── Haftalık hacim: gruplar, direkt / dolaylı setler, kişisel hedefler ──
+const VOLUME_GROUPS = [
+  { id: 'chest', name: 'Göğüs', muscles: ['chest'] },
+  { id: 'back', name: 'Sırt', muscles: ['back', 'traps'] },
+  { id: 'shoulders', name: 'Omuz', muscles: ['shoulders', 'rearDelts'] },
+  { id: 'arms', name: 'Kol', muscles: ['biceps', 'triceps', 'forearms'] },
+  { id: 'legs', name: 'Bacak', muscles: ['quads', 'hamstrings', 'glutes', 'calves'] },
+  { id: 'abs', name: 'Karın', muscles: ['abs'] },
+  { id: 'other', name: 'Diğer', muscles: ['other'] },
+];
+// Dolaylı çalışma: hareketin birincil kası + hareket kalıbı → yardımcı kaslar (yarım set)
+function indirectFor(name) {
+  const n = normName(name), m = muscleFor(name);
+  if (m === 'chest' && /press|push ?-?ups?|\bdips?\b/.test(n)) return ['shoulders', 'triceps'];
+  if (m === 'shoulders' && /press/.test(n)) return ['triceps'];
+  if (m === 'back' && /\brows?\b/.test(n)) return ['biceps', 'rearDelts'];
+  if (m === 'back' && /pulldown|pull ?-?ups?|chin ?-?ups?/.test(n)) return ['biceps'];
+  if (m === 'triceps' && /\bdips?\b|close ?grip/.test(n)) return ['chest'];
+  if (m === 'quads' && /squat|leg press|hack|lunge|step ?up/.test(n)) return ['glutes'];
+  if (m === 'hamstrings' && /\brdl\b|romanian|deadlift|good ?morning/.test(n)) return ['glutes'];
+  return [];
+}
+function weeklyIndirectSets() {
+  const start = logicalNow(); start.setDate(start.getDate() - 6);
+  const from = isoDate(start), to = today();
+  const out = {};
+  DB.workoutLogs.forEach(log => {
+    if (log.date < from || log.date > to) return;
+    (log.sets || []).forEach(s => {
+      if (!hasValue(s)) return;
+      const name = s.exName || (getDayById(log.dayId)?.exercises.find(e => e.id === s.exId) || {}).name;
+      if (!name) return;
+      indirectFor(name).forEach(m => { out[m] = (out[m] || 0) + 0.5; });
+    });
+  });
+  return out;
+}
+function volumeTargets() { return DB.settings.volumeTargets || {}; }
+function fmtSets(v) { return String(Math.round(v * 2) / 2).replace('.', ','); }
+const volOpen = new Set();
+
 function renderMuscleCard() {
   const el = document.getElementById('muscle-card');
   if (!el) return;
-  const counts = weeklyMuscleSets();
-  // Programdaki kas gruplarını sıfır olsa bile göster: ihmal edileni görmek için
+  const direct = weeklyMuscleSets();
+  const showInd = DB.settings.showIndirect === true;
+  const indirect = showInd ? weeklyIndirectSets() : {};
+  const targets = volumeTargets();
   const inProgram = new Set();
   DB.workoutDays.forEach(d => d.exercises.forEach(e => inProgram.add(muscleFor(e.name))));
-  const keys = Object.keys(MUSCLES).filter(k => counts[k] || inProgram.has(k));
-  if (!keys.length) { el.innerHTML = '<div class="muscle-empty">Henüz veri yok.</div>'; return; }
-  keys.sort((a, b) => (counts[b] || 0) - (counts[a] || 0) || MUSCLES[a].localeCompare(MUSCLES[b], 'tr'));
-  const scale = Math.max(20, ...keys.map(k => counts[k] || 0));
-  const zoneL = 10 / scale * 100, zoneW = 10 / scale * 100;
-  el.innerHTML = keys.map(k => {
-    const n = counts[k] || 0;
-    return `<div class="muscle-row${n ? '' : ' zero'}">
-      <span class="muscle-name">${MUSCLES[k]}</span>
-      <div class="muscle-bar"><div class="muscle-zone" style="left:${zoneL}%;width:${zoneW}%;"></div><div class="muscle-fill" style="width:${n / scale * 100}%;"></div></div>
-      <span class="muscle-num">${n}</span>
-    </div>`;
-  }).join('') + `<div class="muscle-legend"><i></i>Haftada 10–20 set, çoğu kişi için yaygın bir hacim aralığı. Kas grubunu hareketin ⋯ menüsünden değiştirebilirsin.</div>`;
+  const sum = (obj, ms) => ms.reduce((a, m) => a + (obj[m] || 0), 0);
+  const rows = VOLUME_GROUPS.map(g => ({ g, d: sum(direct, g.muscles), i: sum(indirect, g.muscles), t: targets[g.id] || 0,
+    used: g.muscles.some(m => inProgram.has(m)) }))
+    .filter(r => r.d || r.i || r.t || (r.used && r.g.id !== 'other'));
+  if (!rows.length) { el.innerHTML = '<div class="muscle-empty">Henüz veri yok.</div>'; return; }
+  const scale = Math.max(10, ...rows.map(r => Math.max(r.d + r.i, r.t))) * 1.12;
+  const pct = v => Math.min(100, v / scale * 100);
+  el.innerHTML = `<div class="vol-head"><span>Son 7 gün · direkt set</span>
+      <button class="vol-toggle${showInd ? ' on' : ''}" onclick="toggleIndirect()">${showInd ? 'Dolaylı: açık' : 'Dolaylı: kapalı'}</button></div>`
+    + rows.map(({ g, d, i, t }) => {
+      const open = volOpen.has(g.id);
+      const subs = g.muscles.filter(m => g.muscles.length > 1 || m !== g.id).map(m => {
+        const dv = direct[m] || 0, iv = indirect[m] || 0;
+        return `${MUSCLES[m]} <b>${fmtSets(dv)}</b>${showInd && iv ? ` <span class="vol-ind-txt">+${fmtSets(iv)}</span>` : ''}`;
+      }).join(' · ');
+      const reached = t && d >= t;
+      return `<button class="vol-row${d || i ? '' : ' zero'}" onclick="toggleVolDetail('${g.id}')" aria-expanded="${open}">
+          <span class="muscle-name">${g.name}</span>
+          <span class="muscle-bar">
+            <span class="muscle-fill" style="width:${pct(d)}%;"></span>
+            ${showInd && i ? `<span class="vol-ind" style="left:${pct(d)}%;width:${pct(i)}%;"></span>` : ''}
+            ${t ? `<span class="vol-target" style="left:calc(${pct(t)}% - 1px);"></span>` : ''}
+          </span>
+          <span class="muscle-num${reached ? ' reached' : ''}">${fmtSets(d)}${t ? `<small>/${t}</small>` : ''}</span>
+        </button>
+        <div class="vol-detail" id="vol-detail-${g.id}" style="display:${open ? 'block' : 'none'};">
+          ${subs ? `<div class="vol-subs">${subs}</div>` : ''}
+          ${showInd && i ? `<div class="vol-subs">Dolaylı: ${fmtSets(i)} set (yardımcı kas olarak, yarım sayılır)</div>` : ''}
+          <div class="vol-target-row"><span>Haftalık hedef</span>
+            <div class="dur-stepper"><button onclick="changeVolTarget('${g.id}',-1)" aria-label="Azalt">${icon('minus')}</button><span>${t ? t + ' set' : 'yok'}</span><button onclick="changeVolTarget('${g.id}',1)" aria-label="Artır">${icon('plus')}</button></div>
+          </div>
+        </div>`;
+    }).join('')
+    + `<div class="muscle-legend">Gruba dokununca kas detayı ve hedef. Hedefleri sen belirlersin; hedef koymadığın gruplar eksik sayılmaz. Kas grubunu hareketin ⋯ menüsünden değiştirebilirsin.</div>`;
+}
+function toggleVolDetail(id) {
+  if (volOpen.has(id)) volOpen.delete(id); else volOpen.add(id);
+  renderMuscleCard();
+}
+function toggleIndirect() {
+  DB.settings.showIndirect = !(DB.settings.showIndirect === true);
+  saveData('settings', DB.settings);
+  renderMuscleCard();
+}
+function changeVolTarget(id, dir) {
+  const t = Object.assign({}, volumeTargets());
+  const next = Math.max(0, Math.min(40, (t[id] || (dir > 0 ? 9 : 0)) + dir));
+  if (next) t[id] = next; else delete t[id];
+  DB.settings.volumeTargets = t;
+  saveData('settings', DB.settings);
+  renderMuscleCard();
 }
 
 function renderStats() {
