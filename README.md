@@ -12,9 +12,9 @@ css/app.css         Tüm stiller (Klasik ve Lime paletleri, açık/koyu mod)
 js/core.js          İkonlar, veri katmanı (localStorage), yardımcılar, geri tuşu yönetimi
 js/home.js          Ana sekme: gün seçimi, haftalık hedef, takvim, yedek hatırlatması
 js/workout.js       Antrenman ekranı, ilerleme önerisi, hareket menüsü, dinlenme sayacı
-js/stats.js         Grafikler, PR listesi, 1RM, kas grubu dağılımı, plato tespiti
-js/measurements.js  Ölçümler, yağ oranı, kilo trendi
-js/routine.js       Supplement ve su takibi
+js/stats.js         Grafikler, rekorlar, haftalık hacim (direkt/dolaylı set, hedefler), plato tespiti
+js/measurements.js  Ölçümler, tahmini yağ oranı, kilo trendi
+js/routine.js       Supplement ve su takibi (ayarlardan açılıp kapanır)
 js/settings.js      Ayarlar, gün/sıra düzenleyici, yedek alma ve geri yükleme
 js/main.js          Açılış (en son yüklenir)
 sw.js               Service worker: çevrimdışı çalışma için önbellek
