@@ -480,7 +480,7 @@ with sync_playwright() as p:
 
 
     # ── 28. İlerleme önerisi ──
-    check('öneri: üst sınır → kilo artar', page.evaluate("JSON.stringify(suggestSet({}, {kg:40, reps:12}, [8,12]))") == '{"kg":42.5,"reps":8,"up":true}')
+    check('öneri: üst sınır → kilo artar', page.evaluate("JSON.stringify(suggestSet({}, {kg:40, reps:12}, [8,12]))") == '{"kg":42.5,"reps":8,"up":true,"steps":1}')
     check('öneri: aralıkta → +1 tekrar', page.evaluate("JSON.stringify(suggestSet({}, {kg:42.5, reps:9}, [8,12]))") == '{"kg":42.5,"reps":10,"up":false}')
     check('öneri: alt sınır altı → alt sınır', page.evaluate("JSON.stringify(suggestSet({}, {kg:50, reps:6}, [8,12]))") == '{"kg":50,"reps":8,"up":false}')
     check('öneri: S/L zayıf tarafa göre', page.evaluate("JSON.stringify(suggestSet({bilateral:true}, {kg:20, repsR:12, repsL:10, reps:12}, [8,12]))") == '{"kg":20,"reps":11,"up":false}')
@@ -496,10 +496,13 @@ with sync_playwright() as p:
     page.click('#ex-sheet .range-chip:has-text("8–12")'); page.wait_for_timeout(150)
     page.evaluate("closeExSheet()"); page.wait_for_timeout(300)
     check('çip 8–12', page.inner_text('#range-chip-0').strip() == '8–12', page.inner_text('#range-chip-0'))
-    check('öneri placeholderda', page.get_attribute('#kg-0-0', 'placeholder') == '42.5' and page.get_attribute('#reps-0-0', 'placeholder') == '8' and page.get_attribute('#reps-0-1', 'placeholder') == '10')
-    check('öneri satırı görünüyor', 'Bugün' in page.inner_text('#ex-card-0 .ex-sug') and '42.5×8' in page.inner_text('#ex-card-0 .ex-sug'))
+    check('tüm setler üst sınırda değil: kilo aynı, +1 tekrar', page.get_attribute('#kg-0-0', 'placeholder') == '40' and page.get_attribute('#reps-0-0', 'placeholder') == '12' and page.get_attribute('#reps-0-1', 'placeholder') == '10')
+    check('öneri satırı ve açıklaması görünüyor', '40×12' in page.inner_text('#ex-card-0 .ex-sug') and '+1 tekrar' in page.inner_text('#ex-card-0 .ex-sug-why'))
+    page.evaluate("setProgressMode('perSet')"); page.wait_for_timeout(150)
+    check('"her set" modunda üst sınırdaki set ağırlaşıyor', page.get_attribute('#kg-0-0', 'placeholder') == '42.5' and page.get_attribute('#reps-0-0', 'placeholder') == '8' and page.get_attribute('#reps-0-1', 'placeholder') == '10')
     page.click('#set-done-0-0')
     check('boş satıra ✓ öneriyi kaydeder', page.input_value('#kg-0-0') == '42.5' and page.input_value('#reps-0-0') == '8')
+    page.evaluate("setProgressMode('all')"); page.wait_for_timeout(150)
     page.fill('#kg-0-1', '44')
     page.evaluate("exSheetIdx = 0; pickRepRange(REP_RANGES.findIndex(r => r && r[0] === 10 && r[1] === 15))"); page.wait_for_timeout(150)
     check('hedef değişince girilen değerler korunur', page.input_value('#kg-0-1') == '44' and page.input_value('#kg-0-0') == '42.5' and page.evaluate("document.getElementById('set-done-0-0').classList.contains('done')"))
@@ -805,6 +808,42 @@ with sync_playwright() as p:
     check('genel varsayılan 2,5 → 5', page.evaluate("kgStep()") == 5 and page.evaluate("incFor('Cable Lateral Raise')") == 1)
     page.evaluate("stepDefaultInc(-1); DB.settings.incByEx = {}; DB.settings.restByEx = {}; saveData('settings', DB.settings); discardActive()")
     check('çok eklemli tespiti', page.evaluate("[isCompound('Chest Supported T-Bar Row Machine'), isCompound('Cable Triceps Pushdown'), isCompound('Leg Press'), isCompound('Pec Deck Fly'), isCompound('Reverse Curl')].join(',')") == 'true,false,true,false,false')
+
+
+    # ── 41. Yeni ilerleme kuralı (tüm setler + kademeli RIR) ──
+    def plan(sets, rng='[8,12]', mode='all', rirp=True, inc=2.5):
+        return page.evaluate(f"""() => {{ DB.settings.progressMode = '{mode}'; DB.settings.rirProgression = {str(rirp).lower()}; DB.settings.incByEx = {{ 'test ex': {inc} }};
+          const p = progressionPlan({{ name: 'Test Ex' }}, {json.dumps(sets)}, {rng}, {len(sets)});
+          return {{ sets: p.sets.map(x => x ? x.kg + 'x' + x.reps : null), reason: p.reason }}; }}""")
+    r = plan([{'kg': 60, 'reps': 12, 'rir': 2}, {'kg': 60, 'reps': 12, 'rir': 1}])
+    check('tüm setler 12, RIR 1–2 → +1 adım', r['sets'] == ['62.5x8', '62.5x8'] and '+2,5 kg' in r['reason'], r)
+    r = plan([{'kg': 60, 'reps': 12, 'rir': 2}, {'kg': 60, 'reps': 12, 'rir': 0}])
+    check('bir set RIR 0 → aynı kilo (pekiştir)', r['sets'] == ['60x12', '60x12'] and 'RIR 0' in r['reason'], r)
+    r = plan([{'kg': 60, 'reps': 12, 'rir': 4}, {'kg': 60, 'reps': 12, 'rir': 4}])
+    check('hepsi RIR 4+ → 2 adım', r['sets'] == ['65x8', '65x8'], r)
+    r = plan([{'kg': 60, 'reps': 12}, {'kg': 60, 'reps': 12}])
+    check('RIR girilmemiş → 1 adım', r['sets'] == ['62.5x8', '62.5x8'], r)
+    r = plan([{'kg': 60, 'reps': 12, 'rir': 0}, {'kg': 60, 'reps': 12, 'rir': 0}], rirp=False)
+    check('RIR\'a göre artış kapalı → RIR 0\'da da 1 adım', r['sets'] == ['62.5x8', '62.5x8'], r)
+    r = plan([{'kg': 15, 'reps': 12, 'rir': 2}, {'kg': 15, 'reps': 12, 'rir': 2}], inc=1)
+    check('hareket bazlı artış (15 → 16 kg)', r['sets'] == ['16x8', '16x8'], r)
+    r = plan([{'kg': 60, 'reps': 12, 'rir': 2}, {'kg': 60, 'reps': 10, 'rir': 1}])
+    check('biri 10\'da → kilo aynı, 12 ve 11 hedef', r['sets'] == ['60x12', '60x11'], r)
+    r = plan([{'kg': 60, 'reps': 12, 'rir': 0}, {'kg': 60, 'reps': 10}], mode='perSet')
+    check('"her set": RIR 0\'daki set aynı kiloda, diğeri +1', r['sets'] == ['60x12', '60x11'], r)
+    page.evaluate("DB.settings.progressMode = 'all'; DB.settings.rirProgression = true; DB.settings.incByEx = {}; saveData('settings', DB.settings)")
+    # Gelişme göstergesi
+    prog = lambda a, b, rng='null': page.evaluate(f"isProgress({json.dumps(a)}, {json.dumps(b)}, {rng})")
+    check('60×12 → 62,5×6 gelişme DEĞİL', prog({'kg': 62.5, 'reps': 6}, {'kg': 60, 'reps': 12}) is False)
+    check('60×10 → 60×11 gelişme', prog({'kg': 60, 'reps': 11}, {'kg': 60, 'reps': 10}) is True)
+    check('60×12 → 62,5×11 gelişme', prog({'kg': 62.5, 'reps': 11}, {'kg': 60, 'reps': 12}) is True)
+    check('aralığın altındaysa gelişme değil (8–12, 62,5×7)', prog({'kg': 70, 'reps': 7}, {'kg': 60, 'reps': 10}, '[8,12]') is False)
+    check('RIR hesaba katılıyor: 60×10 R0 → 60×10 R2 gelişme', prog({'kg': 60, 'reps': 10, 'rir': 2}, {'kg': 60, 'reps': 10, 'rir': 0}) is True)
+    check('RIR hesaba katılıyor: 60×11 R0, önceki 60×10 R3 gelişme değil', prog({'kg': 60, 'reps': 11, 'rir': 0}, {'kg': 60, 'reps': 10, 'rir': 3}) is False)
+    page.evaluate("switchTab('settings')")
+    page.click('#pmode-set-btn')
+    check('ayarlardan artış koşulu değişiyor', page.evaluate("DB.settings.progressMode") == 'perSet' and 'kendi başına' in page.inner_text('#pmode-note'))
+    page.click('#pmode-all-btn')
 
     check('sayfa hatası yok', not errors, errors)
 

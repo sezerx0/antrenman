@@ -490,6 +490,30 @@
             <button onclick="stepDefaultInc(1)" aria-label="Artır"><i data-icon="plus"></i></button>
           </div>
         </div>
+        <div class="settings-row settings-row-stack">
+          <div class="settings-row-main">
+            <div class="settings-icon" style="background:#34c75920;color:#34c759;"><i data-icon="check-circle"></i></div>
+            <span class="settings-label">Artış koşulu</span>
+            <div class="segment-control">
+              <button class="seg-btn" id="pmode-all-btn" onclick="setProgressMode('all')">Tüm setler</button>
+              <button class="seg-btn" id="pmode-set-btn" onclick="setProgressMode('perSet')">Her set</button>
+            </div>
+          </div>
+          <div class="settings-note" style="display:block;" id="pmode-note"></div>
+        </div>
+        <div class="settings-row settings-row-stack">
+          <div class="settings-row-main">
+            <div class="settings-icon" style="background:#5856d620;color:#5856d6;"><i data-icon="gauge"></i></div>
+            <span class="settings-label">RIR'a göre artış</span>
+            <label class="ios-toggle">
+              <input type="checkbox" id="rirprog-toggle" onchange="toggleRirProgression(this.checked)">
+              <div class="ios-toggle-track"></div>
+              <div class="ios-toggle-thumb"></div>
+            </label>
+          </div>
+          <div class="settings-note" style="display:block;">Üst sınıra ulaşınca: RIR 0 → aynı kilo · RIR 1–3 → 1 adım · RIR 4+ → 2 adım. Kapalıysa her zaman 1 adım.</div>
+        </div>
+        <div class="settings-note" style="display:block;padding:0 16px 12px;">Öneriler, hareketin ⋯ menüsünden tekrar aralığı seçilen hareketlerde çıkar.</div>
       </div>
     </div>
 

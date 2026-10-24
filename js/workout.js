@@ -320,26 +320,83 @@ function restDefaultFor(exName) {
     ? (DB.settings.restCompound || 150)
     : (DB.settings.restIsolation || DB.settings.restDuration || 90);
 }
+// ── İlerleme önerisi ──
+// Kural (Ayarlar > İlerleme):
+//  • Artış koşulu "Tüm setler" (varsayılan): geçen seferki TÜM çalışma setleri tekrar
+//    aralığının üst sınırına ulaştıysa ağırlık artar; ulaşmadıysa her sette +1 tekrar.
+//    "Her set": her set kendi başına değerlendirilir.
+//  • RIR'a göre artış (varsayılan açık, kademeli): RIR 0 → aynı kilo (pekiştir),
+//    RIR 1–3 → 1 adım, RIR 4+ → 2 adım. RIR girilmemişse 1 adım.
+//  • Adım = hareketin ağırlık artışı (Hareket ayarları).
+function setReps(ps) {
+  const sides = [ps.repsR, ps.repsL].filter(v => v > 0);
+  return sides.length ? Math.min(...sides) : (ps.reps || 0);   // sağ/sol ayrıysa zayıf taraf
+}
+function progressMode() { return DB.settings.progressMode === 'perSet' ? 'perSet' : 'all'; }
+function rirProgression() { return DB.settings.rirProgression !== false; }
+function rirSteps(rir) {
+  if (!rirProgression() || rir == null) return 1;
+  if (rir <= 0) return 0;
+  return rir >= 4 ? 2 : 1;
+}
+// Tek bir set için öneri (önceki set, tekrar aralığı, kaç adım)
+function suggestFrom(ps, range, inc, steps) {
+  const [lo, hi] = range;
+  const r = setReps(ps), kg = ps.kg || 0;
+  if (!r) return null;
+  if (r >= hi) {
+    if (!kg) return { kg: 0, reps: r + 1, up: false };            // vücut ağırlığı: tekrar artar
+    if (steps <= 0) return { kg, reps: hi, up: false, hold: true };
+    return { kg: round2(kg + steps * inc), reps: lo, up: true, steps };
+  }
+  if (r < lo) return { kg, reps: lo, up: false };
+  return { kg, reps: r + 1, up: false };
+}
+// Geriye dönük uyumluluk: tek set, RIR'sız
 function suggestSet(ex, ps, range) {
   if (!range || !ps || !hasValue(ps)) return null;
+  return suggestFrom(ps, range, incFor(ex && ex.name), rirSteps(ps.rir));
+}
+// Bir hareketin tüm setleri için plan + kısa açıklama
+function progressionPlan(ex, bySet, range, count) {
+  const out = { sets: [], reason: '' };
+  if (!range) return out;
+  const prev = bySet.filter(ps => ps && hasValue(ps));
+  if (!prev.length) return out;
   const [lo, hi] = range;
-  // Sağ/sol ayrı tekrarda zayıf taraf belirleyici
-  const sides = [ps.repsR, ps.repsL].filter(v => v > 0);
-  const reps = sides.length ? Math.min(...sides) : (ps.reps || 0);
-  const kg = ps.kg || 0;
-  if (!reps) return null;
-  if (reps >= hi) {
-    if (!kg) return { kg: 0, reps: hi, up: false };          // vücut ağırlığı: tekrarı koru
-    return { kg: round2(kg + kgStep()), reps: lo, up: true };
+  const inc = incFor(ex.name);
+  const baseFor = s => (bySet[s] && hasValue(bySet[s])) ? bySet[s] : prev[prev.length - 1];
+  if (progressMode() === 'all') {
+    const allHit = prev.every(ps => setReps(ps) >= hi);
+    const rirs = prev.map(ps => ps.rir).filter(v => v != null);
+    const minRir = rirs.length ? Math.min(...rirs) : null;   // en zorlayan set belirler
+    const steps = allHit ? rirSteps(minRir) : 0;
+    for (let s = 0; s < count; s++) {
+      const ps = baseFor(s);
+      if (allHit) { out.sets.push(suggestFrom(ps, range, inc, steps)); continue; }
+      // Henüz tüm setler üst sınırda değil: üst sınırdaki set aynı kalır, diğerleri +1 tekrar
+      const r = setReps(ps);
+      out.sets.push(r >= hi && ps.kg ? { kg: ps.kg, reps: hi, up: false } : suggestFrom(ps, range, inc, 0));
+    }
+    const rirTxt = minRir != null && rirProgression() ? ` (en düşük RIR ${fmtRir(minRir)})` : '';
+    if (allHit && steps > 0) out.reason = `Tüm setler ${hi} tekrara ulaştı${rirTxt} → +${fmtKg(steps * inc)} kg, ${lo} tekrardan başla`;
+    else if (allHit) out.reason = `${hi} tekrara tükenişe kadar ulaştın (RIR 0) → aynı kiloda kal, ${hi}'yi biraz daha rahat yapmayı hedefle`;
+    else out.reason = `Hedef: her sette +1 tekrar. Tüm setler ${hi}'ye ulaşınca kilo artacak`;
+  } else {
+    for (let s = 0; s < count; s++) {
+      const ps = baseFor(s);
+      out.sets.push(suggestFrom(ps, range, inc, rirSteps(ps.rir)));
+    }
+    out.reason = `Her set kendi başına: ${hi} tekrara ulaşan set ağırlaşır, diğerleri +1 tekrar`;
   }
-  if (reps < lo) return { kg, reps: lo, up: false };
-  return { kg, reps: reps + 1, up: false };
+  return out;
 }
 function suggestionFor(ei, s) {
   if (!active || active.mode === 'edit') return null;
   const ex = active.day.exercises[ei];
   const pc = prevCache[ei];
-  return pc ? suggestSet(ex, pc.bySet[s], repRangeFor(ex.name)) : null;
+  if (!pc) return null;
+  return progressionPlan(ex, pc.bySet, repRangeFor(ex.name), s + 1).sets[s] || null;
 }
 function fmtRest(sec) { return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; }
 function restFor(exName) {
@@ -385,16 +442,13 @@ function renderExerciseCards() {
       : '';
 
     const range = repRangeFor(ex.name);
-    const sugs = [];
+    const plan = isEdit ? { sets: [], reason: '' } : progressionPlan(ex, bySet, range, active.sets[ei]);
     let setRows = '';
-    for (let s = 0; s < active.sets[ei]; s++) {
-      const sug = isEdit ? null : suggestSet(ex, bySet[s], range);
-      sugs.push(sug);
-      setRows += buildSetRow(ei, s, ex, bySet[s], sug);
-    }
-    const sugList = sugs.filter(Boolean);
+    for (let s = 0; s < active.sets[ei]; s++) setRows += buildSetRow(ei, s, ex, bySet[s], plan.sets[s] || null);
+    const sugList = plan.sets.filter(Boolean);
     const sugLine = sugList.length
-      ? `<div class="ex-sug">${icon('trend-up')}<span>Bugün: ${sugList.map(g => `<b>${escapeHtml(g.kg ? g.kg + '×' + g.reps : g.reps + ' tk')}${g.up ? icon('arrow-up', 'up') : ''}</b>`).join(', ')}</span></div>`
+      ? `<div class="ex-sug">${icon('trend-up')}<span>Bugün: ${sugList.map(g => `<b>${escapeHtml(g.kg ? g.kg + '×' + g.reps : g.reps + ' tk')}${g.up ? icon('arrow-up', 'up') : ''}</b>`).join(', ')}</span></div>
+         <div class="ex-sug-why">${escapeHtml(plan.reason)}</div>`
       : '';
     const rangeChip = isEdit ? '' : `<button class="ex-chip${range ? ' custom' : ''}" id="range-chip-${ei}" onclick="openExSheet(${ei})" aria-label="Hedef tekrar aralığı">${icon('target')}${range ? `${range[0]}–${range[1]}` : 'Hedef'}</button>`;
 
@@ -781,24 +835,36 @@ function onSetInput(ei, s) {
   captureActive();
 }
 
+// Gelişme göstergesi: aynı sıradaki önceki sete göre "tahmini performans" arttı mı?
+// Performans = Epley tahmini 1RM; iki sette de RIR varsa tekrar + RIR kullanılır
+// (yakın tükenişe göre düzeltilmiş). Tekrar aralığı tanımlıysa alt sınırın altındaki
+// setler gelişme sayılmaz. Örn. 60×12 → 62,5×6: kilo artsa da performans düşük.
+function setPerformance(kg, reps, rir) {
+  if (!(reps > 0)) return 0;
+  const eff = reps + (rir != null ? rir : 0);
+  return kg > 0 ? kg * (1 + eff / 30) : eff;   // vücut ağırlığında tekrar
+}
+function isProgress(cur, prev, range) {
+  if (!cur || !prev) return false;
+  const cr = setReps(cur), pr = setReps(prev);
+  if (!(cr > 0) || !(pr > 0)) return false;
+  if (range && cr < range[0]) return false;
+  if (!!cur.kg !== !!prev.kg) return false;
+  const useRir = cur.rir != null && prev.rir != null && rirEnabled();
+  const a = setPerformance(cur.kg || 0, cr, useRir ? cur.rir : null);
+  const b = setPerformance(prev.kg || 0, pr, useRir ? prev.rir : null);
+  return a > b * 1.005;
+}
 function checkOverload(ei, s) {
-  const kgEl  = document.getElementById(`kg-${ei}-${s}`);
   const rowEl = document.getElementById(`set-row-${ei}-${s}`);
-  if (!kgEl || !rowEl || !active) return;
+  if (!rowEl || !active) return;
   const ex = active.day.exercises[ei];
-  const cur = readSet(ei, s);
-  const reps = ex.bilateral ? Math.max(cur.repsR, cur.repsL) : cur.reps;
-  const prevKg = num(kgEl.dataset.prev) || 0;
-  let prevReps;
-  if (ex.bilateral) {
-    prevReps = Math.max(int(document.getElementById(`repsR-${ei}-${s}`)?.dataset.prev) || 0,
-                        int(document.getElementById(`repsL-${ei}-${s}`)?.dataset.prev) || 0);
-  } else {
-    prevReps = int(document.getElementById(`reps-${ei}-${s}`)?.dataset.prev) || 0;
-  }
-  const isOverload = cur.kg > 0 && reps > 0 && prevKg > 0 && prevReps > 0
-    && (cur.kg > prevKg || (cur.kg >= prevKg && reps > prevReps));
-  rowEl.classList.toggle('overload', isOverload);
+  const ps = prevCache[ei] && prevCache[ei].bySet[s];
+  const c = readSet(ei, s);
+  const cur = ex.bilateral ? { kg: c.kg, repsR: c.repsR, repsL: c.repsL } : { kg: c.kg, reps: c.reps };
+  const r = active.rir ? active.rir[`${ei}-${s}`] : undefined;
+  if (r != null) cur.rir = r;
+  rowEl.classList.toggle('overload', isProgress(cur, ps && hasValue(ps) ? ps : null, repRangeFor(ex.name)));
 }
 
 function handleSetNav(e, type, ei, s) {

@@ -65,6 +65,12 @@ function renderSettings() {
   document.getElementById('rest-comp-label').textContent = fmtRest(s.restCompound || 150);
   document.getElementById('rest-iso-label').textContent = fmtRest(s.restIsolation || s.restDuration || 90);
   document.getElementById('default-inc-label').textContent = fmtKg(kgStep()) + ' kg';
+  document.getElementById('pmode-all-btn').classList.toggle('active', progressMode() === 'all');
+  document.getElementById('pmode-set-btn').classList.toggle('active', progressMode() === 'perSet');
+  document.getElementById('pmode-note').textContent = progressMode() === 'all'
+    ? 'Geçen seferki tüm çalışma setleri üst sınıra ulaşınca kilo artar; ulaşmayan varsa her sette +1 tekrar.'
+    : 'Her set kendi başına: üst sınıra ulaşan set ağırlaşır.';
+  document.getElementById('rirprog-toggle').checked = rirProgression();
   document.getElementById('day-count-label').textContent = DB.workoutDays.length + ' gün';
   const curTpl = currentTemplate();
   document.getElementById('program-label').textContent = curTpl ? curTpl.name : 'Özel';
@@ -212,6 +218,17 @@ function stepRestDefault(kind, dir) {
   DB.settings[key] = Math.max(REST_MIN, Math.min(REST_MAX, cur + dir * REST_STEP));
   saveData('settings', DB.settings);
   renderSettings();
+  if (active) refreshCardsAfterSetting();
+}
+function setProgressMode(m) {
+  DB.settings.progressMode = m === 'perSet' ? 'perSet' : 'all';
+  saveData('settings', DB.settings);
+  renderSettings();
+  if (active) refreshCardsAfterSetting();
+}
+function toggleRirProgression(val) {
+  DB.settings.rirProgression = !!val;
+  saveData('settings', DB.settings);
   if (active) refreshCardsAfterSetting();
 }
 function stepDefaultInc(dir) {
