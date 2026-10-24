@@ -361,14 +361,6 @@
       <div class="section-label">Görünüm</div>
       <div class="card settings-group">
         <div class="settings-row">
-          <div class="settings-icon" style="background:#c8f16940;color:#7FAE1F;"><i data-icon="palette"></i></div>
-          <span class="settings-label">Renk</span>
-          <div class="segment-control">
-            <button class="seg-btn" id="palette-classic-btn" onclick="setPalette('classic')">Klasik</button>
-            <button class="seg-btn" id="palette-lime-btn" onclick="setPalette('lime')">Lime</button>
-          </div>
-        </div>
-        <div class="settings-row">
           <div class="settings-icon" style="background:#ff9f0a20;color:#ff9f0a;"><i data-icon="moon"></i></div>
           <span class="settings-label">Mod</span>
           <div class="segment-control">
@@ -469,6 +461,18 @@
             <span id="default-inc-label">2,5 kg</span>
             <button onclick="stepDefaultInc(1)" aria-label="Artır"><i data-icon="plus"></i></button>
           </div>
+        </div>
+        <div class="settings-row settings-row-stack">
+          <div class="settings-row-main">
+            <div class="settings-icon" style="background:#007aff20;color:#007aff;"><i data-icon="swap"></i></div>
+            <span class="settings-label">Çift makara oranı</span>
+            <div class="dur-stepper">
+              <button onclick="stepCableRatio(-1)" aria-label="Azalt"><i data-icon="minus"></i></button>
+              <span id="cable-ratio-label">2:1</span>
+              <button onclick="stepCableRatio(1)" aria-label="Artır"><i data-icon="plus"></i></button>
+            </div>
+          </div>
+          <div class="settings-note" style="display:block;" id="cable-ratio-note"></div>
         </div>
         <div class="settings-row settings-row-stack">
           <div class="settings-row-main">

@@ -236,7 +236,7 @@ function openHistoryModal(idx) {
     }).join('');
     const note = noteForExName(log, exName);
     return `<div class="hm-ex-block">
-      <div class="hm-ex-name">${escapeHtml(exName)}</div>
+      <div class="hm-ex-name">${escapeHtml(exName)}${sets.some(s => s.cable === 'double') ? ' <span class="hm-cable">çift makara</span>' : ''}</div>
       ${rows}
       ${note ? `<div class="ex-note-prev hm-note">${icon('note')}${escapeHtml(note)}</div>` : ''}
     </div>`;

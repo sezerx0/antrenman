@@ -344,7 +344,20 @@ function getNextDayId() {
   return DB.workoutOrder[(idx + 1) % DB.workoutOrder.length];
 }
 function hasValue(s) { return !!(s && (s.kg || s.reps || s.repsR || s.repsL)); }
-function setVolume(s) { return (s.kg || 0) * (s.reps || 0); }
+function setVolume(s) { return loadKg(s) * (s.reps || 0); }
+// ── Kablo makinesi: tek / çift makara ──
+// Çift makarada (2:1) yazan kilonun yarısı ele gelir. Kayıtta makinede yazan kilo ve
+// makine saklanır; rekor, 1RM, grafik, hacim ve plato tek makara karşılığıyla hesaplanır.
+function cableRatio() { const r = Number(DB.settings.cableRatio); return r >= 1 && r <= 4 ? r : 2; }
+function loadKg(s) {
+  const kg = (s && s.kg) || 0;
+  return s && s.cable === 'double' ? Math.round(kg / cableRatio() * 100) / 100 : kg;
+}
+// Tek makara karşılığı yükün verilen makinede yazan kilosu (0,5 kg'a yuvarlı)
+function kgOnMachine(load, machine) {
+  const v = machine === 'double' ? load * cableRatio() : load;
+  return Math.round(v * 2) / 2;
+}
 function logVolume(log) { return Math.round((log.sets || []).reduce((a, s) => a + setVolume(s), 0)); }
 
 function setMatchesName(s, log, norm) {
@@ -383,7 +396,7 @@ function calcEpley(kg, reps) {
 // alınır; son rekordan bu yana 3+ antrenman geçtiyse plato sayılır.
 function sessionBest(sets) {
   const withKg = sets.filter(s => s.kg > 0 && s.reps > 0);
-  if (withKg.length) return Math.max(...withKg.map(s => calcEpley(s.kg, s.reps)));
+  if (withKg.length) return Math.max(...withKg.map(s => calcEpley(loadKg(s), s.reps)));
   return Math.max(0, ...sets.map(s => s.reps || 0)) / 1000; // vücut ağırlığı: tekrar
 }
 // Uzun aradan (28+ gün) sonra yalnızca aradan sonraki antrenmanlara bakılır:
@@ -416,7 +429,7 @@ function repsOf(s) {
 }
 function historySets(exName, excludeLog) {
   return getLogsByExName(exName).filter(e => e.log !== excludeLog)
-    .flatMap(e => e.sets.map(s => ({ kg: s.kg || 0, reps: repsOf(s), date: e.log.date })))
+    .flatMap(e => e.sets.map(s => ({ kg: loadKg(s), reps: repsOf(s), date: e.log.date })))
     .filter(s => s.reps > 0);
 }
 // Bir setin geçmişe göre kırdığı rekorlar (ilk kez yapılan harekette rekor yok)
@@ -444,7 +457,7 @@ function fmtKgTr(v) { return String(Math.round(v * 10) / 10).replace('.', ','); 
 // Bir hareketin tüm rekor özeti (detay ekranı ve liste için)
 function exerciseRecords(exName) {
   const entries = getLogsByExName(exName);
-  const sets = entries.flatMap(e => e.sets.map(s => ({ kg: s.kg || 0, reps: repsOf(s), date: e.log.date }))).filter(s => s.reps > 0);
+  const sets = entries.flatMap(e => e.sets.map(s => ({ kg: loadKg(s), reps: repsOf(s), date: e.log.date, cable: s.cable }))).filter(s => s.reps > 0);
   if (!sets.length) return null;
   const weighted = sets.filter(s => s.kg > 0);
   let heaviest = null, best = null;

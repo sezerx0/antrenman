@@ -181,6 +181,49 @@ function hideActiveWorkoutBanner() {
 }
 
 // Önceki antrenmandan bu hareketin setleri (set sırasına göre)
+// ── Kablo makinesi seçimi (hareket başına, antrenman içinde) ──
+const CABLE_RE = /cable|kablo|bayesian|crossover|pushdown|push ?down|face ?pull|rope|halat/;
+function isCableEx(name) {
+  const o = (DB.settings.cableByEx || {})[normName(name)];
+  return typeof o === 'boolean' ? o : CABLE_RE.test(normName(name));
+}
+// Varsayılan: bu hareketin son yapıldığı makine
+function lastMachineFor(name) {
+  const all = getLogsByExName(name);
+  for (let i = all.length - 1; i >= 0; i--) {
+    const s = all[i].sets.find(x => x.cable);
+    if (s) return s.cable;
+  }
+  return 'single';
+}
+function machineFor(ex) {
+  if (!isCableEx(ex.name)) return null;
+  if (!active) return lastMachineFor(ex.name);
+  active.cable = active.cable || {};
+  if (!active.cable[ex.id]) active.cable[ex.id] = lastMachineFor(ex.name);
+  return active.cable[ex.id];
+}
+function machineLabel(m) { return m === 'double' ? 'Çift makara' : 'Tek makara'; }
+function toggleCable(ei) {
+  const ex = active.day.exercises[ei];
+  const next = machineFor(ex) === 'double' ? 'single' : 'double';
+  captureActive();
+  active.cable[ex.id] = next;
+  renderExerciseCards();
+  applyActiveValues();
+  saveActive();
+  const conv = (prevCache[ei] || {}).conv;
+  toast(`${machineLabel(next)}${conv ? ' · önceki değerler bu makineye çevrildi' : ''}`, 2200);
+}
+function setCableEx(val) {
+  const ex = active.day.exercises[exSheetIdx];
+  DB.settings.cableByEx = DB.settings.cableByEx || {};
+  if (val === CABLE_RE.test(normName(ex.name))) delete DB.settings.cableByEx[normName(ex.name)];
+  else DB.settings.cableByEx[normName(ex.name)] = val;
+  saveData('settings', DB.settings);
+  refreshCardsAfterSetting();
+}
+
 function prevForExercise(ex) {
   const exclude = active && active.mode === 'edit' ? DB.workoutLogs[active.editIdx] : null;
   const all = getLogsByExName(ex.name).filter(e => e.log !== exclude);
@@ -190,7 +233,15 @@ function prevForExercise(ex) {
     const idx = Number.isInteger(s.setIdx) ? s.setIdx : i;
     if (bySet[idx] === undefined) bySet[idx] = s;
   });
-  return { entry, bySet };
+  // Önceki seferki makine farklıysa değerler bugünkü makineye çevrilir
+  const m = machineFor(ex);
+  let conv = false;
+  if (m) bySet.forEach((s, i) => {
+    if (!s || (s.cable || 'single') === m) return;
+    bySet[i] = { ...s, kg: s.kg ? kgOnMachine(loadKg(s), m) : s.kg, cable: m, conv: true };
+    conv = true;
+  });
+  return { entry, bySet, conv };
 }
 
 // Bir logda, verilen hareket adına ait notu bulur
@@ -273,9 +324,9 @@ function setRir(ei, s, v) {
 function prevCell(ei, s, ps) {
   if (!ps || !hasValue(ps)) return `<span class="set-prev empty" aria-label="Önceki set yok">—</span>`;
   const bi = ps.repsR != null || ps.repsL != null;
-  const kg = ps.kg ? String(ps.kg) : 'VA';
+  const kg = ps.kg ? (ps.conv ? '≈' : '') + String(ps.kg) : 'VA';
   const reps = bi ? `${ps.repsR || 0}/${ps.repsL || 0}` : `${ps.reps || 0}`;
-  const label = `Önceki: ${ps.kg ? ps.kg + ' kg' : 'vücut ağırlığı'} × ${bi ? `sağ ${ps.repsR || 0}, sol ${ps.repsL || 0}` : (ps.reps || 0)} tekrar. Dokun: satıra doldur`;
+  const label = `Önceki${ps.conv ? ' (diğer makineden çevrildi)' : ''}: ${ps.kg ? ps.kg + ' kg' : 'vücut ağırlığı'} × ${bi ? `sağ ${ps.repsR || 0}, sol ${ps.repsL || 0}` : (ps.reps || 0)} tekrar. Dokun: satıra doldur`;
   return `<button class="set-prev" type="button" onclick="fillFromPrev(${ei},${s})" aria-label="${escapeHtml(label)}"><span class="sp-kg">${escapeHtml(kg)}</span><span class="sp-reps">×${escapeHtml(reps)}</span></button>`;
 }
 function fillFromPrev(ei, s) {
@@ -418,14 +469,16 @@ function renderExerciseCards() {
 
   body.innerHTML = (isEdit ? `<div class="ws-edit-banner">${escapeHtml(fmtDate(active.editDate))} tarihli antrenmanı düzenliyorsun</div>` : '') +
   day.exercises.map((ex, ei) => {
-    const { entry, bySet } = prevCache[ei];
+    const { entry, bySet, conv } = prevCache[ei];
+    const machine = machineFor(ex);
 
     let prevHint = '';
     if (entry) {
       const dayLabel = entry.dayName ? ` · ${escapeHtml(entry.dayName)}` : '';
       const extra = bySet.slice(active.sets[ei]).filter(s => s && hasValue(s));
       const extraTxt = extra.length ? ` · fazladan ${extra.length} set: <b>${escapeHtml(extra.map(fmtSetShort).join(', '))}</b>` : '';
-      prevHint = `<div class="ex-prev-hint">Önceki: ${fmtDateShort(entry.log.date)}${dayLabel}${extraTxt}</div>`;
+      const convTxt = conv ? ` · ${machine === 'double' ? 'tek' : 'çift'} makaradan çevrildi` : '';
+      prevHint = `<div class="ex-prev-hint">Önceki: ${fmtDateShort(entry.log.date)}${dayLabel}${convTxt}${extraTxt}</div>`;
     } else if (!isEdit) {
       prevHint = `<div class="ex-prev-hint">İlk kez yapıyorsun</div>`;
     }
@@ -462,6 +515,7 @@ function renderExerciseCards() {
         </div>
         <div class="ex-chips">
           ${rangeChip}
+          ${machine ? `<button class="ex-chip cable-chip${machine === 'double' ? ' custom' : ''}" id="cable-chip-${ei}" onclick="toggleCable(${ei})" aria-label="Kablo makinesi: ${machineLabel(machine)}. Dokun: değiştir">${icon('swap')}${machineLabel(machine)}</button>` : ''}
           ${restChip}
           <button class="ex-chip" id="note-chip-${ei}" onclick="toggleNote(${ei})" aria-label="Not">${icon('note')}Not</button>
         </div>
@@ -679,6 +733,9 @@ function exSettingsHtml(ex) {
         <div class="dur-stepper sheet-stepper"><button onclick="stepExRest(-1)" aria-label="Kısalt">${icon('minus')}</button><span id="ex-rest-label">${fmtRest(restFor(ex.name))}</span><button onclick="stepExRest(1)" aria-label="Uzat">${icon('plus')}</button></div>
       </div>
       <div class="sheet-note">${restCustom ? `<button class="link-btn" onclick="resetExRest()">Varsayılana dön (${fmtRest(restDefaultFor(ex.name))})</button>` : `Varsayılan: ${isCompound(ex.name) ? 'çok eklemli hareket' : 'izolasyon hareketi'}`}</div>
+      <label class="sheet-row">${icon('swap')}İki kablo makinesi
+        <span class="ios-toggle sheet-toggle"><input type="checkbox"${isCableEx(ex.name) ? ' checked' : ''} onchange="setCableEx(this.checked)"><span class="ios-toggle-track"></span><span class="ios-toggle-thumb"></span></span></label>
+      <div class="sheet-note">Açıkken kartta tek / çift makara seçilir; farklı makinedeki önceki değerler çevrilir.</div>
       <label class="sheet-row">${icon('target')}Kas grubu
         <select onchange="setMuscle(active.day.exercises[exSheetIdx].name, this.value); toast('Kas grubu: ' + MUSCLES[this.value], 1500)">
           ${Object.entries(MUSCLES).map(([k, v]) => `<option value="${k}"${k === m ? ' selected' : ''}>${v}</option>`).join('')}
@@ -972,15 +1029,17 @@ function completeSet(ei, s) {
   captureActive();
   updateProgress();
   if (active.mode === 'edit') return;
-  // Rekor: geçmiş + bu antrenmanda daha önce tamamlanan setler
+  // Rekor: geçmiş + bu antrenmanda daha önce tamamlanan setler (tek makara karşılığı)
+  const mc = machineFor(ex);
   const sessionSets = [];
   for (let k = 0; k < active.sets[ei]; k++) {
     if (k === s || !document.getElementById(`set-done-${ei}-${k}`)?.classList.contains('done')) continue;
     const o = readSet(ei, k);
-    sessionSets.push({ kg: o.kg, reps: repsOf(ex.bilateral ? o : { reps: o.reps }), date: today() });
+    sessionSets.push({ kg: loadKg({ kg: o.kg, cable: mc }), reps: repsOf(ex.bilateral ? o : { reps: o.reps }), date: today() });
   }
-  const prs = prsForSet(ex.bilateral ? cur : { kg: cur.kg, reps: cur.reps }, [...historySets(ex.name), ...sessionSets]);
-  if (prs.length) toast(`🏆 ${ex.name}: ${prs.map(p => p.label).join(' · ')}`, 3200);
+  const curLoad = loadKg({ kg: cur.kg, cable: mc });
+  const prs = prsForSet(ex.bilateral ? { ...cur, kg: curLoad } : { kg: curLoad, reps: cur.reps }, [...historySets(ex.name), ...sessionSets]);
+  if (prs.length) toast(`🏆 ${ex.name}: ${prs.map(p => p.label).join(' · ')}${mc === 'double' && prs.some(p => p.type !== 'reps' || curLoad) ? ' (tek makara karşılığı)' : ''}`, 3200);
   if (DB.settings.restTimerEnabled) startRest(ex.name, restFor(ex.name));
 }
 
@@ -1077,6 +1136,8 @@ function collectWorkoutSets() {
         : { exId: ex.id, exName: ex.name, setIdx: s, kg: cur.kg, reps: cur.reps };
       const r = active.rir ? active.rir[`${ei}-${s}`] : undefined;
       if (r != null && rirEnabled()) set.rir = r;
+      const mc = machineFor(ex);
+      if (mc) set.cable = mc;
       if (hasValue(set)) sets.push(set);
     }
   });
@@ -1163,7 +1224,7 @@ function finishWorkout() {
     const detail = exSets.map(s => (s.repsR != null ? `${s.kg}×${s.repsR}/${s.repsL}` : `${s.kg}×${s.reps}`) + (s.rir != null ? ` R${fmtRir(s.rir)}` : '')).join(', ');
     return `<div class="sum-ex-item">
       <div class="sum-ex-name">${escapeHtml(ex.name)}</div>
-      <div class="sum-ex-detail">${escapeHtml(detail)} · ${vol} kg</div>
+      <div class="sum-ex-detail">${escapeHtml(detail)} · ${vol} kg${exSets.some(s => s.cable === 'double') ? ' · çift makara' : ''}</div>
     </div>`;
   }).join('') + (cardio.length ? `<div class="sum-ex-item">
       <div class="sum-ex-name">Kardiyo</div>
@@ -1233,10 +1294,12 @@ function startEditLog(idx) {
     seen.add(normName(n));
   });
 
-  const sets = [], values = {}, done = [], notesById = {}, rir = {};
+  const sets = [], values = {}, done = [], notesById = {}, rir = {}, cable = {};
   exercises.forEach((ex, ei) => {
     const mine = filled.filter(s => normName(nameOf(s)) === normName(ex.name));
     if (mine.some(s => s.repsR != null || s.repsL != null)) ex.bilateral = true;
+    const withCable = mine.find(s => s.cable);
+    if (withCable) cable[ex.id] = withCable.cable;
     let count = ex.sets || 1;
     mine.forEach((s, i) => {
       const si = Number.isInteger(s.setIdx) ? s.setIdx : i;
@@ -1262,7 +1325,7 @@ function startEditLog(idx) {
     dayId: log.dayId,
     day: { id: log.dayId, name: dayDisplayName(log), exercises },
     startTime: Date.now(),
-    sets, values, done, rir,
+    sets, values, done, rir, cable,
     cardio: (log.cardio || []).map(c => ({ type: c.type, min: String(c.min || ''), km: c.km ? String(c.km) : '', kcal: c.kcal ? String(c.kcal) : '' })),
     screenOpen: true,
   };

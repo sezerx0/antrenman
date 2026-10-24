@@ -14,7 +14,7 @@ function openProgressModal(exName) {
 
   const labels = [], oneRMs = [];
   entries.forEach(({ log, sets }) => {
-    const best = Math.max(0, ...sets.map(s => calcEpley(s.kg, s.reps)));
+    const best = Math.max(0, ...sets.map(s => calcEpley(loadKg(s), s.reps)));
     if (!best) return;
     labels.push(fmtDateShort(log.date));
     oneRMs.push(best);
@@ -58,8 +58,8 @@ function openProgressModal(exName) {
     histEl.innerHTML = '<div style="padding:12px 0;color:var(--text-secondary);font-size:14px;text-align:center;">Henüz kayıt yok</div>';
   } else {
     histEl.innerHTML = [...entries].reverse().slice(0, 8).map(({ log, sets, dayName }) => {
-      const summary = sets.map(s => s.repsR != null ? `${s.kg}kg×${s.repsR}/${s.repsL}` : `${s.kg}kg×${s.reps}`).join(', ');
-      const maxORM = Math.max(0, ...sets.map(s => calcEpley(s.kg, s.reps)));
+      const summary = sets.map(s => s.repsR != null ? `${s.kg}kg×${s.repsR}/${s.repsL}` : `${s.kg}kg×${s.reps}`).join(', ') + (sets.some(s => s.cable === 'double') ? ' · çift makara' : '');
+      const maxORM = Math.max(0, ...sets.map(s => calcEpley(loadKg(s), s.reps)));
       return `<div class="prog-history-item">
         <div>
           <span class="prog-date">${fmtDateShort(log.date)}</span>

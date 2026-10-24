@@ -53,8 +53,9 @@ function deleteWorkoutLog(idx) {
 
 function renderSettings() {
   const s = DB.settings;
-  document.getElementById('palette-classic-btn').classList.toggle('active', s.palette !== 'lime');
-  document.getElementById('palette-lime-btn').classList.toggle('active', s.palette === 'lime');
+  const cr = cableRatio();
+  document.getElementById('cable-ratio-label').textContent = String(cr).replace('.', ',') + ':1';
+  document.getElementById('cable-ratio-note').textContent = `Kablo hareketlerinde tek / çift makara seçilebilir. Çift makarada yazan 40 kg ≈ tek makarada ${fmtKg(Math.round(40 / cr * 2) / 2)} kg sayılır; rekor ve grafikler buna göre hesaplanır. Fark daha az hissediliyorsa oranı düşür.`;
   document.getElementById('theme-light-btn').classList.toggle('active', s.theme !== 'dark');
   document.getElementById('theme-dark-btn').classList.toggle('active', s.theme === 'dark');
   document.getElementById('rest-toggle').checked = !!s.restTimerEnabled;
@@ -102,7 +103,8 @@ function setTheme(t) {
   applyTheme();
   refreshAfterThemeChange();
 }
-function isLime() { return DB.settings.palette === 'lime'; }
+// Tek renk paleti: Lime (açık / koyu mod seçilebilir)
+function isLime() { return true; }
 function isDarkMode() { return DB.settings.theme === 'dark'; }
 function applyTheme() {
   const isDark = isDarkMode();
@@ -110,12 +112,6 @@ function applyTheme() {
   document.documentElement.setAttribute('data-palette', isLime() ? 'lime' : 'classic');
   const bar = isLime() ? (isDark ? '#0F1311' : '#F1F1EA') : (isDark ? '#1c1c1e' : '#ffffff');
   document.getElementById('theme-color-meta').setAttribute('content', bar);
-}
-function setPalette(p) {
-  DB.settings.palette = p === 'lime' ? 'lime' : 'classic';
-  saveData('settings', DB.settings);
-  applyTheme();
-  refreshAfterThemeChange();
 }
 // Renkleri JS'te hesaplanan parçaları (takvim, grafikler, kartlar) yeniden çizer
 function refreshAfterThemeChange() {
@@ -247,6 +243,12 @@ function setProgressMode(m) {
 function toggleRirProgression(val) {
   DB.settings.rirProgression = !!val;
   saveData('settings', DB.settings);
+  if (active) refreshCardsAfterSetting();
+}
+function stepCableRatio(dir) {
+  DB.settings.cableRatio = Math.round(Math.max(1.2, Math.min(3, cableRatio() + dir * 0.1)) * 10) / 10;
+  saveData('settings', DB.settings);
+  renderSettings();
   if (active) refreshCardsAfterSetting();
 }
 function stepDefaultInc(dir) {

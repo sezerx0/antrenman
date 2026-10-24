@@ -967,3 +967,6 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .fb-opt.active { background: var(--accent-fill); color: var(--on-accent); }
 .hm-feedback { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); padding: 0 0 10px; }
 .hm-feedback .ic, .hm-feedback svg { width: 15px; height: 15px; color: #ff2d55; flex-shrink: 0; }
+/* ── Kablo makinesi ── */
+.sheet-toggle { margin-left: auto; }
+.hm-cable { font-size: 11px; font-weight: 600; color: var(--text-secondary); background: var(--bg-secondary); border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: 1px; }

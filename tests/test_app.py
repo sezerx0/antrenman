@@ -375,9 +375,7 @@ with sync_playwright() as p:
 
     # ── 23. Lime teması ──
     page.evaluate("switchTab('settings')")
-    page.click('#palette-lime-btn')
-    check('lime paleti uygulandı', page.evaluate("document.documentElement.dataset.palette") == 'lime' and page.evaluate("DB.settings.palette") == 'lime')
-    check('lime ayarı kalıcı', page.evaluate("JSON.parse(localStorage.getItem('antrenman:settings')).palette") == 'lime')
+    check('tek palet: lime, renk seçimi yok', page.evaluate("document.documentElement.dataset.palette") == 'lime' and page.query_selector('#palette-classic-btn') is None)
     page.evaluate("switchTab('workout')")
     check('lime: kahraman kart görünüyor, klasik hedef kartı gizli', page.is_visible('#hero-ring-pct') and not page.is_visible('#weekly-goal-num'))
     page.click('.hero-goal button >> nth=1')
@@ -385,8 +383,8 @@ with sync_playwright() as p:
     page.click('.hero-goal button >> nth=0')
     page.click('#theme-dark-btn') if page.is_visible('#theme-dark-btn') else page.evaluate("setTheme('dark')")
     check('lime + koyu', page.evaluate("document.documentElement.dataset.theme") == 'dark' and page.evaluate("document.documentElement.dataset.palette") == 'lime')
-    page.evaluate("setTheme('light'); setPalette('classic')")
-    check('klasiğe dönüş', page.evaluate("document.documentElement.dataset.palette") == 'classic' and page.is_visible('#weekly-goal-num') and not page.is_visible('#hero-ring-pct'))
+    page.evaluate("setTheme('light')")
+    check('açık moda dönüş, lime kalıyor', page.evaluate("document.documentElement.dataset.theme") == '' and page.evaluate("document.documentElement.dataset.palette") == 'lime')
     check('textOn kontrast', page.evaluate("textOn('#C8F169')") == '#1C2420' and page.evaluate("textOn('#1C2420')") == '#fff')
 
 
@@ -727,10 +725,8 @@ with sync_playwright() as p:
     last = page.evaluate("DB.workoutLogs[DB.workoutLogs.length - 1]")
     check('kardiyo kayda yazıldı', page.evaluate("DB.workoutLogs.length") == n0 + 1 and last.get('cardio') == [{'type': 'Bisiklet', 'min': 20, 'km': 7.5, 'kcal': 180}], last.get('cardio'))
     check('son antrenmanlarda kardiyo süresi', '20 dk kardiyo' in page.inner_text('#recent-list'))
-    page.evaluate("DB.settings.palette = 'lime'; applyTheme(); renderHome()")
+    page.evaluate("renderHome()")
     check('haftalık kardiyo toplamı (kahraman kart)', '20 dk' in page.inner_text('#hero-cardio'))
-    page.evaluate("DB.settings.palette = 'classic'; applyTheme(); renderHome()")
-    check('haftalık kardiyo toplamı (klasik)', '20 dk' in page.inner_text('#week-cardio'))
     page.evaluate("openWorkoutScreen('torso-a')"); page.wait_for_timeout(300)
     page.click('#cardio-card .cardio-add'); page.wait_for_timeout(150)
     check('yeni kardiyo son türle başlıyor, önceki değer ipucu', page.evaluate("document.querySelector('#cardio-card .cardio-type').value") == 'Bisiklet' and page.get_attribute('#cardio-card [data-cardio="min"]', 'placeholder') == '20' and 'Bisiklet 20 dk' in page.inner_text('#cardio-card .ex-prev-hint'))
@@ -935,6 +931,51 @@ with sync_playwright() as p:
     page.evaluate(f"openHistoryModal({li})"); page.wait_for_timeout(200)
     check('geçmişte görünüyor', 'Zorluk: Zor' in page.inner_text('#hm-body') and 'Toparlanma: İyi' in page.inner_text('#hm-body'))
     page.evaluate(f"closeHistoryModal(); DB.workoutLogs.splice({li}, 1); saveData('workoutLogs', DB.workoutLogs); DB.settings.feedback = false; saveData('settings', DB.settings)")
+
+
+    # ── 46. Kablo makinesi: tek / çift makara ──
+    page.evaluate("""() => { discardActive(); DB.settings.cableRatio = 2;
+      DB.workoutLogs.unshift({date:'2020-04-01', dayId:'torso-a', dayName:'Torso A', __test:1, sets:[
+        {exId:'c1', exName:'Kablo Test Raise', setIdx:0, kg:10, reps:15, cable:'single'}, {exId:'c1', exName:'Kablo Test Raise', setIdx:1, kg:10, reps:14, cable:'single'}], notes:{}});
+      saveData('workoutLogs', DB.workoutLogs);
+      getDayById('torso-a').exercises.unshift({id:'kt', name:'Kablo Test Raise', sets:2}); openWorkoutScreen('torso-a'); }""")
+    page.wait_for_timeout(300)
+    check('kablo hareketinde makine çipi, varsayılan son makine', 'Tek makara' in page.inner_text('#cable-chip-0'))
+    check('kablo olmayan harekette çip yok', page.query_selector('#cable-chip-1') is None)
+    check('tek makarada önceki 10', page.inner_text('#set-row-0-0 .sp-kg') == '10')
+    page.click('#cable-chip-0'); page.wait_for_timeout(300)
+    check('çift makaraya geçince önceki ≈20 (2:1)', page.inner_text('#set-row-0-0 .sp-kg') == '≈20' and 'çevrildi' in page.inner_text('#ex-card-0'), page.inner_text('#set-row-0-0 .sp-kg'))
+    page.fill('#kg-0-0', '20'); page.fill('#reps-0-0', '15'); page.evaluate("onSetInput(0,0)")
+    check('aynı yük + aynı tekrar: ilerleme sayılmıyor', not page.evaluate("document.getElementById('set-row-0-0').classList.contains('overload')"))
+    page.evaluate("document.getElementById('toast').textContent=''")
+    page.click('#set-done-0-0'); page.wait_for_timeout(200)
+    check('çift makarada 20 kg sahte rekor değil', '🏆' not in page.inner_text('#toast') and 'Kablo Test' not in page.inner_text('#toast'), page.inner_text('#toast'))
+    page.fill('#kg-0-1', '24'); page.fill('#reps-0-1', '12'); page.evaluate("onSetInput(0,1)")
+    page.click('#set-done-0-1'); page.wait_for_timeout(200)
+    check('gerçek rekor tek makara karşılığıyla', 'en ağır: 12 kg' in page.inner_text('#toast') and 'tek makara karşılığı' in page.inner_text('#toast'), page.inner_text('#toast'))
+    sets = page.evaluate("collectWorkoutSets().filter(s => s.exName === 'Kablo Test Raise')")
+    check('kayıtta makinede yazan kilo + makine', sets[0]['kg'] == 20 and sets[0]['cable'] == 'double' and all('cable' not in x for x in page.evaluate("collectWorkoutSets().filter(s => s.exName !== 'Kablo Test Raise')")), sets)
+    check('hacim tek makara karşılığı', page.evaluate("setVolume({kg:20, reps:10, cable:'double'})") == 100)
+    page.evaluate("finishWorkout()"); page.wait_for_timeout(300)
+    check('özette çift makara', 'çift makara' in page.inner_text('#sum-ex-list'))
+    page.evaluate("saveSummary()"); page.wait_for_timeout(400)
+    rec = page.evaluate("exerciseRecords('Kablo Test Raise')")
+    check('rekor kartı: en ağır 12 kg (24 çift)', rec['heaviest']['kg'] == 12, rec['heaviest'])
+    page.evaluate("openWorkoutScreen('torso-a')"); page.wait_for_timeout(300)
+    check('sonraki antrenmanda varsayılan son makine (çift)', 'Çift makara' in page.inner_text('#cable-chip-0') and page.inner_text('#set-row-0-1 .sp-kg') == '24')
+    page.click('#cable-chip-0'); page.wait_for_timeout(200)
+    check('tek makaraya dönünce ≈12', page.inner_text('#set-row-0-1 .sp-kg') == '≈12')
+    page.evaluate("openExSheet(1)"); page.wait_for_timeout(200)
+    page.click('#ex-sheet .sheet-toggle .ios-toggle-track'); page.wait_for_timeout(200)
+    check('kablo olmayan harekete makine seçimi açılabiliyor', page.query_selector('#cable-chip-1') is not None)
+    page.click('#ex-sheet .sheet-toggle .ios-toggle-track'); page.wait_for_timeout(200)
+    page.evaluate("closeExSheet()"); page.wait_for_timeout(200)
+    page.evaluate("discardActive(); switchTab('settings')")
+    page.click('#progress-settings .dur-stepper:has(#cable-ratio-label) button >> nth=0')
+    check('oran ayarı 1,9:1', page.inner_text('#cable-ratio-label') == '1,9:1' and page.evaluate("cableRatio()") == 1.9)
+    page.evaluate("""() => { DB.settings.cableRatio = 2; delete DB.settings.cableByEx; saveData('settings', DB.settings);
+      getDayById('torso-a').exercises.shift(); saveData('workoutDays', DB.workoutDays);
+      DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test && !(l.sets || []).some(s => s.exName === 'Kablo Test Raise')); saveData('workoutLogs', DB.workoutLogs); switchTab('workout'); }""")
 
     check('sayfa hatası yok', not errors, errors)
 
