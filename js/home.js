@@ -225,7 +225,7 @@ function openHistoryModal(idx) {
         : `${s.reps || 0} tk`;
       return `<div class="hm-set-row">
         <span class="hm-set-num">${i+1}</span>
-        <span class="hm-set-val">${s.kg || 0} kg × ${repsTxt}</span>
+        <span class="hm-set-val">${s.kg || 0} kg × ${repsTxt}${s.rir != null ? ` <span class="hm-rir">RIR ${fmtRir(s.rir)}</span>` : ''}</span>
         ${vol ? `<span class="hm-set-vol">${vol} kg</span>` : ''}
       </div>`;
     }).join('');

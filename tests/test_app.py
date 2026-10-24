@@ -748,6 +748,40 @@ with sync_playwright() as p:
     check('düzenlenen kardiyo kaydedildi', page.evaluate(f"DB.workoutLogs[{idx}].cardio[0].min") == 25)
     page.evaluate(f"DB.workoutLogs.splice({idx}, 1); saveData('workoutLogs', DB.workoutLogs); renderHome()")
 
+
+    # ── 39. RIR takibi ──
+    page.evaluate("discardActive(); DB.settings.rirEnabled = true; saveData('settings', DB.settings); switchTab('workout'); openWorkoutScreen('torso-a')"); page.wait_for_timeout(300)
+    check('RIR satırı set tamamlanmadan gizli', not page.is_visible('#rir-row-0-0'))
+    page.fill('#kg-0-0', '40'); page.fill('#reps-0-0', '10'); page.click('#set-done-0-0'); page.evaluate("stopRest()"); page.wait_for_timeout(150)
+    check('set tamamlanınca RIR satırı görünüyor', page.is_visible('#rir-row-0-0'))
+    page.click('#rir-row-0-0 .rir-btn[data-v="2"]')
+    check('RIR seçildi', page.evaluate("active.rir['0-0']") == 2 and page.evaluate("document.querySelector('#rir-row-0-0 .rir-btn.on').dataset.v") == '2')
+    page.fill('#kg-0-1', '40'); page.fill('#reps-0-1', '9'); page.click('#set-done-0-1'); page.evaluate("stopRest()")
+    page.click('#rir-row-0-1 .rir-btn[data-v="4"]'); page.click('#rir-row-0-1 .rir-btn[data-v="4"]')
+    check('aynı RIR\'a tekrar dokununca seçim kalkıyor', page.evaluate("active.rir['0-1']") is None)
+    page.click('#rir-row-0-1 .rir-btn[data-v="4"]')
+    page.reload(); page.wait_for_timeout(500)
+    check('RIR yenilemeden sonra korunuyor', page.evaluate("document.querySelector('#rir-row-0-0 .rir-btn.on')?.dataset.v") == '2')
+    page.click('#ex-card-0 .set-count-btn.accent'); page.wait_for_timeout(100)
+    page.fill('#kg-0-2', '40'); page.fill('#reps-0-2', '8'); page.click('#set-done-0-2'); page.evaluate("stopRest()"); page.click('#rir-row-0-2 .rir-btn[data-v="1"]')
+    page.click('#ex-card-0 .set-count-btn >> nth=0'); page.wait_for_timeout(150)
+    check('silinen setin RIR\'ı da siliniyor', page.evaluate("active.rir['0-2']") is None and not page.evaluate("!!document.getElementById('set-wrap-0-2')"))
+    page.evaluate("finishWorkout(); saveSummary();"); page.wait_for_timeout(400)
+    last = page.evaluate("DB.workoutLogs[DB.workoutLogs.length - 1]")
+    rirs = [s_.get('rir') for s_ in last['sets'] if s_['exName'] == 'Pec Deck Fly']
+    check('RIR kayda yazıldı (4 = 4+)', rirs == [2, 4], rirs)
+    idx = page.evaluate("DB.workoutLogs.length - 1")
+    page.evaluate(f"openHistoryModal({idx})"); page.wait_for_timeout(200)
+    check('geçmişte RIR görünüyor', 'RIR 2' in page.inner_text('#hm-body') and 'RIR 4+' in page.inner_text('#hm-body'))
+    page.click('#history-modal .btn-primary'); page.wait_for_timeout(400)
+    check('düzenlemede RIR yüklendi', page.evaluate("document.querySelector('#rir-row-0-0 .rir-btn.on')?.dataset.v") == '2')
+    page.evaluate("discardActive(); closeAllLayers()"); page.wait_for_timeout(300)
+    page.evaluate("openWorkoutScreen('torso-a')"); page.wait_for_timeout(300)
+    check('sonraki antrenmanda önceki RIR görünüyor', 'önceki: 2' in page.inner_text('#rir-row-0-0'))
+    page.evaluate("toggleRir(false)"); page.wait_for_timeout(200)
+    check('RIR kapatılınca satır yok', page.evaluate("document.querySelectorAll('.rir-row').length") == 0)
+    page.evaluate(f"toggleRir(true); discardActive(); DB.workoutLogs.splice({idx}, 1); saveData('workoutLogs', DB.workoutLogs)")
+
     check('sayfa hatası yok', not errors, errors)
 
     # ── 35. Antrenman bildirimi ──

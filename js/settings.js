@@ -59,6 +59,7 @@ function renderSettings() {
   document.getElementById('theme-dark-btn').classList.toggle('active', s.theme === 'dark');
   document.getElementById('rest-toggle').checked = !!s.restTimerEnabled;
   document.getElementById('keep-awake-toggle').checked = s.keepAwake !== false;
+  document.getElementById('rir-toggle').checked = s.rirEnabled !== false;
   document.getElementById('workout-notif-toggle').checked = workoutNotifOn();
   renderNotifStatus();
   document.getElementById('rest-dur-label').textContent = fmtRest(s.restDuration || 90);
@@ -187,6 +188,11 @@ async function toggleWorkoutNotif(val) {
   toast('✅ Antrenman bildirimi açık');
 }
 
+function toggleRir(val) {
+  DB.settings.rirEnabled = !!val;
+  saveData('settings', DB.settings);
+  if (active) { captureActive(); renderExerciseCards(); applyActiveValues(); }
+}
 function toggleKeepAwake(val) {
   DB.settings.keepAwake = !!val;
   saveData('settings', DB.settings);

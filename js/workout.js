@@ -231,7 +231,7 @@ function buildSetRow(ei, s, ex, ps, sug) {
         <input class="reps-val" type="text" inputmode="numeric" placeholder="${escapeHtml(phReps || 'tk')}" data-prev="${escapeHtml(ps.reps || '')}"${sugAttr(sug && sug.reps)} id="reps-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'reps',${ei},${s})">
         <button class="stepper-btn" onclick="stepReps(${ei},${s},1)" type="button">+</button>
       </div>`;
-  return `<div class="set-row${sug && sug.up ? ' sug-up' : ''}" id="set-row-${id}">
+  return `<div class="set-wrap" id="set-wrap-${id}"><div class="set-row${sug && sug.up ? ' sug-up' : ''}" id="set-row-${id}">
     <span class="set-num">${s+1}</span>
     ${prevCell(ei, s, ps)}
     <div class="kg-stepper">
@@ -241,7 +241,31 @@ function buildSetRow(ei, s, ex, ps, sug) {
     </div>
     ${repsHtml}
     <button class="set-done-btn" onclick="completeSet(${ei},${s})" id="set-done-${id}" aria-label="Seti tamamla">${icon('check')}</button>
+  </div>${rirRow(ei, s, ps)}</div>`;
+}
+
+// ── RIR: setten sonra kaç tekrar daha yapılabilirdi (isteğe bağlı) ──
+// 4 = "4 ve üstü". Set tamamlanınca satırın altında görünür.
+function rirEnabled() { return DB.settings.rirEnabled !== false; }
+function fmtRir(v) { return v >= 4 ? '4+' : String(v); }
+function rirRow(ei, s, ps) {
+  if (!rirEnabled()) return '';
+  const sel = active && active.rir ? active.rir[`${ei}-${s}`] : undefined;
+  const prev = ps && ps.rir != null ? `önceki: ${fmtRir(ps.rir)}` : 'kaç tekrar daha?';
+  return `<div class="rir-row" id="rir-row-${ei}-${s}">
+    <span class="rir-label">RIR</span>
+    ${[0, 1, 2, 3, 4].map(v => `<button type="button" class="rir-btn${sel === v ? ' on' : ''}" data-v="${v}" onclick="setRir(${ei},${s},${v})" aria-label="RIR ${fmtRir(v)}">${fmtRir(v)}</button>`).join('')}
+    <span class="rir-prev">${prev}</span>
   </div>`;
+}
+function setRir(ei, s, v) {
+  if (!active) return;
+  active.rir = active.rir || {};
+  const key = `${ei}-${s}`;
+  if (active.rir[key] === v) delete active.rir[key]; else active.rir[key] = v;
+  document.querySelectorAll(`#rir-row-${ei}-${s} .rir-btn`).forEach(b => b.classList.toggle('on', Number(b.dataset.v) === active.rir[key]));
+  checkOverload(ei, s);
+  saveActive();
 }
 
 // "Önceki" sütunu: bu hareketin son yapıldığı antrenmanda aynı sıradaki set.
@@ -612,6 +636,7 @@ function clearExValues(ei) {
   const re = new RegExp(`^(kg|reps|repsR|repsL|set-done)-${ei}-\\d+$`);
   Object.keys(active.values).forEach(k => { if (re.test(k)) delete active.values[k]; });
   active.done = (active.done || []).filter(id => !re.test(id));
+  if (active.rir) Object.keys(active.rir).forEach(k => { if (k.startsWith(`${ei}-`)) delete active.rir[k]; });
 }
 function knownBilateral(name) {
   const n = normName(name);
@@ -770,10 +795,11 @@ function removeSet(ei) {
   if (!active) return;
   const s = active.sets[ei];
   if (s <= 1) return;
-  const row = document.getElementById(`set-row-${ei}-${s - 1}`);
+  const row = document.getElementById(`set-wrap-${ei}-${s - 1}`);
   const cur = readSet(ei, s - 1);
   if (hasValue(cur) && !confirm(`${s}. sette girilmiş değerler var. Set silinsin mi?`)) return;
   if (row) row.remove();
+  if (active.rir) delete active.rir[`${ei}-${s - 1}`];
   active.sets[ei] = s - 1;
   document.getElementById(`set-count-${ei}`).textContent = `${active.sets[ei]} set`;
   updateWsSub();
@@ -903,6 +929,8 @@ function collectWorkoutSets() {
       const set = ex.bilateral
         ? { exId: ex.id, exName: ex.name, setIdx: s, kg: cur.kg, repsR: cur.repsR, repsL: cur.repsL, reps: Math.max(cur.repsR, cur.repsL) }
         : { exId: ex.id, exName: ex.name, setIdx: s, kg: cur.kg, reps: cur.reps };
+      const r = active.rir ? active.rir[`${ei}-${s}`] : undefined;
+      if (r != null && rirEnabled()) set.rir = r;
       if (hasValue(set)) sets.push(set);
     }
   });
@@ -951,7 +979,7 @@ function finishWorkout() {
     const exSets = allSets.filter(s => s.exId === ex.id);
     if (!exSets.length) return '';
     const vol = Math.round(exSets.reduce((a, s) => a + setVolume(s), 0));
-    const detail = exSets.map(s => s.repsR != null ? `${s.kg}×${s.repsR}/${s.repsL}` : `${s.kg}×${s.reps}`).join(', ');
+    const detail = exSets.map(s => (s.repsR != null ? `${s.kg}×${s.repsR}/${s.repsL}` : `${s.kg}×${s.reps}`) + (s.rir != null ? ` R${fmtRir(s.rir)}` : '')).join(', ');
     return `<div class="sum-ex-item">
       <div class="sum-ex-name">${escapeHtml(ex.name)}</div>
       <div class="sum-ex-detail">${escapeHtml(detail)} · ${vol} kg</div>
@@ -1023,7 +1051,7 @@ function startEditLog(idx) {
     seen.add(normName(n));
   });
 
-  const sets = [], values = {}, done = [], notesById = {};
+  const sets = [], values = {}, done = [], notesById = {}, rir = {};
   exercises.forEach((ex, ei) => {
     const mine = filled.filter(s => normName(nameOf(s)) === normName(ex.name));
     if (mine.some(s => s.repsR != null || s.repsL != null)) ex.bilateral = true;
@@ -1038,6 +1066,7 @@ function startEditLog(idx) {
         if (!s.repsR && !s.repsL && s.reps) values[`repsR-${ei}-${si}`] = String(s.reps);
       } else if (s.reps) values[`reps-${ei}-${si}`] = String(s.reps);
       done.push(`set-done-${ei}-${si}`);
+      if (s.rir != null) rir[`${ei}-${si}`] = s.rir;
     });
     sets.push(Math.min(20, count));
     const note = noteForExName(log, ex.name);
@@ -1051,7 +1080,7 @@ function startEditLog(idx) {
     dayId: log.dayId,
     day: { id: log.dayId, name: dayDisplayName(log), exercises },
     startTime: Date.now(),
-    sets, values, done,
+    sets, values, done, rir,
     cardio: (log.cardio || []).map(c => ({ type: c.type, min: String(c.min || ''), km: c.km ? String(c.km) : '', kcal: c.kcal ? String(c.kcal) : '' })),
     screenOpen: true,
   };
