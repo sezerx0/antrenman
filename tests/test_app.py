@@ -947,6 +947,27 @@ with sync_playwright() as p:
     check('sekme sayısı 5', tabs_ov == 5, tabs_ov)
     page.evaluate("setWater(0); switchTab('workout')")
 
+
+    # ── 45. Antrenman sonu değerlendirme ──
+    page.evaluate("discardActive(); openWorkoutScreen('torso-a')"); page.wait_for_timeout(300)
+    page.fill('#kg-0-0', '40'); page.fill('#reps-0-0', '8')
+    page.evaluate("finishWorkout()"); page.wait_for_timeout(300)
+    check('değerlendirme varsayılan kapalı', not page.is_visible('#sum-feedback'))
+    page.evaluate("closeSummary(); DB.settings.feedback = true; saveData('settings', DB.settings)"); page.wait_for_timeout(300)
+    page.evaluate("finishWorkout()"); page.wait_for_timeout(300)
+    check('değerlendirme açıkken özet ekranda', page.is_visible('#sum-feedback') and 'Zorluk' in page.inner_text('#sum-feedback'))
+    page.click('#sum-feedback .fb-row >> nth=0 >> .fb-opt >> nth=2')
+    page.click('#sum-feedback .fb-row >> nth=1 >> .fb-opt >> nth=1')
+    page.click('#sum-feedback .fb-row >> nth=1 >> .fb-opt >> nth=1')
+    page.click('#sum-feedback .fb-row >> nth=2 >> .fb-opt >> nth=2')
+    check('seçim / geri alma', page.evaluate("JSON.stringify(pendingWorkoutData.feedback)") == '{"difficulty":3,"recovery":3}', page.evaluate("JSON.stringify(pendingWorkoutData.feedback)"))
+    page.evaluate("saveSummary()"); page.wait_for_timeout(300)
+    li = page.evaluate("DB.workoutLogs.length - 1")
+    check('kayda yazıldı', page.evaluate(f"DB.workoutLogs[{li}].feedback.difficulty") == 3)
+    page.evaluate(f"openHistoryModal({li})"); page.wait_for_timeout(200)
+    check('geçmişte görünüyor', 'Zorluk: Zor' in page.inner_text('#hm-body') and 'Toparlanma: İyi' in page.inner_text('#hm-body'))
+    page.evaluate(f"closeHistoryModal(); DB.workoutLogs.splice({li}, 1); saveData('workoutLogs', DB.workoutLogs); DB.settings.feedback = false; saveData('settings', DB.settings)")
+
     check('sayfa hatası yok', not errors, errors)
 
     # ── 35. Antrenman bildirimi ──

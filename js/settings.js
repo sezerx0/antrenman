@@ -61,6 +61,7 @@ function renderSettings() {
   document.getElementById('keep-awake-toggle').checked = s.keepAwake !== false;
   document.getElementById('rir-toggle').checked = s.rirEnabled !== false;
   document.getElementById('mod-suppl-toggle').checked = supplOn();
+  document.getElementById('feedback-toggle').checked = feedbackOn();
   document.getElementById('mod-water-toggle').checked = waterOn();
   document.getElementById('suppl-settings-section').style.display = supplOn() ? '' : 'none';
   document.getElementById('workout-notif-toggle').checked = workoutNotifOn();
@@ -199,6 +200,10 @@ async function toggleWorkoutNotif(val) {
   toast('✅ Antrenman bildirimi açık');
 }
 
+function toggleFeedback(val) {
+  DB.settings.feedback = !!val;
+  saveData('settings', DB.settings);
+}
 function toggleModSuppl(val) {
   DB.settings.modSuppl = !!val;
   saveData('settings', DB.settings);

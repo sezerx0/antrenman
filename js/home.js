@@ -210,6 +210,7 @@ function openHistoryModal(idx) {
   document.getElementById('hm-day-name').textContent = dayDisplayName(log);
   const dur = log.duration ? `${fmtMins(log.duration)} · ` : '';
   document.getElementById('hm-meta').textContent = `${fmtDate(log.date)} · ${dur}${logVolume(log)} kg hacim`;
+  const fbTxt = feedbackText(log.feedback);
 
   const byEx = {};
   const order = [];
@@ -240,6 +241,7 @@ function openHistoryModal(idx) {
       ${note ? `<div class="ex-note-prev hm-note">${icon('note')}${escapeHtml(note)}</div>` : ''}
     </div>`;
   }).join('') : (log.cardio && log.cardio.length ? '' : '<div style="padding:12px 0;color:var(--text-secondary);font-size:14px;text-align:center;">Bu antrenmanda set kaydı yok.</div>');
+  if (fbTxt) body.innerHTML = `<div class="hm-feedback">${icon('heart')}<span>${escapeHtml(fbTxt)}</span></div>` + body.innerHTML;
   if (log.cardio && log.cardio.length) {
     body.innerHTML += `<div class="hm-ex-block">
       <div class="hm-ex-name">Kardiyo</div>

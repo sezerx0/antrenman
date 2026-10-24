@@ -1074,6 +1074,36 @@ function collectWorkoutSets() {
   return sets;
 }
 
+// ── Antrenman sonu değerlendirme (isteğe bağlı) ──
+const FEEDBACK = [
+  { key: 'difficulty', label: 'Zorluk', opts: ['Kolay', 'Orta', 'Zor'] },
+  { key: 'energy', label: 'Enerji', opts: ['Düşük', 'Normal', 'Yüksek'] },
+  { key: 'recovery', label: 'Toparlanma', opts: ['Kötü', 'Orta', 'İyi'] },
+];
+function feedbackOn() { return DB.settings.feedback === true; }
+function feedbackText(fb) {
+  if (!fb) return '';
+  return FEEDBACK.filter(f => fb[f.key]).map(f => `${f.label}: ${f.opts[fb[f.key] - 1]}`).join(' · ');
+}
+function renderSumFeedback() {
+  const el = document.getElementById('sum-feedback');
+  if (!el) return;
+  if (!feedbackOn() || !pendingWorkoutData) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  const fb = pendingWorkoutData.feedback || {};
+  el.style.display = 'block';
+  el.innerHTML = `<div class="fb-title">Nasıl geçti? <span>isteğe bağlı</span></div>` + FEEDBACK.map(f => `<div class="fb-row">
+      <span class="fb-label">${f.label}</span>
+      <div class="fb-opts">${f.opts.map((o, i) => `<button class="fb-opt${fb[f.key] === i + 1 ? ' active' : ''}" onclick="setFeedback('${f.key}',${i + 1})">${o}</button>`).join('')}</div>
+    </div>`).join('');
+}
+function setFeedback(key, v) {
+  if (!pendingWorkoutData) return;
+  const fb = pendingWorkoutData.feedback || {};
+  if (fb[key] === v) delete fb[key]; else fb[key] = v;
+  if (Object.keys(fb).length) pendingWorkoutData.feedback = fb; else delete pendingWorkoutData.feedback;
+  renderSumFeedback();
+}
+
 function finishWorkout() {
   if (!active) return;
   captureActive();
@@ -1131,6 +1161,7 @@ function finishWorkout() {
       <div class="sum-ex-detail">${escapeHtml(cardio.map(fmtCardio).join(', '))}</div>
     </div>` : '');
 
+  renderSumFeedback();
   document.getElementById('summary-overlay').classList.add('open');
   pushLayer('summary');
 }

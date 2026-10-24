@@ -405,6 +405,18 @@
         </div>
         <div class="settings-row settings-row-stack">
           <div class="settings-row-main">
+            <div class="settings-icon" style="background:#ff2d5520;color:#ff2d55;"><i data-icon="heart"></i></div>
+            <span class="settings-label">Bitiş değerlendirmesi</span>
+            <label class="ios-toggle">
+              <input type="checkbox" id="feedback-toggle" onchange="toggleFeedback(this.checked)">
+              <div class="ios-toggle-track"></div>
+              <div class="ios-toggle-thumb"></div>
+            </label>
+          </div>
+          <div class="settings-note" style="display:block;">Bitirirken zorluk, enerji ve toparlanmayı işaretlersin (isteğe bağlı). Geçmişte görünür.</div>
+        </div>
+        <div class="settings-row settings-row-stack">
+          <div class="settings-row-main">
             <div class="settings-icon" style="background:#ff3b3020;color:#ff3b30;"><i data-icon="bell"></i></div>
             <span class="settings-label">Bildirimde göster</span>
             <label class="ios-toggle">
@@ -644,6 +656,7 @@
       <div class="sum-pr-banner" id="sum-pr-banner"></div>
     </div>
     <div id="sum-ex-list" style="margin:12px 0;text-align:left;"></div>
+    <div id="sum-feedback" style="display:none;"></div>
     <button class="btn-primary" onclick="saveSummary()">Kaydet</button>
     <button class="btn-secondary" onclick="closeSummary()">Vazgeç</button>
   </div>
