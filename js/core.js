@@ -392,13 +392,27 @@ function calcEpley(kg, reps) {
   return Math.round(kg * (1 + reps / 30) * 10) / 10;
 }
 // ── Plato tespiti ──
-// Her antrenmanın en iyi tahmini 1RM'i (vücut ağırlığında en iyi tekrar)
-// alınır; son rekordan bu yana 3+ antrenman geçtiyse plato sayılır.
-function sessionBest(sets) {
-  const withKg = sets.filter(s => s.kg > 0 && s.reps > 0);
-  if (withKg.length) return Math.max(...withKg.map(s => calcEpley(loadKg(s), s.reps)));
-  return Math.max(0, ...sets.map(s => s.reps || 0)) / 1000; // vücut ağırlığı: tekrar
+// Her antrenman için iki performans ölçüsü (tek makara karşılığı yük, RIR dahil):
+//  top: en iyi setin tahmini 1RM'i · avg: çalışma setlerinin (en ağır kilonun %80'i ve üstü)
+//  ortalaması — aynı kiloda toplam tekrar artınca ya da aynı tekrar daha rahat (yüksek RIR)
+//  yapılınca da yükselir. RIR'lı tekrar = tekrar + RIR (tükenişe kadar yapılabilecek tahmini).
+function setScore(s) {
+  const r = repsOf(s) + (s.rir != null ? s.rir : 0);
+  const kg = loadKg(s);
+  return kg > 0 ? calcEpley(kg, r) : r;
 }
+function sessionPerf(sets) {
+  const valid = sets.filter(s => repsOf(s) > 0);
+  if (!valid.length) return null;
+  const weighted = valid.filter(s => s.kg > 0);
+  const pool = weighted.length ? weighted : valid;
+  const topKg = Math.max(...pool.map(loadKg));
+  const work = pool.filter(s => loadKg(s) >= topKg * 0.8);
+  const scores = work.map(setScore);
+  return { top: Math.max(...scores), avg: scores.reduce((a, v) => a + v, 0) / scores.length };
+}
+// Geriye dönük: tek sayı (en iyi set)
+function sessionBest(sets) { const p = sessionPerf(sets); return p ? p.top : 0; }
 // Uzun aradan (28+ gün) sonra yalnızca aradan sonraki antrenmanlara bakılır:
 // ara öncesi rekorlar, geri dönüşte yanlış "plato" uyarısı üretmesin.
 const COMEBACK_GAP_DAYS = 28;
@@ -410,13 +424,26 @@ function sinceLastBreak(entries) {
   }
   return entries.slice(start);
 }
+// Plato: aradan sonra en az 5 antrenman, son 4+ antrenmanda ne en iyi set ne de çalışma
+// setleri ortalaması önceki en iyisini %1 geçmiş, ve son 5 antrenmanın eğilimi yükselmiyor.
 function plateauInfo(exName, excludeLog) {
-  const vals = sinceLastBreak(getLogsByExName(exName).filter(e => e.log !== excludeLog)).map(e => sessionBest(e.sets)).filter(v => v > 0);
-  if (vals.length < 4) return null;
-  let best = vals[0], lastImprove = 0;
-  for (let i = 1; i < vals.length; i++) if (vals[i] > best + 1e-9) { best = vals[i]; lastImprove = i; }
-  const stalled = vals.length - 1 - lastImprove;
-  return stalled >= 3 ? { stalled } : null;
+  const perf = sinceLastBreak(getLogsByExName(exName).filter(e => e.log !== excludeLog)).map(e => sessionPerf(e.sets)).filter(Boolean);
+  if (perf.length < 5) return null;
+  let bestTop = perf[0].top, bestAvg = perf[0].avg, lastImprove = 0;
+  for (let i = 1; i < perf.length; i++) {
+    const up = perf[i].top > bestTop * 1.01 || perf[i].avg > bestAvg * 1.01;
+    bestTop = Math.max(bestTop, perf[i].top); bestAvg = Math.max(bestAvg, perf[i].avg);
+    if (up) lastImprove = i;
+  }
+  const stalled = perf.length - 1 - lastImprove;
+  if (stalled < 4) return null;
+  // Son 5 antrenmanda ortalamanın eğimi (antrenman başına, ortalamaya göre oran)
+  const ys = perf.slice(-5).map(p => p.avg), n = ys.length, mx = (n - 1) / 2;
+  const my = ys.reduce((a, v) => a + v, 0) / n;
+  const slope = ys.reduce((a, y, i) => a + (i - mx) * (y - my), 0) / ys.reduce((a, _, i) => a + (i - mx) ** 2, 0);
+  const rel = my ? slope / my : 0;
+  if (rel > 0.002) return null;   // yavaş da olsa yükseliyor
+  return { stalled, declining: rel < -0.01 };
 }
 
 // ── Rekorlar: üç ayrı başarı türü ──

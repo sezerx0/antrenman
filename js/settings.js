@@ -73,7 +73,7 @@ function renderSettings() {
   document.getElementById('pmode-all-btn').classList.toggle('active', progressMode() === 'all');
   document.getElementById('pmode-set-btn').classList.toggle('active', progressMode() === 'perSet');
   document.getElementById('pmode-note').textContent = progressMode() === 'all'
-    ? 'Geçen seferki tüm çalışma setleri üst sınıra ulaşınca kilo artar; ulaşmayan varsa her sette +1 tekrar.'
+    ? 'Programdaki tüm setler kaydedilip en ağır kilodaki setlerin hepsi üst sınıra ulaşınca kilo artar; ulaşmayan varsa +1 tekrar. Daha hafif setler kendi başına ağırlaşır.'
     : 'Her set kendi başına: üst sınıra ulaşan set ağırlaşır.';
   document.getElementById('rirprog-toggle').checked = rirProgression();
   document.getElementById('day-count-label').textContent = DB.workoutDays.length + ' gün';

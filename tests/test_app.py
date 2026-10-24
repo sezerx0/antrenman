@@ -509,8 +509,8 @@ with sync_playwright() as p:
     page.click('#ex-sheet .range-chip:has-text("8–12")'); page.wait_for_timeout(150)
     page.evaluate("closeExSheet()"); page.wait_for_timeout(300)
     check('çip 8–12', page.inner_text('#range-chip-0').strip() == '8–12', page.inner_text('#range-chip-0'))
-    check('tüm setler üst sınırda değil: kilo aynı, +1 tekrar', page.get_attribute('#kg-0-0', 'placeholder') == '40' and page.get_attribute('#reps-0-0', 'placeholder') == '12' and page.get_attribute('#reps-0-1', 'placeholder') == '10')
-    check('öneri satırı görünüyor, sıradan +1 tekrarda açıklama yok', '40×12' in page.inner_text('#ex-card-0 .ex-sug') and page.query_selector('#ex-card-0 .ex-sug-why') is None)
+    check('40×12 + 42,5×9: hafif set 42,5\'e çıkar, ağır set +1 tekrar', page.get_attribute('#kg-0-0', 'placeholder') == '42.5' and page.get_attribute('#reps-0-0', 'placeholder') == '8' and page.get_attribute('#reps-0-1', 'placeholder') == '10')
+    check('öneri satırı ve hafif set açıklaması', '42.5×8' in page.inner_text('#ex-card-0 .ex-sug') and 'Hafif set' in page.inner_text('#ex-card-0 .ex-sug-why'))
     page.evaluate("setProgressMode('perSet')"); page.wait_for_timeout(150)
     check('"her set" modunda üst sınırdaki set ağırlaşıyor', page.get_attribute('#kg-0-0', 'placeholder') == '42.5' and page.get_attribute('#reps-0-0', 'placeholder') == '8' and page.get_attribute('#reps-0-1', 'placeholder') == '10')
     page.click('#set-done-0-0')
@@ -594,17 +594,18 @@ with sync_playwright() as p:
     # ── 31. Plato uyarısı ──
     page.evaluate("""() => { discardActive();
       const mk = (d, kg, reps) => ({date: d, dayId:'limbs-b', dayName:'Limbs B', __test:1, sets:[{exId:'q', exName:'Plato Testi', setIdx:0, kg, reps}], notes:{}});
-      DB.workoutLogs.push(mk('2098-01-01', 100, 10), mk('2098-01-08', 105, 10), mk('2098-01-15', 100, 10), mk('2098-01-22', 105, 9), mk('2098-01-29', 102.5, 10));
+      DB.workoutLogs.push(mk('2098-01-01', 100, 10), mk('2098-01-08', 105, 10), mk('2098-01-15', 100, 10), mk('2098-01-22', 105, 9), mk('2098-01-29', 102.5, 10), mk('2098-02-05', 102.5, 9));
       DB.workoutLogs.push({date:'2098-01-01', dayId:'limbs-b', __test:1, sets:[{exId:'r', exName:'Gelişen', setIdx:0, kg:50, reps:10}], notes:{}},
                           {date:'2098-01-08', dayId:'limbs-b', __test:1, sets:[{exId:'r', exName:'Gelişen', setIdx:0, kg:50, reps:10}], notes:{}},
                           {date:'2098-01-15', dayId:'limbs-b', __test:1, sets:[{exId:'r', exName:'Gelişen', setIdx:0, kg:50, reps:10}], notes:{}},
                           {date:'2098-01-22', dayId:'limbs-b', __test:1, sets:[{exId:'r', exName:'Gelişen', setIdx:0, kg:52.5, reps:10}], notes:{}});
       saveData('workoutLogs', DB.workoutLogs); }""")
-    check('plato: 3 antrenmandır rekor yok', page.evaluate("JSON.stringify(plateauInfo('Plato Testi'))") == '{"stalled":3}', page.evaluate("JSON.stringify(plateauInfo('Plato Testi'))"))
+    check('plato: 4 antrenmandır performans artmıyor', page.evaluate("plateauInfo('Plato Testi') && plateauInfo('Plato Testi').stalled") == 4, page.evaluate("JSON.stringify(plateauInfo('Plato Testi'))"))
+    check('3 antrenman rekorsuzluk plato değil', page.evaluate("plateauInfo('Plato Testi', DB.workoutLogs.find(l => l.date === '2098-02-05' && l.sets[0].exName === 'Plato Testi'))") is None)
     check('ilerleyen harekette plato yok', page.evaluate("plateauInfo('Gelişen')") is None)
     check('az veride plato yok', page.evaluate("plateauInfo('Pec Deck Fly')") is None)
     page.evaluate("switchTab('stats')")
-    check('PR listesinde plato etiketi', 'Plato · 3 antrenman' in page.inner_text('#pr-list'))
+    check('PR listesinde plato etiketi', 'Plato · 4 antrenman' in page.inner_text('#pr-list') or 'Düşüşte · 4 antrenman' in page.inner_text('#pr-list'))
     page.evaluate("""() => { const d = getDayById('limbs-b'); d.exercises.push({id:'pt', name:'Plato Testi', sets:1}); openWorkoutScreen('limbs-b'); }""")
     page.wait_for_timeout(300)
     check('antrenman kartında plato uyarısı', page.evaluate("[...document.querySelectorAll('.ex-plateau')].length") == 1)
@@ -800,7 +801,7 @@ with sync_playwright() as p:
     r = plan([{'kg': 60, 'reps': 12, 'rir': 2}, {'kg': 60, 'reps': 12, 'rir': 1}])
     check('tüm setler 12, RIR 1–2 → +1 adım', r['sets'] == ['62.5x8', '62.5x8'] and '+2,5 kg' in r['reason'], r)
     r = plan([{'kg': 60, 'reps': 12, 'rir': 2}, {'kg': 60, 'reps': 12, 'rir': 0}])
-    check('bir set RIR 0 → aynı kilo (pekiştir)', r['sets'] == ['60x12', '60x12'] and 'RIR 0' in r['reason'], r)
+    check('bir set RIR 0 → yine +1 adım, uyarı notuyla', r['sets'] == ['62.5x8', '62.5x8'] and 'tükenişteydi' in r['reason'], r)
     r = plan([{'kg': 60, 'reps': 12, 'rir': 4}, {'kg': 60, 'reps': 12, 'rir': 4}])
     check('hepsi RIR 4+ → 2 adım', r['sets'] == ['65x8', '65x8'], r)
     r = plan([{'kg': 60, 'reps': 12}, {'kg': 60, 'reps': 12}])
@@ -812,7 +813,24 @@ with sync_playwright() as p:
     r = plan([{'kg': 60, 'reps': 12, 'rir': 2}, {'kg': 60, 'reps': 10, 'rir': 1}])
     check('biri 10\'da → kilo aynı, 12 ve 11 hedef', r['sets'] == ['60x12', '60x11'], r)
     r = plan([{'kg': 60, 'reps': 12, 'rir': 0}, {'kg': 60, 'reps': 10}], mode='perSet')
-    check('"her set": RIR 0\'daki set aynı kiloda, diğeri +1', r['sets'] == ['60x12', '60x11'], r)
+    check('"her set": RIR 0\'daki set de artar, diğeri +1', r['sets'] == ['62.5x8', '60x11'], r)
+    # Eksik set: programda 3 set, geçen sefer 2 kaydedilmiş
+    p3 = lambda sets, n: page.evaluate(f"""() => {{ DB.settings.progressMode = 'all'; DB.settings.incByEx = {{}};
+      const p = progressionPlan({{ name: 'Test Ex', sets: {n} }}, {json.dumps(sets)}, [8,12], {n});
+      return {{ sets: p.sets.map(x => x ? x.kg + 'x' + x.reps : null), reason: p.reason, notable: p.notable }}; }}""")
+    r = p3([{'kg': 50, 'reps': 12}, {'kg': 50, 'reps': 12}], 3)
+    check('3 setlik programda 2 set kayıtlı → kilo artmaz', r['sets'] == ['50x12', '50x12', '50x12'] and '2/3 set' in r['reason'] and r['notable'], r)
+    r = p3([{'kg': 50, 'reps': 10}, {'kg': 50, 'reps': 9}], 2)
+    check('sıradan +1 tekrar: açıklama gösterilmez', r['sets'] == ['50x11', '50x10'] and not r['notable'], r)
+    r = p3([{'kg': 50, 'reps': 12}, {'kg': 50, 'reps': 12}, {'kg': 50, 'reps': 12}], 3)
+    check('3/3 set üst sınırda → artar', r['sets'] == ['52.5x8', '52.5x8', '52.5x8'], r)
+    # Farklı kilolar: en ağır setler belirleyici, hafif set kendi başına
+    r = p3([{'kg': 50, 'reps': 12}, {'kg': 50, 'reps': 12}, {'kg': 45, 'reps': 9}], 3)
+    check('50,50 üst sınırda + 45×9 → ağırlar artar, hafif +1 tekrar', r['sets'] == ['52.5x8', '52.5x8', '45x10'] and 'En ağır (50 kg)' in r['reason'], r)
+    r = p3([{'kg': 50, 'reps': 10}, {'kg': 50, 'reps': 9}, {'kg': 45, 'reps': 12}], 3)
+    check('hafif set üst sınırda → sadece o ağırlaşır (en ağırı geçmez)', r['sets'] == ['50x11', '50x10', '47.5x8'] and 'Hafif set' in r['reason'], r)
+    r = p3([{'kg': 50, 'reps': 9}, {'kg': 47.5, 'reps': 12}], 2)
+    check('hafif set en ağır kiloya kadar çıkar', r['sets'][1] == '50x8', r)
     page.evaluate("DB.settings.progressMode = 'all'; DB.settings.rirProgression = true; DB.settings.incByEx = {}; saveData('settings', DB.settings)")
     # Gelişme göstergesi
     prog = lambda a, b, rng='null': page.evaluate(f"isProgress({json.dumps(a)}, {json.dumps(b)}, {rng})")
@@ -843,7 +861,7 @@ with sync_playwright() as p:
       saveData('workoutLogs', DB.workoutLogs); }""")
     check('uzun aradan sonra eski rekor plato saydırmıyor', page.evaluate("plateauInfo('Ara Testi')") is None)
     page.evaluate("""() => { DB.workoutLogs.push({date:'2097-06-13', dayId:'push-a', __test:1, sets:[{exId:'q', exName:'Ara Testi', setIdx:0, kg:40, reps:5}], notes:{}}, {date:'2097-06-17', dayId:'push-a', __test:1, sets:[{exId:'q', exName:'Ara Testi', setIdx:0, kg:40, reps:5}], notes:{}}); saveData('workoutLogs', DB.workoutLogs); }""")
-    check('aradan sonra da ilerlemiyorsa plato', page.evaluate("JSON.stringify(plateauInfo('Ara Testi'))") == '{"stalled":4}', page.evaluate("JSON.stringify(plateauInfo('Ara Testi'))"))
+    check('aradan sonra da ilerlemiyorsa plato', page.evaluate("plateauInfo('Ara Testi') && plateauInfo('Ara Testi').stalled") == 4, page.evaluate("JSON.stringify(plateauInfo('Ara Testi'))"))
     # Antrenmanda rekor bildirimi + özet
     page.evaluate("""() => { DB.workoutDays.push({id:'pr-day', name:'PR Günü', exercises:[{id:'pr1', name:'Ara Testi', sets:2}]}); saveData('workoutDays', DB.workoutDays); syncOrder(); openWorkoutScreen('pr-day'); }""")
     page.wait_for_timeout(300)
@@ -994,6 +1012,22 @@ with sync_playwright() as p:
     check('kilo artışında açıklama görünüyor', 'kg' in page.inner_text('#ex-card-0 .ex-sug-why') and '12 tekrara ulaştı' in page.inner_text('#ex-card-0 .ex-sug-why'))
     page.evaluate("""() => { discardActive(); getDayById('torso-a').exercises.shift(); saveData('workoutDays', DB.workoutDays); setRepRangeFor('Açıklama Testi', null);
       DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); }""")
+
+
+    # ── 49. Plato: toplam tekrar ve RIR de performans sayılır ──
+    page.evaluate("""() => { discardActive();
+      const mk = (d, sets) => ({date: d, dayId:'push-a', dayName:'Push A', __test:1, sets: sets.map((x, i) => ({exId:'p', exName:'Trend Testi', setIdx:i, kg:x[0], reps:x[1], ...(x[2] != null ? {rir:x[2]} : {})})), notes:{}});
+      DB.workoutLogs.push(
+        mk('2096-01-01', [[60,10,1],[60,9,0],[60,8,0]]), mk('2096-01-05', [[60,10,1],[60,9,0],[60,9,0]]),
+        mk('2096-01-09', [[60,10,1],[60,10,0],[60,9,0]]), mk('2096-01-13', [[60,10,1],[60,10,1],[60,10,0]]),
+        mk('2096-01-17', [[60,10,2],[60,10,1],[60,10,1]]), mk('2096-01-21', [[60,10,2],[60,10,2],[60,10,1]]));
+      saveData('workoutLogs', DB.workoutLogs); }""")
+    check('en iyi set aynı kalsa da toplam tekrar/RIR artıyorsa plato yok', page.evaluate("plateauInfo('Trend Testi')") is None, page.evaluate("JSON.stringify(plateauInfo('Trend Testi'))"))
+    page.evaluate("""() => { const mk = (d, r) => ({date: d, dayId:'push-a', __test:1, sets:[{exId:'d', exName:'Düşüş Testi', setIdx:0, kg:60, reps:r}], notes:{}});
+      DB.workoutLogs.push(mk('2096-02-01', 12), mk('2096-02-05', 11), mk('2096-02-09', 11), mk('2096-02-13', 10), mk('2096-02-17', 9)); saveData('workoutLogs', DB.workoutLogs); }""")
+    pl = page.evaluate("plateauInfo('Düşüş Testi')")
+    check('sürekli düşüş → "düşüyor" uyarısı', pl and pl['declining'] is True, pl)
+    page.evaluate("DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs)")
 
     check('sayfa hatası yok', not errors, errors)
 

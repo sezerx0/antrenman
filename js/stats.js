@@ -297,7 +297,7 @@ function renderPrList() {
       : { val: `${rec.bwBest.reps} tekrar`, lbl: 'en çok', sub: `Vücut ağırlığı · ${fmtDateShort(rec.bwBest.date)}` };
     return `<button class="pr-item" data-name="${escapeHtml(name)}" onclick="openProgressModal(this.dataset.name)">
       <div class="pr-row"><span class="pr-name">${escapeHtml(name)}</span><span class="pr-main">${main.val}</span></div>
-      <div class="pr-row pr-row2"><span>${main.sub}${pl ? ` <span class="pr-plateau">${icon('alert')}Plato · ${pl.stalled} antrenman</span>` : ''}</span><span class="pr-main-lbl">${main.lbl}</span></div>
+      <div class="pr-row pr-row2"><span>${main.sub}${pl ? ` <span class="pr-plateau">${icon('alert')}${pl.declining ? 'Düşüşte' : 'Plato'} · ${pl.stalled} antrenman</span>` : ''}</span><span class="pr-main-lbl">${main.lbl}</span></div>
     </button>`;
   }).join('');
 }

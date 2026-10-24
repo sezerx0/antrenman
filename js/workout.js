@@ -375,18 +375,18 @@ function restDefaultFor(exName) {
 }
 // ── İlerleme önerisi ──
 // Kural (Ayarlar > İlerleme):
-//  • Artış koşulu "Tüm setler" (varsayılan): geçen seferki TÜM çalışma setleri tekrar
-//    aralığının üst sınırına ulaştıysa ağırlık artar; ulaşmadıysa her sette +1 tekrar.
+//  • Artış koşulu "Tüm setler" (varsayılan): programdaki set sayısı kadar set kaydedilmiş
+//    ve en ağır kilodaki setlerin hepsi üst sınıra ulaşmış olmalı. Eksik set varsa kilo artmaz.
+//    Daha hafif (geri çekilme) setler üst sınıra ulaşınca kendi başına ağırlaşır.
 //    "Her set": her set kendi başına değerlendirilir.
-//  • RIR'a göre artış (varsayılan açık, kademeli): RIR 0 → aynı kilo (pekiştir),
-//    RIR 1–3 → 1 adım, RIR 4+ → 2 adım. RIR girilmemişse 1 adım.
+//  • RIR bir gösterge: RIR 0–3 → 1 adım, RIR 4+ → 2 adım. RIR 0'da artış yine önerilir
+//    ama "teknik bozulmadıysa dene" notu eklenir. RIR girilmemişse 1 adım.
 //  • Adım = hareketin ağırlık artışı (Hareket ayarları).
 function setReps(ps) { return repsOf(ps); }   // sağ/sol ayrıysa zayıf taraf
 function progressMode() { return DB.settings.progressMode === 'perSet' ? 'perSet' : 'all'; }
 function rirProgression() { return DB.settings.rirProgression !== false; }
 function rirSteps(rir) {
   if (!rirProgression() || rir == null) return 1;
-  if (rir <= 0) return 0;
   return rir >= 4 ? 2 : 1;
 }
 // Tek bir set için öneri (önceki set, tekrar aralığı, kaç adım)
@@ -409,43 +409,59 @@ function suggestSet(ex, ps, range) {
 }
 // Bir hareketin tüm setleri için plan + kısa açıklama
 function progressionPlan(ex, bySet, range, count) {
-  const out = { sets: [], reason: '' };
+  const out = { sets: [], reason: '', notable: false };
   if (!range) return out;
   const prev = bySet.filter(ps => ps && hasValue(ps));
   if (!prev.length) return out;
   const [lo, hi] = range;
   const inc = incFor(ex.name);
   const baseFor = s => (bySet[s] && hasValue(bySet[s])) ? bySet[s] : prev[prev.length - 1];
-  if (progressMode() === 'all') {
-    const allHit = prev.every(ps => setReps(ps) >= hi);
-    const rirs = prev.map(ps => ps.rir).filter(v => v != null);
-    const minRir = rirs.length ? Math.min(...rirs) : null;   // en zorlayan set belirler
-    const steps = allHit ? rirSteps(minRir) : 0;
-    for (let s = 0; s < count; s++) {
-      const ps = baseFor(s);
-      if (allHit) { out.sets.push(suggestFrom(ps, range, inc, steps)); continue; }
-      // Henüz tüm setler üst sınırda değil: üst sınırdaki set aynı kalır, diğerleri +1 tekrar
-      const r = setReps(ps);
-      out.sets.push(r >= hi && ps.kg ? { kg: ps.kg, reps: hi, up: false } : suggestFrom(ps, range, inc, 0));
-    }
-    const rirTxt = minRir != null && rirProgression() ? ` (en düşük RIR ${fmtRir(minRir)})` : '';
-    out.notable = allHit;   // açıklama sadece kilo artışı / bekleme kararında gösterilir
-    if (allHit && steps > 0) out.reason = `Tüm setler ${hi} tekrara ulaştı${rirTxt} → +${fmtKg(steps * inc)} kg, ${lo} tekrardan başla`;
-    else if (allHit) out.reason = `${hi} tekrara tükenişe kadar ulaştın (RIR 0) → aynı kiloda kal, ${hi}'yi biraz daha rahat yapmayı hedefle`;
-    else {
-      const reps = prev.map(setReps);
-      const below = reps.some(r => r < lo), inRange = reps.some(r => r >= lo && r < hi);
-      const tail = `Tüm setler ${hi} tekrara ulaşınca kilo artacak`;
-      out.reason = below && !inRange ? `Geçen sefer ${lo} tekrarın altında kaldın → aynı kiloyla ${lo} tekrarı hedefle. ${tail}`
-        : below ? `${lo} tekrarın altında kalan setlerde ${lo} tekrar, diğerlerinde +1 tekrar. ${tail}`
-        : `Hedef: her sette +1 tekrar. ${tail}`;
-    }
-  } else {
-    for (let s = 0; s < count; s++) {
-      const ps = baseFor(s);
-      out.sets.push(suggestFrom(ps, range, inc, rirSteps(ps.rir)));
-    }
+  if (progressMode() !== 'all') {
+    for (let s = 0; s < count; s++) out.sets.push(suggestFrom(baseFor(s), range, inc, rirSteps(baseFor(s).rir)));
     out.reason = `Her set kendi başına: ${hi} tekrara ulaşan set ağırlaşır, diğerleri +1 tekrar`;
+    return out;
+  }
+  // Programdaki set sayısı kadar set kaydedilmiş mi?
+  const need = Math.max(1, ex.sets || count);
+  let recorded = 0;
+  for (let s = 0; s < need; s++) if (bySet[s] && hasValue(bySet[s])) recorded++;
+  const complete = recorded >= need;
+  // En ağır kilodaki setler belirleyici; hafif setler ayrıca değerlendirilir
+  const topKg = Math.max(...prev.map(ps => ps.kg || 0));
+  const topSets = prev.filter(ps => (ps.kg || 0) === topKg);
+  const mixed = prev.some(ps => (ps.kg || 0) < topKg);
+  const topHit = complete && topSets.every(ps => setReps(ps) >= hi);
+  const rirs = topSets.map(ps => ps.rir).filter(v => v != null);
+  const minRir = rirs.length ? Math.min(...rirs) : null;
+  const steps = topHit ? rirSteps(minRir) : 0;
+  let lightUp = false;
+  for (let s = 0; s < count; s++) {
+    const ps = baseFor(s), r = setReps(ps), kg = ps.kg || 0;
+    if (kg < topKg) {
+      // Hafif set: üst sınıra ulaştıysa bir adım ağırlaşır (en ağır kiloyu geçmez)
+      if (r >= hi && kg > 0) { out.sets.push({ kg: round2(Math.min(topKg, kg + inc)), reps: lo, up: true, steps: 1 }); lightUp = true; }
+      else out.sets.push(suggestFrom(ps, range, inc, 0) || null);
+      continue;
+    }
+    if (topHit) { out.sets.push(suggestFrom(ps, range, inc, steps)); continue; }
+    out.sets.push(r >= hi && kg ? { kg, reps: hi, up: false } : suggestFrom(ps, range, inc, 0));
+  }
+  const tail = `Tüm setler ${hi} tekrara ulaşınca kilo artacak`;
+  if (!complete) {
+    out.notable = true;
+    out.reason = `Geçen sefer ${recorded}/${need} set kaydedildi → kilo artışı için önce tüm setleri tamamla`;
+  } else if (topHit) {
+    out.notable = true;
+    const who = mixed ? `En ağır (${fmtKg(topKg)} kg) setler` : 'Tüm setler';
+    out.reason = `${who} ${hi} tekrara ulaştı${minRir != null && rirProgression() ? ` (en düşük RIR ${fmtRir(minRir)})` : ''} → +${fmtKg(steps * inc)} kg, ${lo} tekrardan başla`
+      + (minRir === 0 && rirProgression() ? '. Son set tükenişteydi: teknik bozulmadıysa dene, zorlarsa önceki kiloya dön' : '');
+  } else {
+    const reps = topSets.map(setReps);
+    const below = reps.some(r => r < lo), inRange = reps.some(r => r >= lo && r < hi);
+    out.reason = below && !inRange ? `Geçen sefer ${lo} tekrarın altında kaldın → aynı kiloyla ${lo} tekrarı hedefle. ${tail}`
+      : below ? `${lo} tekrarın altında kalan setlerde ${lo} tekrar, diğerlerinde +1 tekrar. ${tail}`
+      : `Hedef: her sette +1 tekrar. ${tail}`;
+    if (lightUp) { out.notable = true; out.reason = `Hafif set ${hi} tekrara ulaştı → o set ağırlaşıyor. En ağır setler ${hi} tekrara ulaşınca onlar da artacak`; }
   }
   return out;
 }
@@ -492,7 +508,7 @@ function renderExerciseCards() {
     }
     const plateau = isEdit ? null : plateauInfo(ex.name);
     const plateauLine = plateau
-      ? `<div class="ex-plateau">${icon('alert')}<span>${plateau.stalled} antrenmandır rekor yok. Tekrar aralığını, set sayısını ya da hareketi değiştirmeyi düşünebilirsin.</span></div>`
+      ? `<div class="ex-plateau">${icon('alert')}<span>${plateau.declining ? `Son ${plateau.stalled} antrenmanda performans düşüyor. Yorgunluk birikmiş olabilir: uyku ve beslenmeye bak, gerekirse bir hafta hafif çalış.` : `Son ${plateau.stalled} antrenmanda performans (kilo, tekrar, RIR) artmadı. Uyku, beslenme ve toparlanma yerindeyse küçük bir değişiklik düşünebilirsin: tekrar aralığı, set sayısı ya da hareket.`}</span></div>`
       : '';
     const noteVal = entry ? noteForExName(entry.log, ex.name) : '';
     const prevNote = noteVal ? `<div class="ex-prev-note">${icon('note')}${escapeHtml(noteVal)}</div>` : '';
