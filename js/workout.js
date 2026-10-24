@@ -23,7 +23,7 @@ function captureActive() {
   const values = {};
   body.querySelectorAll('input, textarea').forEach(el => { if (el.id && el.value !== '') values[el.id] = el.value; });
   active.values = values;
-  active.done = [...body.querySelectorAll('.set-done-btn.done')].map(b => b.id);
+  active.done = [...body.querySelectorAll('.set-done-btn.done, .side-done-btn.done')].map(b => b.id);
   active.auto = [...body.querySelectorAll('input.auto')].map(el => el.id);
   saveActive();
 }
@@ -293,7 +293,11 @@ function buildSetRow(ei, s, ex, ps, sug) {
       <button class="stepper-btn" onclick="stepKg(${ei},${s},1)" type="button">+</button>
     </div>
     ${repsHtml}
-    <button class="set-done-btn" onclick="completeSet(${ei},${s})" id="set-done-${id}" aria-label="Seti tamamla">${icon('check')}</button>
+    ${ex.bilateral ? `<div class="side-done">
+        <button class="side-done-btn" onclick="completeSide(${ei},${s},'R')" id="set-doneR-${id}" aria-label="Sağ taraf bitti">${icon('check')}</button>
+        <button class="side-done-btn" onclick="completeSide(${ei},${s},'L')" id="set-doneL-${id}" aria-label="Sol taraf bitti">${icon('check')}</button>
+      </div>` : ''}
+    <button class="set-done-btn${ex.bilateral ? ' bi-main' : ''}" onclick="completeSet(${ei},${s})" id="set-done-${id}" aria-label="Seti tamamla">${icon('check')}</button>
   </div>${rirRow(ei, s, ps)}</div>`;
 }
 
@@ -1087,9 +1091,11 @@ function stepKg(ei, s, dir) {
   if (!input || !active) return;
   const delta = Math.sign(dir) * incFor(active.day.exercises[ei].name);
   input.classList.remove('auto');
-  if (input.value === '' && delta > 0) {
-    const prev = num(input.dataset.sug || input.dataset.prev);
+  // Boşken + ya da −: geçen antrenmandaki kilo gelir (yoksa öneri / önceki set)
+  if (input.value === '') {
+    const prev = num(input.dataset.prev || input.dataset.sug);
     if (prev) { input.value = prev; onSetInput(ei, s); return; }
+    if (delta < 0) return;
   }
   const base = num(input.value) || 0;
   const next = Math.max(0, Math.round((base + delta) * 100) / 100);
@@ -1101,9 +1107,10 @@ function stepReps(ei, s, delta) {
   const input = document.getElementById(`reps-${ei}-${s}`);
   if (!input) return;
   input.classList.remove('auto');
-  if (input.value === '' && delta > 0) {
-    const prev = int(input.dataset.sug || input.dataset.prev);
+  if (input.value === '') {
+    const prev = int(input.dataset.prev || input.dataset.sug);
     if (prev) { input.value = prev; onSetInput(ei, s); return; }
+    if (delta < 0) return;
   }
   const next = Math.max(0, (int(input.value) || 0) + delta);
   input.value = next > 0 ? next : '';
@@ -1144,12 +1151,43 @@ function removeSet(ei) {
   updateNextSet();
 }
 
+// Sağ/sol: her taraf ayrı işaretlenir; ilk taraf bitince dinlenme başlar,
+// ikinci taraf bitince set tamamlanır (rekor, sıradaki set, dinlenme)
+function completeSide(ei, s, side) {
+  const btn = document.getElementById(`set-done${side}-${ei}-${s}`);
+  const main = document.getElementById(`set-done-${ei}-${s}`);
+  if (!btn || !main || !active) return;
+  getAudioCtx();
+  const other = document.getElementById(`set-done${side === 'R' ? 'L' : 'R'}-${ei}-${s}`);
+  if (btn.classList.contains('done')) {
+    btn.classList.remove('done');
+    if (main.classList.contains('done')) {
+      main.classList.remove('done');
+      if (active.prs) delete active.prs[`${ei}-${s}`];
+      updateProgress(); updateNextSet();
+    }
+    captureActive();
+    return;
+  }
+  const r = readSet(ei, s)[side === 'R' ? 'repsR' : 'repsL'];
+  if (!r) { toast(`${side === 'R' ? 'Sağ' : 'Sol'} taraf için tekrar gir.`); return; }
+  if (other && other.classList.contains('done')) {
+    completeSet(ei, s);   // iki taraf da bitti → set tamam
+    return;
+  }
+  btn.classList.add('done');
+  captureActive();
+  const ex = active.day.exercises[ei];
+  if (active.mode !== 'edit' && DB.settings.restTimerEnabled) startRest(`${ex.name} · ${side === 'R' ? 'sağ' : 'sol'}`, restFor(ex.name));
+}
+
 function completeSet(ei, s) {
   const btn = document.getElementById(`set-done-${ei}-${s}`);
   if (!btn || !active) return;
   getAudioCtx(); // iOS'ta sesi kullanıcı dokunuşuyla açmak için
   if (btn.classList.contains('done')) {
     btn.classList.remove('done');
+    ['R', 'L'].forEach(k => document.getElementById(`set-done${k}-${ei}-${s}`)?.classList.remove('done'));
     if (active.prs && active.prs[`${ei}-${s}`]) {
       delete active.prs[`${ei}-${s}`];
       const n = document.getElementById(`set-num-${ei}-${s}`);
@@ -1160,20 +1198,17 @@ function completeSet(ei, s) {
     updateNextSet();
     return;
   }
-  // Boş alanları soluk görünen değerlerle doldur (öneri / önceki set / devralınan)
+  // Değerler otomatik doldurulmaz: soluk yazılar sadece ipucu. Boş alanda ± önceki değeri getirir.
   const row = document.getElementById(`set-row-${ei}-${s}`);
   if (document.activeElement && row.contains(document.activeElement)) document.activeElement.blur();
-  row.querySelectorAll('input').forEach(inp => {
-    const fill = inp.dataset.sug || inp.dataset.prev;
-    if (inp.value === '' && fill) { inp.value = fill; inp.classList.add('auto'); }
-  });
   const ex = active.day.exercises[ei];
   const cur = readSet(ei, s);
   const reps = ex.bilateral ? Math.max(cur.repsR, cur.repsL) : cur.reps;
-  if (!cur.kg && !reps) {
-    toast('Önce kilo ve tekrar gir.');
+  if (!reps) {
+    toast(cur.kg ? 'Tekrar sayısını gir.' : 'Önce kilo ve tekrar gir.');
     return;
   }
+  if (ex.bilateral) ['R', 'L'].forEach(k => document.getElementById(`set-done${k}-${ei}-${s}`)?.classList.add('done'));
   btn.classList.add('done');
   active.lastDone = [ei, s];
   checkOverload(ei, s);

@@ -1020,3 +1020,17 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .set-count-row { margin-top: 8px; padding-top: 8px; }
 .set-count-btn { padding: 6px 12px; font-size: 12px; }
 .set-count-btn:not(.accent) { background: none; color: var(--text-secondary); }
+/* Gelişme işareti: arka plan yerine set numarasının altında küçük ↑ */
+.set-row.overload { background: none; }
+.set-row.overload .kg-val, .set-row.overload .reps-val { border-color: transparent; }
+.set-num { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+.set-row.overload .set-num::after { content: '↑'; font-size: 11px; font-weight: 800; color: var(--green); margin-top: 1px; }
+[data-palette="lime"] .set-row.overload .set-num::after { color: #5E8A12; }
+[data-palette="lime"][data-theme="dark"] .set-row.overload .set-num::after { color: var(--lime); }
+/* Sağ / sol: her taraf için ayrı ✓ */
+.side-done { display: flex; flex-direction: column; gap: 3px; width: 34px; flex-shrink: 0; align-items: center; }
+.side-done-btn { width: 30px; height: 17px; border-radius: 7px; border: 1.5px solid var(--border-strong); background: none; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
+.side-done-btn .ic { width: 11px; height: 11px; }
+.side-done-btn .ic path { stroke-width: 3; }
+.side-done-btn.done { background: var(--done); border-color: var(--done); color: var(--on-done); }
+.set-done-btn.bi-main { display: none; }

@@ -264,7 +264,7 @@ with sync_playwright() as p:
     page.screenshot(path=os.path.join(OUT, 'shot_workout.png'))
 
 
-    # ── 18. Yeni arayüz: boş satıra ✓ önceki değeri kaydeder ──
+    # ── 18. Boş satır: ✓ otomatik doldurmaz; ± önceki antrenmanın değerini getirir ──
     page.evaluate("switchTab('workout'); discardActive(); DB.settings.restByEx = {}; saveData('settings', DB.settings)")
     page.evaluate("""() => {
       DB.workoutLogs.push({date:'2026-10-02', dayId:'torso-a', dayName:'Torso A', sets:[
@@ -274,15 +274,22 @@ with sync_playwright() as p:
     }""")
     page.evaluate("openWorkoutScreen('torso-a')")
     page.click('#set-done-0-1')
-    check('boş satıra ✓ önceki değeri doldurdu', page.input_value('#kg-0-1') == '42.5' and page.input_value('#reps-0-1') == '8')
+    check('boş satıra ✓ değer doldurmuyor, işaretlemiyor', page.input_value('#kg-0-1') == '' and not page.evaluate("document.getElementById('set-done-0-1').classList.contains('done')"))
+    page.click('#set-row-0-1 .kg-stepper .stepper-btn >> nth=0')
+    check('boş kiloda − önceki antrenmanın kilosunu getiriyor', page.input_value('#kg-0-1') == '42.5')
+    page.click('#set-row-0-1 .reps-stepper .stepper-btn >> nth=1')
+    check('boş tekrarda + önceki tekrarı getiriyor', page.input_value('#reps-0-1') == '8')
+    page.click('#set-done-0-1')
     check('✓ işaretlendi', page.evaluate("document.getElementById('set-done-0-1').classList.contains('done')"))
     check('ilerleme 1 / 13 set', page.inner_text('#ws-day-sub') == '1 / 13 set', page.inner_text('#ws-day-sub'))
     check('ilerleme çubuğu doldu', page.evaluate("document.getElementById('ws-progress-fill').style.width") != '0%')
     page.click('#set-done-1-0')
     check('önceki değeri olmayan boş satır işaretlenmedi', not page.evaluate("document.getElementById('set-done-1-0').classList.contains('done')"))
-    page.fill('#kg-1-0', '50')  # sadece kilo, tekrar boş, önceki yok
+    page.fill('#kg-1-0', '50')  # sadece kilo, tekrar boş
     page.click('#set-done-1-0')
-    check('sadece kilo girilince yine işaretlenir', page.evaluate("document.getElementById('set-done-1-0').classList.contains('done')"))
+    check('tekrar girilmeden set işaretlenmiyor', not page.evaluate("document.getElementById('set-done-1-0').classList.contains('done')") and 'Tekrar' in page.inner_text('#toast'))
+    page.fill('#reps-1-0', '10'); page.click('#set-done-1-0')
+    check('kilo + tekrar girilince işaretleniyor', page.evaluate("document.getElementById('set-done-1-0').classList.contains('done')"))
 
     # ── 19. Hareket başına dinlenme + ±30 ──
     page.evaluate("stopRest()")
@@ -513,12 +520,12 @@ with sync_playwright() as p:
     check('öneri satırı ve hafif set açıklaması', '42.5×8' in page.inner_text('#ex-card-0 .ex-sug') and 'Hafif set' in page.inner_text('#ex-card-0 .ex-sug-why'))
     page.evaluate("setProgressMode('perSet')"); page.wait_for_timeout(150)
     check('"her set" modunda üst sınırdaki set ağırlaşıyor', page.get_attribute('#kg-0-0', 'placeholder') == '42.5' and page.get_attribute('#reps-0-0', 'placeholder') == '8' and page.get_attribute('#reps-0-1', 'placeholder') == '10')
-    page.click('#set-done-0-0')
-    check('boş satıra ✓ öneriyi kaydeder', page.input_value('#kg-0-0') == '42.5' and page.input_value('#reps-0-0') == '8')
+    page.fill('#kg-0-0', '42,5'); page.fill('#reps-0-0', '8'); page.click('#set-done-0-0')
+    check('set elle girilip kaydedildi', page.input_value('#kg-0-0') == '42,5' and page.evaluate("document.getElementById('set-done-0-0').classList.contains('done')"))
     page.evaluate("setProgressMode('all')"); page.wait_for_timeout(150)
     page.fill('#kg-0-1', '44')
     page.evaluate("exSheetIdx = 0; pickRepRange(REP_RANGES.findIndex(r => r && r[0] === 10 && r[1] === 15))"); page.wait_for_timeout(150)
-    check('hedef değişince girilen değerler korunur', page.input_value('#kg-0-1') == '44' and page.input_value('#kg-0-0') == '42.5' and page.evaluate("document.getElementById('set-done-0-0').classList.contains('done')"))
+    check('hedef değişince girilen değerler korunur', page.input_value('#kg-0-1') == '44' and page.input_value('#kg-0-0') == '42,5' and page.evaluate("document.getElementById('set-done-0-0').classList.contains('done')"))
     check('aynı isimli hareketlere uygulanır', page.evaluate("JSON.stringify(repRangeFor('pec deck fly'))") == '[10,15]')
     page.evaluate("discardActive(); DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); DB.settings.repRangeByEx = {}; saveData('settings', DB.settings)")
 
@@ -1046,22 +1053,23 @@ with sync_playwright() as p:
     check('Detaylar açıldı (son antrenmanlar)', page.is_visible('#ex-details-0') and 'Son antrenmanlar' in page.text_content('#ex-details-0'))
     page.click('#details-chip-0')
     check('ilk set sıradaki olarak işaretli', page.evaluate("document.getElementById('set-wrap-0-0').classList.contains('next')"))
-    # tek dokunuşla tamamla: öneri değerleri dolar, "otomatik" görünür
+    # ± ile önceki değer, ✓ ile kayıt
+    page.click('#set-row-0-0 .kg-stepper .stepper-btn >> nth=1'); page.click('#set-row-0-0 .reps-stepper .stepper-btn >> nth=1')
     page.click('#set-done-0-0'); page.wait_for_timeout(200)
-    check('tek dokunuşla set kaydı (öneriyle)', page.input_value('#kg-0-0') == '50' and page.input_value('#reps-0-0') == '11' and 'auto' in page.get_attribute('#kg-0-0', 'class'))
+    check('± ile önceki değer gelip set kaydedildi', page.input_value('#kg-0-0') == '50' and page.input_value('#reps-0-0') == '10' and page.evaluate("document.getElementById('set-done-0-0').classList.contains('done')"))
     check('dinlenme otomatik başladı', page.is_visible('#rest-banner'))
     check('sıradaki set öne çıktı (2. set)', page.evaluate("document.getElementById('set-wrap-0-1').classList.contains('next') && !document.getElementById('set-wrap-0-0').classList.contains('next')"))
     check('tamamlanan sette ± gizli', not page.is_visible('#set-row-0-0 .stepper-btn'))
     page.fill('#kg-0-0', '47,5'); page.evaluate("onSetInput(0,0)")
-    check('elle düzeltilen değer "otomatik" değil, düzenlenebilir', 'auto' not in page.get_attribute('#kg-0-0', 'class') and page.evaluate("collectWorkoutSets().find(s => s.exName === 'Hızlı Test' && s.setIdx === 0).kg") == 47.5)
+    check('tamamlanan set düzenlenebilir', page.evaluate("collectWorkoutSets().find(s => s.exName === 'Hızlı Test' && s.setIdx === 0).kg") == 47.5)
     # 2. sette öneriden farklı kilo → 3. set devralır
     page.fill('#kg-0-1', '47,5'); page.fill('#reps-0-1', '10'); page.click('#set-done-0-1'); page.wait_for_timeout(150)
     check('öneriden farklı kilo sonraki sete devredildi', page.get_attribute('#kg-0-2', 'placeholder') == '47.5' and 'src-inh' in page.get_attribute('#kg-0-2', 'class'))
     # Geçmişi olmayan hareket: ilk setin kilosu ve tekrarı devralınır
     page.fill('#kg-1-0', '30'); page.fill('#reps-1-0', '12'); page.click('#set-done-1-0'); page.wait_for_timeout(150)
     check('geçmişsiz harekette ilk set devralındı', page.get_attribute('#kg-1-1', 'placeholder') == '30' and page.get_attribute('#reps-1-1', 'placeholder') == '12')
-    page.click('#set-done-1-1'); page.wait_for_timeout(150)
-    check('devralınan değerle tek dokunuş', page.input_value('#kg-1-1') == '30' and page.input_value('#reps-1-1') == '12')
+    page.click('#set-row-1-1 .kg-stepper .stepper-btn >> nth=1'); page.fill('#reps-1-1', '12'); page.click('#set-done-1-1'); page.wait_for_timeout(150)
+    check('geçmişsiz harekette ± devralınan kiloyu getiriyor', page.input_value('#kg-1-1') == '30')
     # yeniden çizimde (makine/ayar) kaydırma korunuyor
     page.wait_for_timeout(700)
     page.evaluate("document.getElementById('ws-body').scrollTop = 300")
@@ -1069,10 +1077,10 @@ with sync_playwright() as p:
     y0 = page.evaluate(pos)
     page.evaluate("refreshCardsAfterSetting()")
     check('yeniden çizimde sayfa zıplamıyor (aynı set yerinde)', abs(page.evaluate(pos) - y0) < 2 and page.evaluate("document.getElementById('ws-body').scrollTop") > 200, (y0, page.evaluate(pos)))
-    check('yeniden çizimde otomatik/devralma/tamamlandı korunuyor', 'auto' in page.get_attribute('#kg-1-1', 'class') and page.get_attribute('#kg-0-2', 'placeholder') == '47.5' and page.evaluate("document.getElementById('set-done-1-1').classList.contains('done')"))
+    check('yeniden çizimde devralma/tamamlandı korunuyor', page.get_attribute('#kg-0-2', 'placeholder') == '47.5' and page.evaluate("document.getElementById('set-done-1-1').classList.contains('done')"))
     # Sıradaki set dinlenme sayacının arkasında kalmıyor
     page.evaluate("document.getElementById('ws-body').scrollTop = 0; stopRest()")
-    page.click('#set-done-0-2'); page.wait_for_timeout(600)
+    page.fill('#kg-0-2', '47,5'); page.fill('#reps-0-2', '9'); page.click('#set-done-0-2'); page.wait_for_timeout(600)
     nb = page.evaluate("(() => { const w = document.querySelector('.set-wrap.next'); return w ? w.getBoundingClientRect().bottom : 0; })()")
     check('sıradaki set dinlenme sayacının üstünde görünür', 0 < nb <= page.evaluate("window.innerHeight") - 90, nb)
     # Geri al
@@ -1080,6 +1088,33 @@ with sync_playwright() as p:
     check('tamamlanan set geri alınabiliyor', not page.evaluate("document.getElementById('set-done-0-2').classList.contains('done')"))
     page.evaluate("""() => { stopRest(); discardActive(); getDayById('torso-a').exercises.splice(0, 2); saveData('workoutDays', DB.workoutDays); setRepRangeFor('Hızlı Test', null);
       DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); }""")
+
+
+    # ── 51. Sağ/sol: her taraf ayrı ✓ ; gelişme ↑ işareti ──
+    page.evaluate("""() => { discardActive(); stopRest(); DB.settings.restTimerEnabled = true;
+      getDayById('torso-a').exercises.unshift({id:'bt', name:'Tek Kol Test', sets:2, bilateral:true}); openWorkoutScreen('torso-a'); }""")
+    page.wait_for_timeout(300)
+    check('sağ/sol harekette iki ✓, tek ✓ gizli', page.is_visible('#set-doneR-0-0') and page.is_visible('#set-doneL-0-0') and not page.is_visible('#set-done-0-0'))
+    page.fill('#kg-0-0', '15'); page.fill('#repsR-0-0', '10')
+    page.click('#set-doneR-0-0'); page.wait_for_timeout(150)
+    check('sağ bitti: set henüz tamam değil, dinlenme başladı', page.evaluate("document.getElementById('set-doneR-0-0').classList.contains('done') && !document.getElementById('set-done-0-0').classList.contains('done')") and page.is_visible('#rest-banner') and 'sağ' in page.inner_text('#rest-exercise-label'))
+    page.click('#set-doneL-0-0'); page.wait_for_timeout(100)
+    check('sol tekrar girilmeden işaretlenmiyor', not page.evaluate("document.getElementById('set-doneL-0-0').classList.contains('done')"))
+    page.fill('#repsL-0-0', '9'); page.click('#set-doneL-0-0'); page.wait_for_timeout(150)
+    check('iki taraf bitince set tamam', page.evaluate("document.getElementById('set-done-0-0').classList.contains('done')") and '1 /' in page.inner_text('#ws-day-sub'))
+    page.evaluate("captureActive(); renderExerciseCards(); applyActiveValues()")
+    check('taraf durumu yeniden çizimde korunuyor', page.evaluate("document.getElementById('set-doneR-0-0').classList.contains('done') && document.getElementById('set-doneL-0-0').classList.contains('done')"))
+    page.click('#set-doneL-0-0'); page.wait_for_timeout(100)
+    check('bir taraf geri alınınca set de geri alınıyor', not page.evaluate("document.getElementById('set-done-0-0').classList.contains('done')") and page.evaluate("document.getElementById('set-doneR-0-0').classList.contains('done')"))
+    page.evaluate("""() => { stopRest(); discardActive(); getDayById('torso-a').exercises.shift(); saveData('workoutDays', DB.workoutDays); }""")
+    # ↑ işareti
+    after = page.evaluate("""() => { DB.workoutLogs.unshift({date:'2020-07-01', dayId:'torso-a', __test:1, sets:[{exId:'u', exName:'Ok Test', setIdx:0, kg:40, reps:8}], notes:{}});
+      getDayById('torso-a').exercises.unshift({id:'ok', name:'Ok Test', sets:1}); openWorkoutScreen('torso-a');
+      document.getElementById('kg-0-0').value = '40'; document.getElementById('reps-0-0').value = '9'; onSetInput(0,0);
+      const row = document.getElementById('set-row-0-0');
+      return [row.classList.contains('overload'), getComputedStyle(row.querySelector('.set-num'), '::after').content, getComputedStyle(row).backgroundColor]; }""")
+    check('gelişmede arka plan yok, ↑ işareti var', after[0] and '↑' in after[1] and after[2] in ('rgba(0, 0, 0, 0)', 'transparent'), after)
+    page.evaluate("""() => { discardActive(); getDayById('torso-a').exercises.shift(); saveData('workoutDays', DB.workoutDays); DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); }""")
 
     check('sayfa hatası yok', not errors, errors)
 
