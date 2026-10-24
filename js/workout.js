@@ -429,6 +429,7 @@ function progressionPlan(ex, bySet, range, count) {
       out.sets.push(r >= hi && ps.kg ? { kg: ps.kg, reps: hi, up: false } : suggestFrom(ps, range, inc, 0));
     }
     const rirTxt = minRir != null && rirProgression() ? ` (en düşük RIR ${fmtRir(minRir)})` : '';
+    out.notable = allHit;   // açıklama sadece kilo artışı / bekleme kararında gösterilir
     if (allHit && steps > 0) out.reason = `Tüm setler ${hi} tekrara ulaştı${rirTxt} → +${fmtKg(steps * inc)} kg, ${lo} tekrardan başla`;
     else if (allHit) out.reason = `${hi} tekrara tükenişe kadar ulaştın (RIR 0) → aynı kiloda kal, ${hi}'yi biraz daha rahat yapmayı hedefle`;
     else {
@@ -507,7 +508,7 @@ function renderExerciseCards() {
     const sugList = plan.sets.filter(Boolean);
     const sugLine = sugList.length
       ? `<div class="ex-sug">${icon('trend-up')}<span>Bugün: ${sugList.map(g => `<b>${escapeHtml(g.kg ? g.kg + '×' + g.reps : g.reps + ' tk')}${g.up ? icon('arrow-up', 'up') : ''}</b>`).join(', ')}</span></div>
-         <div class="ex-sug-why">${escapeHtml(plan.reason)}</div>`
+         ${plan.notable ? `<div class="ex-sug-why">${escapeHtml(plan.reason)}</div>` : ''}`
       : '';
     const rangeChip = isEdit ? '' : `<button class="ex-chip${range ? ' custom' : ''}" id="range-chip-${ei}" onclick="openExSheet(${ei})" aria-label="Hedef tekrar aralığı">${icon('target')}${range ? `${range[0]}–${range[1]}` : 'Hedef'}</button>`;
 

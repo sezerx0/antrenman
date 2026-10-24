@@ -510,7 +510,7 @@ with sync_playwright() as p:
     page.evaluate("closeExSheet()"); page.wait_for_timeout(300)
     check('çip 8–12', page.inner_text('#range-chip-0').strip() == '8–12', page.inner_text('#range-chip-0'))
     check('tüm setler üst sınırda değil: kilo aynı, +1 tekrar', page.get_attribute('#kg-0-0', 'placeholder') == '40' and page.get_attribute('#reps-0-0', 'placeholder') == '12' and page.get_attribute('#reps-0-1', 'placeholder') == '10')
-    check('öneri satırı ve açıklaması görünüyor', '40×12' in page.inner_text('#ex-card-0 .ex-sug') and '+1 tekrar' in page.inner_text('#ex-card-0 .ex-sug-why'))
+    check('öneri satırı görünüyor, sıradan +1 tekrarda açıklama yok', '40×12' in page.inner_text('#ex-card-0 .ex-sug') and page.query_selector('#ex-card-0 .ex-sug-why') is None)
     page.evaluate("setProgressMode('perSet')"); page.wait_for_timeout(150)
     check('"her set" modunda üst sınırdaki set ağırlaşıyor', page.get_attribute('#kg-0-0', 'placeholder') == '42.5' and page.get_attribute('#reps-0-0', 'placeholder') == '8' and page.get_attribute('#reps-0-1', 'placeholder') == '10')
     page.click('#set-done-0-0')
@@ -983,6 +983,17 @@ with sync_playwright() as p:
     check('alt sınır altı: 12 tekrarı hedefle', 'altında kaldın' in why and '12 tekrarı hedefle' in why, why)
     why = page.evaluate("""progressionPlan({name:'X'}, [{kg:15,reps:14},{kg:15,reps:10}], [12,20], 2).reason""")
     check('karışık: altındakilerde 12, diğerlerinde +1', 'diğerlerinde +1' in why, why)
+
+
+    # ── 48. Açıklama sadece kilo kararında ──
+    page.evaluate("""() => { discardActive(); DB.workoutLogs.unshift({date:'2020-05-01', dayId:'torso-a', dayName:'Torso A', __test:1, sets:[
+        {exId:'k', exName:'Açıklama Testi', setIdx:0, kg:20, reps:12}, {exId:'k', exName:'Açıklama Testi', setIdx:1, kg:20, reps:12}], notes:{}});
+      saveData('workoutLogs', DB.workoutLogs); setRepRangeFor('Açıklama Testi', [8,12]);
+      getDayById('torso-a').exercises.unshift({id:'at', name:'Açıklama Testi', sets:2}); openWorkoutScreen('torso-a'); }""")
+    page.wait_for_timeout(300)
+    check('kilo artışında açıklama görünüyor', 'kg' in page.inner_text('#ex-card-0 .ex-sug-why') and '12 tekrara ulaştı' in page.inner_text('#ex-card-0 .ex-sug-why'))
+    page.evaluate("""() => { discardActive(); getDayById('torso-a').exercises.shift(); saveData('workoutDays', DB.workoutDays); setRepRangeFor('Açıklama Testi', null);
+      DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); }""")
 
     check('sayfa hatası yok', not errors, errors)
 
