@@ -431,7 +431,14 @@ function progressionPlan(ex, bySet, range, count) {
     const rirTxt = minRir != null && rirProgression() ? ` (en düşük RIR ${fmtRir(minRir)})` : '';
     if (allHit && steps > 0) out.reason = `Tüm setler ${hi} tekrara ulaştı${rirTxt} → +${fmtKg(steps * inc)} kg, ${lo} tekrardan başla`;
     else if (allHit) out.reason = `${hi} tekrara tükenişe kadar ulaştın (RIR 0) → aynı kiloda kal, ${hi}'yi biraz daha rahat yapmayı hedefle`;
-    else out.reason = `Hedef: her sette +1 tekrar. Tüm setler ${hi}'ye ulaşınca kilo artacak`;
+    else {
+      const reps = prev.map(setReps);
+      const below = reps.some(r => r < lo), inRange = reps.some(r => r >= lo && r < hi);
+      const tail = `Tüm setler ${hi} tekrara ulaşınca kilo artacak`;
+      out.reason = below && !inRange ? `Geçen sefer ${lo} tekrarın altında kaldın → aynı kiloyla ${lo} tekrarı hedefle. ${tail}`
+        : below ? `${lo} tekrarın altında kalan setlerde ${lo} tekrar, diğerlerinde +1 tekrar. ${tail}`
+        : `Hedef: her sette +1 tekrar. ${tail}`;
+    }
   } else {
     for (let s = 0; s < count; s++) {
       const ps = baseFor(s);

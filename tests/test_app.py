@@ -977,6 +977,13 @@ with sync_playwright() as p:
       getDayById('torso-a').exercises.shift(); saveData('workoutDays', DB.workoutDays);
       DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test && !(l.sets || []).some(s => s.exName === 'Kablo Test Raise')); saveData('workoutLogs', DB.workoutLogs); switchTab('workout'); }""")
 
+
+    # ── 47. Öneri açıklaması: alt sınırın altındaki setler ──
+    why = page.evaluate("""progressionPlan({name:'X'}, [{kg:15,reps:10},{kg:15,reps:10},{kg:15,reps:8}], [12,20], 3).reason""")
+    check('alt sınır altı: 12 tekrarı hedefle', 'altında kaldın' in why and '12 tekrarı hedefle' in why, why)
+    why = page.evaluate("""progressionPlan({name:'X'}, [{kg:15,reps:14},{kg:15,reps:10}], [12,20], 2).reason""")
+    check('karışık: altındakilerde 12, diğerlerinde +1', 'diğerlerinde +1' in why, why)
+
     check('sayfa hatası yok', not errors, errors)
 
     # ── 35. Antrenman bildirimi ──
