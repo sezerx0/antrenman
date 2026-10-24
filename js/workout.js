@@ -24,6 +24,7 @@ function captureActive() {
   body.querySelectorAll('input, textarea').forEach(el => { if (el.id && el.value !== '') values[el.id] = el.value; });
   active.values = values;
   active.done = [...body.querySelectorAll('.set-done-btn.done')].map(b => b.id);
+  active.auto = [...body.querySelectorAll('input.auto')].map(el => el.id);
   saveActive();
 }
 
@@ -209,8 +210,7 @@ function toggleCable(ei) {
   const next = machineFor(ex) === 'double' ? 'single' : 'double';
   captureActive();
   active.cable[ex.id] = next;
-  renderExerciseCards();
-  applyActiveValues();
+  keepPosition(() => { renderExerciseCards(); applyActiveValues(); });
   saveActive();
   const conv = (prevCache[ei] || {}).conv;
   toast(`${machineLabel(next)}${conv ? ' · önceki değerler bu makineye çevrildi' : ''}`, 2200);
@@ -265,29 +265,31 @@ function buildSetRow(ei, s, ex, ps, sug) {
   const phReps = sug ? sug.reps : ps.reps;
   const phR = sug ? sug.reps : ps.repsR;
   const phL = sug ? sug.reps : ps.repsL;
-  const sugAttr = v => sug ? ` data-sug="${escapeHtml(v)}"` : '';
+  const sugAttr = v => sug ? ` data-sug="${escapeHtml(v)}" data-osug="${escapeHtml(v)}"` : '';
+  // Soluk yazı = öneri (renkli) ya da geçen sefer (gri); girilen değer koyu
+  const src = sug ? ' src-sug' : (hasValue(ps) ? ' src-prev' : '');
   const repsHtml = ex.bilateral
     ? `<div class="bi-reps">
         <div class="bi-reps-row">
           <span class="bi-label">SAĞ</span>
-          <input class="bi-val" type="text" inputmode="numeric" placeholder="${escapeHtml(phR || 'tk')}" data-prev="${escapeHtml(ps.repsR || '')}"${sugAttr(sug && sug.reps)} id="repsR-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsR',${ei},${s})">
+          <input class="bi-val${src}" type="text" inputmode="numeric" placeholder="${escapeHtml(phR || 'tk')}" data-prev="${escapeHtml(ps.repsR || '')}"${sugAttr(sug && sug.reps)} id="repsR-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsR',${ei},${s})">
         </div>
         <div class="bi-reps-row">
           <span class="bi-label">SOL</span>
-          <input class="bi-val" type="text" inputmode="numeric" placeholder="${escapeHtml(phL || 'tk')}" data-prev="${escapeHtml(ps.repsL || '')}"${sugAttr(sug && sug.reps)} id="repsL-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsL',${ei},${s})">
+          <input class="bi-val${src}" type="text" inputmode="numeric" placeholder="${escapeHtml(phL || 'tk')}" data-prev="${escapeHtml(ps.repsL || '')}"${sugAttr(sug && sug.reps)} id="repsL-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsL',${ei},${s})">
         </div>
       </div>`
     : `<div class="reps-stepper">
         <button class="stepper-btn" onclick="stepReps(${ei},${s},-1)" type="button">−</button>
-        <input class="reps-val" type="text" inputmode="numeric" placeholder="${escapeHtml(phReps || 'tk')}" data-prev="${escapeHtml(ps.reps || '')}"${sugAttr(sug && sug.reps)} id="reps-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'reps',${ei},${s})">
+        <input class="reps-val${src}" type="text" inputmode="numeric" placeholder="${escapeHtml(phReps || 'tk')}" data-prev="${escapeHtml(ps.reps || '')}"${sugAttr(sug && sug.reps)} id="reps-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'reps',${ei},${s})">
         <button class="stepper-btn" onclick="stepReps(${ei},${s},1)" type="button">+</button>
       </div>`;
   return `<div class="set-wrap" id="set-wrap-${id}"><div class="set-row${sug && sug.up ? ' sug-up' : ''}" id="set-row-${id}">
-    <span class="set-num">${s+1}</span>
+    <span class="set-num" id="set-num-${id}">${s+1}</span>
     ${prevCell(ei, s, ps)}
     <div class="kg-stepper">
       <button class="stepper-btn" onclick="stepKg(${ei},${s},-1)" type="button">−</button>
-      <input class="kg-val" type="text" inputmode="decimal" placeholder="${escapeHtml(phKg || 'kg')}" data-prev="${escapeHtml(prevKg)}"${sugAttr(sug && sug.kg)} id="kg-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'kg',${ei},${s})">
+      <input class="kg-val${src}" type="text" inputmode="decimal" placeholder="${escapeHtml(phKg || 'kg')}" data-prev="${escapeHtml(prevKg)}"${sugAttr(sug && sug.kg)} id="kg-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'kg',${ei},${s})">
       <button class="stepper-btn" onclick="stepKg(${ei},${s},1)" type="button">+</button>
     </div>
     ${repsHtml}
@@ -332,8 +334,9 @@ function prevCell(ei, s, ps) {
 function fillFromPrev(ei, s) {
   const row = document.getElementById(`set-row-${ei}-${s}`);
   if (!row) return;
-  row.querySelectorAll('input').forEach(inp => { if (inp.dataset.prev) inp.value = inp.dataset.prev; });
-  onSetInput(ei, s);
+  row.querySelectorAll('input').forEach(inp => { if (inp.dataset.prev) { inp.value = inp.dataset.prev; inp.classList.add('auto'); } });
+  checkOverload(ei, s);
+  captureActive();
 }
 
 // ── İlerleme önerisi (çift ilerleme) ──
@@ -482,9 +485,34 @@ function fmtSetShort(s) {
   return s.repsR != null || s.repsL != null ? `${s.kg || 0}×${s.repsR || 0}/${s.repsL || 0}` : `${s.kg || 0}×${s.reps || 0}`;
 }
 
+const detailsOpen = new Set();   // açık "Detaylar" bölümleri (hareket id)
+function toggleDetails(ei) {
+  const ex = active && active.day.exercises[ei];
+  if (!ex) return;
+  const el = document.getElementById(`ex-details-${ei}`);
+  const open = !detailsOpen.has(ex.id);
+  if (open) detailsOpen.add(ex.id); else detailsOpen.delete(ex.id);
+  if (el) el.style.display = open ? 'block' : 'none';
+  document.getElementById(`details-chip-${ei}`)?.classList.toggle('open', open);
+}
+// Son birkaç antrenmanın özeti (Detaylar içinde)
+function recentSessionsHtml(ex) {
+  const exclude = active && active.mode === 'edit' ? DB.workoutLogs[active.editIdx] : null;
+  const list = getLogsByExName(ex.name).filter(e => e.log !== exclude).slice(-3).reverse();
+  if (!list.length) return '';
+  return `<div class="exd-title">Son antrenmanlar</div>` + list.map(e => `<div class="exd-row"><span>${fmtDateShort(e.log.date)}</span><b>${escapeHtml(e.sets.filter(hasValue).map(fmtSetShort).join(', '))}${e.sets.some(s => s.cable === 'double') ? ' · çift makara' : ''}</b></div>`).join('');
+}
+function sugSummary(sugList) {
+  const txt = g => g.kg ? g.kg + '×' + g.reps : g.reps + ' tk';
+  const same = sugList.length > 1 && sugList.every(g => txt(g) === txt(sugList[0]) && !!g.up === !!sugList[0].up);
+  const b = g => `<b>${escapeHtml(txt(g))}${g.up ? icon('arrow-up', 'up') : ''}</b>`;
+  return same ? `${b(sugList[0])} <span class="ex-sug-n">her sette</span>` : sugList.map(b).join(', ');
+}
+
 function renderExerciseCards() {
   const body = document.getElementById('ws-body');
   if (!active) { body.innerHTML = ''; return; }
+  const scrollY = body.scrollTop;   // yeniden çizimde sayfa en üste atlamasın
   const day = active.day;
   const isEdit = active.mode === 'edit';
   prevCache = day.exercises.map(prevForExercise);
@@ -496,38 +524,42 @@ function renderExerciseCards() {
     const { entry, bySet, conv } = prevCache[ei];
     const machine = machineFor(ex);
 
+    // Ön planda: kısa "Önceki" satırı. Ayrıntılar "Detaylar"da.
     let prevHint = '';
+    const details = [];
     if (entry) {
       const dayLabel = entry.dayName ? ` · ${escapeHtml(entry.dayName)}` : '';
+      prevHint = `<div class="ex-prev-hint">Önceki: ${fmtDateShort(entry.log.date)}${dayLabel}</div>`;
       const extra = bySet.slice(active.sets[ei]).filter(s => s && hasValue(s));
-      const extraTxt = extra.length ? ` · fazladan ${extra.length} set: <b>${escapeHtml(extra.map(fmtSetShort).join(', '))}</b>` : '';
-      const convTxt = conv ? ` · ${machine === 'double' ? 'tek' : 'çift'} makaradan çevrildi` : '';
-      prevHint = `<div class="ex-prev-hint">Önceki: ${fmtDateShort(entry.log.date)}${dayLabel}${convTxt}${extraTxt}</div>`;
+      if (extra.length) details.push(`<div class="exd-line">Geçen sefer fazladan ${extra.length} set: <b>${escapeHtml(extra.map(fmtSetShort).join(', '))}</b></div>`);
+      if (conv) details.push(`<div class="exd-line">Önceki değerler ${machine === 'double' ? 'tek' : 'çift'} makaradan bugünkü makineye çevrildi (≈).</div>`);
     } else if (!isEdit) {
       prevHint = `<div class="ex-prev-hint">İlk kez yapıyorsun</div>`;
     }
     const plateau = isEdit ? null : plateauInfo(ex.name);
-    const plateauLine = plateau
-      ? `<div class="ex-plateau">${icon('alert')}<span>${plateau.declining ? `Son ${plateau.stalled} antrenmanda performans düşüyor. Yorgunluk birikmiş olabilir: uyku ve beslenmeye bak, gerekirse bir hafta hafif çalış.` : `Son ${plateau.stalled} antrenmanda performans (kilo, tekrar, RIR) artmadı. Uyku, beslenme ve toparlanma yerindeyse küçük bir değişiklik düşünebilirsin: tekrar aralığı, set sayısı ya da hareket.`}</span></div>`
-      : '';
+    if (plateau) details.push(`<div class="ex-plateau">${icon('alert')}<span>${plateau.declining ? `Son ${plateau.stalled} antrenmanda performans düşüyor. Yorgunluk birikmiş olabilir: uyku ve beslenmeye bak, gerekirse bir hafta hafif çalış.` : `Son ${plateau.stalled} antrenmanda performans (kilo, tekrar, RIR) artmadı. Uyku, beslenme ve toparlanma yerindeyse küçük bir değişiklik düşünebilirsin: tekrar aralığı, set sayısı ya da hareket.`}</span></div>`);
     const noteVal = entry ? noteForExName(entry.log, ex.name) : '';
     const prevNote = noteVal ? `<div class="ex-prev-note">${icon('note')}${escapeHtml(noteVal)}</div>` : '';
     const rest = restFor(ex.name);
-    const restChip = restOn
-      ? `<button class="ex-chip${restMap[normName(ex.name)] ? ' custom' : ''}" id="rest-chip-${ei}" onclick="openExSheet(${ei})" aria-label="Dinlenme süresi">${icon('timer')}${fmtRest(rest)}</button>`
-      : '';
 
     const range = repRangeFor(ex.name, ex);
     const plan = isEdit ? { sets: [], reason: '' } : progressionPlan(ex, bySet, range, active.sets[ei]);
     let setRows = '';
     for (let s = 0; s < active.sets[ei]; s++) setRows += buildSetRow(ei, s, ex, bySet[s], plan.sets[s] || null);
     const sugList = plan.sets.filter(Boolean);
-    const sugLine = sugList.length
-      ? `<div class="ex-sug">${icon('trend-up')}<span>Bugün: ${sugList.map(g => `<b>${escapeHtml(g.kg ? g.kg + '×' + g.reps : g.reps + ' tk')}${g.up ? icon('arrow-up', 'up') : ''}</b>`).join(', ')}</span></div>
-         ${plan.notable ? `<div class="ex-sug-why">${escapeHtml(plan.reason)}</div>` : ''}`
-      : '';
-    const rangeChip = isEdit ? '' : `<button class="ex-chip${range ? ' custom' : ''}" id="range-chip-${ei}" onclick="openExSheet(${ei})" aria-label="Hedef tekrar aralığı">${icon('target')}${range ? `${range[0]}–${range[1]}` : 'Hedef'}</button>`;
+    const sugLine = sugList.length ? `<div class="ex-sug">${icon('trend-up')}<span>Bugün: ${sugSummary(sugList)}</span></div>` : '';
+    if (plan.reason) details.unshift(`<div class="ex-sug-why">${escapeHtml(plan.reason)}</div>`);
+    const hist = recentSessionsHtml(ex);
+    if (hist) details.push(hist);
+    const flag = !!plateau;   // dikkat edilecek bir şey (plato/düşüş): çipte nokta
 
+    // Meta: hedef set × tekrar aralığı · dinlenme (dokununca hareket ayarları)
+    const meta = `<div class="ex-meta">
+        <span id="set-count-${ei}">${active.sets[ei]} set</span>
+        ${isEdit ? '' : `<span class="ex-meta-sep">·</span><button class="ex-meta-btn${range ? ' custom' : ''}" id="range-chip-${ei}" onclick="openExSheet(${ei})" aria-label="Hedef tekrar aralığı">${range ? `${range[0]}–${range[1]}` : 'Hedef'}</button>${range ? '<span class="ex-meta-unit">tekrar</span>' : ''}`}
+        ${restOn ? `<span class="ex-meta-sep">·</span><button class="ex-meta-btn${restMap[normName(ex.name)] ? ' custom' : ''}" id="rest-chip-${ei}" onclick="openExSheet(${ei})" aria-label="Dinlenme süresi">${icon('timer')}${fmtRest(rest)}</button>` : ''}
+      </div>`;
+    const open = detailsOpen.has(ex.id);
     const skipped = (active.skipped || []).includes(ei);
     return `<div class="ex-card${skipped ? ' skipped' : ''}" id="ex-card-${ei}">
       <div class="ex-card-header">
@@ -537,17 +569,17 @@ function renderExerciseCards() {
             <button class="ex-more-btn" onclick="openExSheet(${ei})" aria-label="Hareket menüsü">${icon('more')}</button>
           </div>
         </div>
+        ${meta}
         <div class="ex-chips">
-          ${rangeChip}
           ${machine ? `<button class="ex-chip cable-chip${machine === 'double' ? ' custom' : ''}" id="cable-chip-${ei}" onclick="toggleCable(${ei})" aria-label="Kablo makinesi: ${machineLabel(machine)}. Dokun: değiştir">${icon('swap')}${machineLabel(machine)}</button>` : ''}
-          ${restChip}
           <button class="ex-chip" id="note-chip-${ei}" onclick="toggleNote(${ei})" aria-label="Not">${icon('note')}Not</button>
+          ${details.length ? `<button class="ex-chip details-chip${flag ? ' flag' : ''}${open ? ' open' : ''}" id="details-chip-${ei}" onclick="toggleDetails(${ei})" aria-label="Detaylar">Detaylar${icon('chevron-down', 'chev')}</button>` : ''}
         </div>
         ${ex.swappedFrom ? `<div class="ex-swapped">${icon('swap')}Bugün ${escapeHtml(ex.swappedFrom)} yerine</div>` : ''}
         ${prevHint}
         ${sugLine}
-        ${plateauLine}
         ${prevNote}
+        ${details.length ? `<div class="ex-details" id="ex-details-${ei}" style="display:${open ? 'block' : 'none'};">${details.join('')}</div>` : ''}
       </div>
       <div class="ex-sets-container">
         <div class="set-col-header">
@@ -559,9 +591,8 @@ function renderExerciseCards() {
         </div>
         <div id="sets-list-${ei}">${setRows}</div>
         <div class="set-count-row">
-          <button class="set-count-btn" onclick="removeSet(${ei})">− Set</button>
-          <span class="set-count-label" id="set-count-${ei}">${active.sets[ei]} set</span>
-          <button class="set-count-btn accent" onclick="addSet(${ei})">+ Set</button>
+          <button class="set-count-btn" onclick="removeSet(${ei})" aria-label="Son seti sil">− Set</button>
+          <button class="set-count-btn accent" onclick="addSet(${ei})" aria-label="Set ekle">+ Set</button>
         </div>
       </div>
       <div class="ex-skip-bar"><span>Bu antrenmanda atlandı</span><button onclick="toggleSkipEx(${ei})">Geri al</button></div>
@@ -570,7 +601,9 @@ function renderExerciseCards() {
       </div>
     </div>`;
   }).join('') + renderCardioCard();
+  body.scrollTop = scrollY;
   updateProgress();
+  updateNextSet();
 }
 
 // ═══════════════════════════════════════════════
@@ -766,11 +799,21 @@ function exSettingsHtml(ex) {
         </select></label>
     </div>`;
 }
+// Yeniden çizimde ekrandaki ilk set/kart yerinde kalsın (sayfa zıplamasın)
+function keepPosition(fn) {
+  const body = document.getElementById('ws-body');
+  if (!body) { fn(); return; }
+  const top = body.getBoundingClientRect().top;
+  const anchor = [...body.querySelectorAll('.set-wrap, .ex-card')].find(el => el.getBoundingClientRect().bottom > top + 1);
+  const id = anchor && anchor.id, off = anchor ? anchor.getBoundingClientRect().top - top : 0;
+  fn();
+  const el = id && document.getElementById(id);
+  if (el) body.scrollTop += (el.getBoundingClientRect().top - top) - off;
+}
 // Ayar değişince kartları yeniden çiz (girilen değerler korunur)
 function refreshCardsAfterSetting() {
   captureActive();
-  renderExerciseCards();
-  applyActiveValues();
+  keepPosition(() => { renderExerciseCards(); applyActiveValues(); });
 }
 function pickRepRange(i) {
   const ex = active.day.exercises[exSheetIdx];
@@ -882,6 +925,7 @@ function toggleSkipEx(ei) {
   document.getElementById(`ex-card-${ei}`).classList.toggle('skipped', i === -1);
   updateProgress();
   saveActive();
+  updateNextSet();
 }
 
 // Kaydedilmiş değerleri ekrana geri yükler
@@ -895,6 +939,8 @@ function applyActiveValues() {
     const el = document.getElementById(id);
     if (el) el.classList.add('done');
   });
+  (active.auto || []).forEach(id => document.getElementById(id)?.classList.add('auto'));
+  Object.entries(active.prs || {}).forEach(([k, label]) => markPrRow(k, label));
   active.day.exercises.forEach((ex, ei) => {
     for (let s = 0; s < active.sets[ei]; s++) checkOverload(ei, s);
     const note = document.getElementById(`note-${ei}`);
@@ -902,8 +948,74 @@ function applyActiveValues() {
       document.getElementById(`note-sec-${ei}`).style.display = 'block';
       document.getElementById(`note-chip-${ei}`).classList.add('has-note');
     }
+    // Tamamlanan setlerin kilosu (gerekirse) sonraki setlere devredilir
+    for (let s = 0; s < active.sets[ei]; s++) if (isSetDone(ei, s)) inheritForward(ei, s);
   });
   updateProgress();
+  updateNextSet();
+}
+
+function isSetDone(ei, s) { return !!document.getElementById(`set-done-${ei}-${s}`)?.classList.contains('done'); }
+// Önceki setin kilosunu devral: sonraki boş setin önerisi/geçmişi yoksa, ya da bu sette
+// önerilenden farklı kilo kullanıldıysa (aynı öneriye sahip sonraki setlerde)
+function inheritForward(ei, s) {
+  const kgEl = document.getElementById(`kg-${ei}-${s}`);
+  if (!kgEl) return;
+  const kg = num(kgEl.value);
+  if (!(kg > 0)) return;
+  const own = kgEl.dataset.osug;
+  for (let t = s + 1; t < active.sets[ei]; t++) {
+    if (isSetDone(ei, t)) continue;
+    const next = document.getElementById(`kg-${ei}-${t}`);
+    if (!next || next.value !== '') continue;
+    const orig = next.dataset.osug;
+    const noSource = !orig && !next.dataset.prev;
+    const deviated = own && orig === own && num(own) !== kg;
+    if (!noSource && !deviated) continue;
+    const v = String(kg);
+    next.dataset.sug = v; next.placeholder = v;
+    next.classList.remove('src-prev'); next.classList.add('src-sug', 'src-inh');
+    if (noSource) {
+      // tekrar da yoksa bu setin tekrarı ipucu olsun
+      ['reps', 'repsR', 'repsL'].forEach(k => {
+        const from = document.getElementById(`${k}-${ei}-${s}`), to = document.getElementById(`${k}-${ei}-${t}`);
+        if (from && to && to.value === '' && !to.dataset.sug && !to.dataset.prev && from.value) {
+          to.dataset.sug = from.value; to.placeholder = from.value; to.classList.add('src-sug', 'src-inh');
+        }
+      });
+    }
+  }
+}
+// Sıradaki tamamlanmamış set öne çıkar: en son tamamlanan setten sonraki ilk boş set
+function updateNextSet() {
+  if (!active) return;
+  document.querySelectorAll('#ws-body .set-wrap.next').forEach(el => el.classList.remove('next'));
+  if (active.mode === 'edit') return;
+  const skipped = active.skipped || [];
+  const order = [];
+  active.day.exercises.forEach((_, ei) => { if (!skipped.includes(ei)) for (let s = 0; s < active.sets[ei]; s++) order.push([ei, s]); });
+  const last = active.lastDone ? order.findIndex(([e, s]) => e === active.lastDone[0] && s === active.lastDone[1]) : -1;
+  const pick = order.slice(last + 1).find(([e, s]) => !isSetDone(e, s)) || order.find(([e, s]) => !isSetDone(e, s));
+  if (!pick) return null;
+  const wrap = document.getElementById(`set-wrap-${pick[0]}-${pick[1]}`);
+  if (wrap) wrap.classList.add('next');
+  return wrap;
+}
+// Sıradaki set ekranın altında (ya da dinlenme sayacının arkasında) kaldıysa nazikçe kaydır
+function revealSet(wrap) {
+  const body = document.getElementById('ws-body');
+  if (!wrap || !body) return;
+  const r = wrap.getBoundingClientRect(), b = body.getBoundingClientRect();
+  const bottom = Math.min(window.innerHeight, b.bottom) - (document.body.classList.contains('rest-on') ? 96 : 16);
+  if (r.bottom > bottom) body.scrollBy({ top: r.bottom - bottom + 8, behavior: 'smooth' });
+}
+function markPrRow(key, label) {
+  const num = document.getElementById(`set-num-${key}`);
+  if (!num) return;
+  num.classList.add('pr');
+  num.innerHTML = icon('trophy');
+  num.title = label;
+  num.setAttribute('aria-label', 'Rekor: ' + label);
 }
 
 function readSet(ei, s) {
@@ -918,6 +1030,8 @@ function readSet(ei, s) {
 }
 
 function onSetInput(ei, s) {
+  const ae = document.activeElement;
+  if (ae && ae.classList && ae.id && ae.id.endsWith(`-${ei}-${s}`)) ae.classList.remove('auto');
   checkOverload(ei, s);
   captureActive();
 }
@@ -972,6 +1086,7 @@ function stepKg(ei, s, dir) {
   const input = document.getElementById(`kg-${ei}-${s}`);
   if (!input || !active) return;
   const delta = Math.sign(dir) * incFor(active.day.exercises[ei].name);
+  input.classList.remove('auto');
   if (input.value === '' && delta > 0) {
     const prev = num(input.dataset.sug || input.dataset.prev);
     if (prev) { input.value = prev; onSetInput(ei, s); return; }
@@ -985,6 +1100,7 @@ function stepKg(ei, s, dir) {
 function stepReps(ei, s, delta) {
   const input = document.getElementById(`reps-${ei}-${s}`);
   if (!input) return;
+  input.classList.remove('auto');
   if (input.value === '' && delta > 0) {
     const prev = int(input.dataset.sug || input.dataset.prev);
     if (prev) { input.value = prev; onSetInput(ei, s); return; }
@@ -1008,6 +1124,7 @@ function addSet(ei) {
   document.getElementById(`set-count-${ei}`).textContent = `${active.sets[ei]} set`;
   updateWsSub();
   captureActive();
+  updateNextSet();
 }
 
 function removeSet(ei) {
@@ -1019,10 +1136,12 @@ function removeSet(ei) {
   if (hasValue(cur) && !confirm(`${s}. sette girilmiş değerler var. Set silinsin mi?`)) return;
   if (row) row.remove();
   if (active.rir) delete active.rir[`${ei}-${s - 1}`];
+  if (active.prs) delete active.prs[`${ei}-${s - 1}`];
   active.sets[ei] = s - 1;
   document.getElementById(`set-count-${ei}`).textContent = `${active.sets[ei]} set`;
   updateWsSub();
   captureActive();
+  updateNextSet();
 }
 
 function completeSet(ei, s) {
@@ -1031,15 +1150,22 @@ function completeSet(ei, s) {
   getAudioCtx(); // iOS'ta sesi kullanıcı dokunuşuyla açmak için
   if (btn.classList.contains('done')) {
     btn.classList.remove('done');
+    if (active.prs && active.prs[`${ei}-${s}`]) {
+      delete active.prs[`${ei}-${s}`];
+      const n = document.getElementById(`set-num-${ei}-${s}`);
+      if (n) { n.classList.remove('pr'); n.textContent = s + 1; n.removeAttribute('title'); n.removeAttribute('aria-label'); }
+    }
     captureActive();
     updateProgress();
+    updateNextSet();
     return;
   }
-  // Boş alanları önceki antrenmanın değerleriyle doldur (gri görünen değerler)
+  // Boş alanları soluk görünen değerlerle doldur (öneri / önceki set / devralınan)
   const row = document.getElementById(`set-row-${ei}-${s}`);
+  if (document.activeElement && row.contains(document.activeElement)) document.activeElement.blur();
   row.querySelectorAll('input').forEach(inp => {
     const fill = inp.dataset.sug || inp.dataset.prev;
-    if (inp.value === '' && fill) inp.value = fill;
+    if (inp.value === '' && fill) { inp.value = fill; inp.classList.add('auto'); }
   });
   const ex = active.day.exercises[ei];
   const cur = readSet(ei, s);
@@ -1049,9 +1175,12 @@ function completeSet(ei, s) {
     return;
   }
   btn.classList.add('done');
+  active.lastDone = [ei, s];
   checkOverload(ei, s);
+  inheritForward(ei, s);
   captureActive();
   updateProgress();
+  const nextWrap = updateNextSet();
   if (active.mode === 'edit') return;
   // Rekor: geçmiş + bu antrenmanda daha önce tamamlanan setler (tek makara karşılığı)
   const mc = machineFor(ex);
@@ -1063,8 +1192,17 @@ function completeSet(ei, s) {
   }
   const curLoad = loadKg({ kg: cur.kg, cable: mc });
   const prs = prsForSet(ex.bilateral ? { ...cur, kg: curLoad } : { kg: curLoad, reps: cur.reps }, [...historySets(ex.name), ...sessionSets]);
-  if (prs.length) toast(`🏆 ${ex.name}: ${prs.map(p => p.label).join(' · ')}${mc === 'double' && prs.some(p => p.type !== 'reps' || curLoad) ? ' (tek makara karşılığı)' : ''}`, 3200);
+  if (prs.length) {
+    // Antrenman sırasında kısa: set numarasının yerinde kupa + tek satırlık bildirim. Ayrıntı özette.
+    const label = prs.map(p => p.label).join(' · ') + (mc === 'double' ? ' (tek makara karşılığı)' : '');
+    active.prs = active.prs || {};
+    active.prs[`${ei}-${s}`] = label;
+    markPrRow(`${ei}-${s}`, label);
+    saveActive();
+    toast(`🏆 Rekor · ${prs[0].label}${mc === 'double' ? ' (tek makara karşılığı)' : ''}`, 1800);
+  }
   if (DB.settings.restTimerEnabled) startRest(ex.name, restFor(ex.name));
+  requestAnimationFrame(() => revealSet(nextWrap));
 }
 
 // ═══════════════════════════════════════════════

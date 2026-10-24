@@ -639,7 +639,8 @@ with sync_playwright() as p:
     cells = page.evaluate("[...document.querySelectorAll('#ex-card-0 .set-prev')].map(e => e.innerText.replace(/\\s+/g, ''))")
     check('Torso A, Torso B\'deki son Pec Deck setlerini gösteriyor', cells == ['47.5×11', '50×8'], cells)
     hint = page.inner_text('#ex-card-0 .ex-prev-hint')
-    check('nereden geldiği ve fazladan set yazıyor', 'Torso B' in hint and 'fazladan 1 set' in hint and '50×6' in hint, hint)
+    det = page.text_content('#ex-details-0')
+    check('nereden geldiği kartta, fazladan set Detaylar\'da', 'Torso B' in hint and 'fazladan 1 set' in det and '50×6' in det, (hint, det))
     page.click('#ex-card-0 .set-prev >> nth=1')
     check('önceki hücresine dokununca satır doluyor (işaretlenmeden)', page.input_value('#kg-0-1') == '50' and page.input_value('#reps-0-1') == '8' and not page.evaluate("document.getElementById('set-done-0-1').classList.contains('done')"))
     page.click('#ex-card-0 .set-count-btn.accent')
@@ -962,7 +963,7 @@ with sync_playwright() as p:
     check('kablo olmayan harekette çip yok', page.query_selector('#cable-chip-1') is None)
     check('tek makarada önceki 10', page.inner_text('#set-row-0-0 .sp-kg') == '10')
     page.click('#cable-chip-0'); page.wait_for_timeout(300)
-    check('çift makaraya geçince önceki ≈20 (2:1)', page.inner_text('#set-row-0-0 .sp-kg') == '≈20' and 'çevrildi' in page.inner_text('#ex-card-0'), page.inner_text('#set-row-0-0 .sp-kg'))
+    check('çift makaraya geçince önceki ≈20 (2:1)', page.inner_text('#set-row-0-0 .sp-kg') == '≈20' and 'çevrildi' in page.text_content('#ex-details-0'), page.inner_text('#set-row-0-0 .sp-kg'))
     page.fill('#kg-0-0', '20'); page.fill('#reps-0-0', '15'); page.evaluate("onSetInput(0,0)")
     check('aynı yük + aynı tekrar: ilerleme sayılmıyor', not page.evaluate("document.getElementById('set-row-0-0').classList.contains('overload')"))
     page.evaluate("document.getElementById('toast').textContent=''")
@@ -1028,6 +1029,57 @@ with sync_playwright() as p:
     pl = page.evaluate("plateauInfo('Düşüş Testi')")
     check('sürekli düşüş → "düşüyor" uyarısı', pl and pl['declining'] is True, pl)
     page.evaluate("DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs)")
+
+
+    # ── 50. Hızlı set kaydı ve sade kart ──
+    page.evaluate("""() => { discardActive(); DB.settings.restTimerEnabled = true; saveData('settings', DB.settings);
+      DB.workoutLogs.unshift({date:'2020-06-01', dayId:'torso-a', dayName:'Torso A', __test:1, sets:[
+        {exId:'h1', exName:'Hızlı Test', setIdx:0, kg:50, reps:10}, {exId:'h1', exName:'Hızlı Test', setIdx:1, kg:50, reps:9}, {exId:'h1', exName:'Hızlı Test', setIdx:2, kg:50, reps:9}], notes:{}});
+      saveData('workoutLogs', DB.workoutLogs); setRepRangeFor('Hızlı Test', [8,12]);
+      getDayById('torso-a').exercises.unshift({id:'ht', name:'Hızlı Test', sets:3}, {id:'yt', name:'Yepyeni Hareket', sets:3});
+      openWorkoutScreen('torso-a'); }""")
+    page.wait_for_timeout(300)
+    check('meta satırı: set · tekrar aralığı · dinlenme', '3 set' in page.inner_text('#ex-card-0 .ex-meta') and '8–12' in page.inner_text('#ex-card-0 .ex-meta') and page.query_selector('#rest-chip-0') is not None)
+    check('öneri placeholder (renkli sınıf)', page.get_attribute('#kg-0-0', 'placeholder') == '50' and 'src-sug' in page.get_attribute('#kg-0-0', 'class') and page.get_attribute('#reps-0-1', 'placeholder') == '10')
+    check('açıklamalar varsayılan gizli, Detaylar ile açılıyor', not page.is_visible('#ex-details-0'))
+    page.click('#details-chip-0'); page.wait_for_timeout(100)
+    check('Detaylar açıldı (son antrenmanlar)', page.is_visible('#ex-details-0') and 'Son antrenmanlar' in page.text_content('#ex-details-0'))
+    page.click('#details-chip-0')
+    check('ilk set sıradaki olarak işaretli', page.evaluate("document.getElementById('set-wrap-0-0').classList.contains('next')"))
+    # tek dokunuşla tamamla: öneri değerleri dolar, "otomatik" görünür
+    page.click('#set-done-0-0'); page.wait_for_timeout(200)
+    check('tek dokunuşla set kaydı (öneriyle)', page.input_value('#kg-0-0') == '50' and page.input_value('#reps-0-0') == '11' and 'auto' in page.get_attribute('#kg-0-0', 'class'))
+    check('dinlenme otomatik başladı', page.is_visible('#rest-banner'))
+    check('sıradaki set öne çıktı (2. set)', page.evaluate("document.getElementById('set-wrap-0-1').classList.contains('next') && !document.getElementById('set-wrap-0-0').classList.contains('next')"))
+    check('tamamlanan sette ± gizli', not page.is_visible('#set-row-0-0 .stepper-btn'))
+    page.fill('#kg-0-0', '47,5'); page.evaluate("onSetInput(0,0)")
+    check('elle düzeltilen değer "otomatik" değil, düzenlenebilir', 'auto' not in page.get_attribute('#kg-0-0', 'class') and page.evaluate("collectWorkoutSets().find(s => s.exName === 'Hızlı Test' && s.setIdx === 0).kg") == 47.5)
+    # 2. sette öneriden farklı kilo → 3. set devralır
+    page.fill('#kg-0-1', '47,5'); page.fill('#reps-0-1', '10'); page.click('#set-done-0-1'); page.wait_for_timeout(150)
+    check('öneriden farklı kilo sonraki sete devredildi', page.get_attribute('#kg-0-2', 'placeholder') == '47.5' and 'src-inh' in page.get_attribute('#kg-0-2', 'class'))
+    # Geçmişi olmayan hareket: ilk setin kilosu ve tekrarı devralınır
+    page.fill('#kg-1-0', '30'); page.fill('#reps-1-0', '12'); page.click('#set-done-1-0'); page.wait_for_timeout(150)
+    check('geçmişsiz harekette ilk set devralındı', page.get_attribute('#kg-1-1', 'placeholder') == '30' and page.get_attribute('#reps-1-1', 'placeholder') == '12')
+    page.click('#set-done-1-1'); page.wait_for_timeout(150)
+    check('devralınan değerle tek dokunuş', page.input_value('#kg-1-1') == '30' and page.input_value('#reps-1-1') == '12')
+    # yeniden çizimde (makine/ayar) kaydırma korunuyor
+    page.wait_for_timeout(700)
+    page.evaluate("document.getElementById('ws-body').scrollTop = 300")
+    pos = "(() => document.getElementById('set-wrap-1-2').getBoundingClientRect().top)()"
+    y0 = page.evaluate(pos)
+    page.evaluate("refreshCardsAfterSetting()")
+    check('yeniden çizimde sayfa zıplamıyor (aynı set yerinde)', abs(page.evaluate(pos) - y0) < 2 and page.evaluate("document.getElementById('ws-body').scrollTop") > 200, (y0, page.evaluate(pos)))
+    check('yeniden çizimde otomatik/devralma/tamamlandı korunuyor', 'auto' in page.get_attribute('#kg-1-1', 'class') and page.get_attribute('#kg-0-2', 'placeholder') == '47.5' and page.evaluate("document.getElementById('set-done-1-1').classList.contains('done')"))
+    # Sıradaki set dinlenme sayacının arkasında kalmıyor
+    page.evaluate("document.getElementById('ws-body').scrollTop = 0; stopRest()")
+    page.click('#set-done-0-2'); page.wait_for_timeout(600)
+    nb = page.evaluate("(() => { const w = document.querySelector('.set-wrap.next'); return w ? w.getBoundingClientRect().bottom : 0; })()")
+    check('sıradaki set dinlenme sayacının üstünde görünür', 0 < nb <= page.evaluate("window.innerHeight") - 90, nb)
+    # Geri al
+    page.click('#set-done-0-2'); page.wait_for_timeout(100)
+    check('tamamlanan set geri alınabiliyor', not page.evaluate("document.getElementById('set-done-0-2').classList.contains('done')"))
+    page.evaluate("""() => { stopRest(); discardActive(); getDayById('torso-a').exercises.splice(0, 2); saveData('workoutDays', DB.workoutDays); setRepRangeFor('Hızlı Test', null);
+      DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); }""")
 
     check('sayfa hatası yok', not errors, errors)
 

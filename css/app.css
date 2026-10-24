@@ -970,3 +970,53 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 /* ── Kablo makinesi ── */
 .sheet-toggle { margin-left: auto; }
 .hm-cable { font-size: 11px; font-weight: 600; color: var(--text-secondary); background: var(--bg-secondary); border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: 1px; }
+/* ═══ Antrenman ekranı: hızlı set kaydı ve sade kart ═══ */
+/* Meta: 3 set · 8–12 tekrar · 2:30 */
+.ex-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-top: 3px; font-size: 13px; font-weight: 600; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.ex-meta-sep { color: var(--text-tertiary); }
+.ex-meta-unit { font-weight: 500; }
+.ex-meta-btn { display: inline-flex; align-items: center; gap: 3px; border: none; background: none; padding: 2px 4px; margin: -2px -2px; border-radius: 6px; font: inherit; color: var(--text-primary); cursor: pointer; }
+.ex-meta-btn .ic { width: 13px; height: 13px; color: var(--text-secondary); }
+.ex-meta-btn:active { background: var(--bg-secondary); }
+.ex-meta-btn.custom { color: var(--accent); }
+[data-palette="lime"] .ex-meta-btn.custom { color: var(--text-primary); }
+.ex-chips { margin: 6px 0 2px; }
+/* Detaylar */
+.details-chip .ic.chev { width: 12px; height: 12px; transition: transform 0.15s; }
+.details-chip.open .ic.chev { transform: rotate(180deg); }
+.details-chip.flag::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--orange); margin-left: 2px; }
+.ex-details { margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: var(--bg-secondary); display: flex; flex-direction: column; gap: 6px; }
+.ex-details .ex-sug-why { margin: 0; font-size: 12px; color: var(--text-secondary); }
+.ex-details .ex-plateau { margin-top: 0; }
+.exd-line { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+.exd-line b { color: var(--text-primary); font-weight: 600; }
+.exd-title { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+.exd-row { display: flex; gap: 8px; font-size: 12px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.exd-row span { width: 44px; flex-shrink: 0; }
+.exd-row b { font-weight: 600; color: var(--text-primary); }
+.ex-sug-n { font-weight: 500; }
+.ex-card.skipped .ex-meta, .ex-card.skipped .ex-details { display: none !important; }
+/* Değer kaynağı: soluk yazı = öneri (renkli) / önceki (gri); girilen = koyu; otomatik dolan = orta */
+.kg-val::placeholder, .reps-val::placeholder { font-size: 15px; font-weight: 500; }
+.bi-val::placeholder { font-size: 12px; font-weight: 500; }
+.kg-val.src-sug::placeholder, .reps-val.src-sug::placeholder, .bi-val.src-sug::placeholder { color: color-mix(in srgb, var(--green) 75%, var(--text-tertiary)); font-weight: 600; }
+[data-palette="lime"] .kg-val.src-sug::placeholder, [data-palette="lime"] .reps-val.src-sug::placeholder, [data-palette="lime"] .bi-val.src-sug::placeholder { color: #8DB52E; }
+[data-palette="lime"][data-theme="dark"] .kg-val.src-sug::placeholder, [data-palette="lime"][data-theme="dark"] .reps-val.src-sug::placeholder, [data-palette="lime"][data-theme="dark"] .bi-val.src-sug::placeholder { color: color-mix(in srgb, var(--lime) 70%, transparent); }
+.kg-val, .reps-val, .bi-val { font-weight: 700; }
+.kg-val.auto, .reps-val.auto, .bi-val.auto { font-weight: 600; color: var(--text-secondary); }
+/* Sıradaki set öne çıkar */
+.set-wrap { border-radius: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.set-wrap.next { background: color-mix(in srgb, var(--done) 12%, transparent); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--done) 55%, transparent); margin: 8px -6px 0; padding: 0 6px 4px; }
+.set-wrap.next > .set-row { margin-top: 4px; }
+.set-wrap.next .set-num { color: var(--text-primary); }
+/* Tamamlanan setler sade: ± düğmeleri gizli, değere dokunup düzenlenebilir */
+.set-wrap:has(.set-done-btn.done) .stepper-btn { display: none; }
+.set-wrap:has(.set-done-btn.done) .kg-stepper, .set-wrap:has(.set-done-btn.done) .reps-stepper { background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
+.set-wrap:has(.set-done-btn.done) .set-prev { opacity: 0.45; }
+.set-wrap:has(.set-done-btn.done) .kg-val, .set-wrap:has(.set-done-btn.done) .reps-val { color: var(--text-primary); }
+/* Rekor: set numarası yerine kupa */
+.set-num.pr .ic { width: 14px; height: 14px; color: var(--orange); }
+/* Set ekle / sil: hafif */
+.set-count-row { margin-top: 8px; padding-top: 8px; }
+.set-count-btn { padding: 6px 12px; font-size: 12px; }
+.set-count-btn:not(.accent) { background: none; color: var(--text-secondary); }
