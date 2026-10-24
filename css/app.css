@@ -528,7 +528,7 @@ body {
 
 /* Segment control for theme */
 .segment-control { display: flex; background: var(--bg-secondary); border-radius: 9px; padding: 2px; }
-.seg-btn { flex: 1; padding: 7px 10px; font-size: 13px; font-weight: 500; border: none; background: none; border-radius: 7px; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
+.seg-btn { white-space: nowrap; flex: 1; padding: 7px 10px; font-size: 13px; font-weight: 500; border: none; background: none; border-radius: 7px; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
 .seg-btn.active { background: var(--bg-primary); color: var(--text-primary); box-shadow: var(--shadow); }
 
 /* Toast */
