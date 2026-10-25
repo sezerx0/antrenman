@@ -1042,8 +1042,5 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 [data-palette="lime"][data-theme="dark"] .set-row .kg-val.src-sug::placeholder, [data-palette="lime"][data-theme="dark"] .set-row .reps-val.src-sug::placeholder { color: var(--text-tertiary); font-size: 13px; font-weight: 500; }
 .set-row .bi-val::placeholder, [data-palette="lime"] .set-row .bi-val.src-sug::placeholder, [data-palette="lime"][data-theme="dark"] .set-row .bi-val.src-sug::placeholder, .set-row .bi-val.src-sug::placeholder { color: var(--text-tertiary); font-size: 10px; font-weight: 500; }
 /* Sıradaki set: yeşil yerine nötr gri şerit (kartta ve kutulardan farklı ton) */
-.set-wrap.next { background: color-mix(in srgb, var(--text-primary) 8%, var(--bg-primary)); box-shadow: none; }
-:root:not([data-theme="dark"]) .set-wrap.next .kg-stepper,
-:root:not([data-theme="dark"]) .set-wrap.next .reps-stepper,
-:root:not([data-theme="dark"]) .set-wrap.next .bi-reps-row { background: var(--bg-primary); }
+.set-wrap.next { background: color-mix(in srgb, var(--text-primary) 14%, var(--bg-primary)); box-shadow: none; }
 [data-theme="dark"] .set-wrap.next { background: color-mix(in srgb, var(--text-primary) 10%, var(--bg-primary)); }
