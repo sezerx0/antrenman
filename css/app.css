@@ -1044,3 +1044,6 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 /* Sıradaki set: yeşil yerine nötr gri şerit (kartta ve kutulardan farklı ton) */
 .set-wrap.next { background: color-mix(in srgb, var(--text-primary) 14%, var(--bg-primary)); box-shadow: none; }
 [data-theme="dark"] .set-wrap.next { background: color-mix(in srgb, var(--text-primary) 10%, var(--bg-primary)); }
+/* Sıradaki set şeridi: üstte ve altta eşit boşluk (satırın üst boşluğu dışarı taşmasın) */
+.set-wrap.next { margin: 2px -6px 0; padding: 6px; }
+.set-wrap.next > .set-row { margin-top: 0; }

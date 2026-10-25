@@ -1054,6 +1054,9 @@ with sync_playwright() as p:
     check('Detaylar açıldı (son antrenmanlar)', page.is_visible('#ex-details-0') and 'Son antrenmanlar' in page.text_content('#ex-details-0'))
     page.click('#details-chip-0')
     check('ilk set sıradaki olarak işaretli', page.evaluate("document.getElementById('set-wrap-0-0').classList.contains('next')"))
+    gaps = page.evaluate("""(() => { const w = document.getElementById('set-wrap-0-0').getBoundingClientRect(), r = document.getElementById('set-row-0-0').getBoundingClientRect();
+      return [Math.round(r.top - w.top), Math.round(w.bottom - r.bottom)]; })()""")
+    check('vurgu şeridi ortalı (üst = alt boşluk)', gaps[0] == gaps[1] and gaps[0] > 0, gaps)
     # ± ile önceki değer, ✓ ile kayıt
     page.click('#set-row-0-0 .kg-stepper .stepper-btn >> nth=1'); page.click('#set-row-0-0 .reps-stepper .stepper-btn >> nth=1')
     page.click('#set-done-0-0'); page.wait_for_timeout(200)
