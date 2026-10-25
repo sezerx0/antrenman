@@ -266,22 +266,24 @@ function buildSetRow(ei, s, ex, ps, sug) {
   const phR = sug ? sug.reps : ps.repsR;
   const phL = sug ? sug.reps : ps.repsL;
   const sugAttr = v => sug ? ` data-sug="${escapeHtml(v)}" data-osug="${escapeHtml(v)}"` : '';
-  // Soluk yazı = öneri (renkli) ya da geçen sefer (gri); girilen değer koyu
+  // Kutular boş başlar (sadece "kg" / "tk"). Öneri "Bugün" satırında, geçen sefer "Önceki"
+  // sütununda görünür; boş kutuda ± geçen seferki değeri getirir. data-hint: o değer.
   const src = sug ? ' src-sug' : (hasValue(ps) ? ' src-prev' : '');
+  const hint = v => ` data-hint="${escapeHtml(v || '')}"`;
   const repsHtml = ex.bilateral
     ? `<div class="bi-reps">
         <div class="bi-reps-row">
           <span class="bi-label">SAĞ</span>
-          <input class="bi-val${src}" type="text" inputmode="numeric" placeholder="${escapeHtml(phR || 'tk')}" data-prev="${escapeHtml(ps.repsR || '')}"${sugAttr(sug && sug.reps)} id="repsR-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsR',${ei},${s})">
+          <input class="bi-val${src}" type="text" inputmode="numeric" placeholder="tk"${hint(phR)} data-prev="${escapeHtml(ps.repsR || '')}"${sugAttr(sug && sug.reps)} id="repsR-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsR',${ei},${s})">
         </div>
         <div class="bi-reps-row">
           <span class="bi-label">SOL</span>
-          <input class="bi-val${src}" type="text" inputmode="numeric" placeholder="${escapeHtml(phL || 'tk')}" data-prev="${escapeHtml(ps.repsL || '')}"${sugAttr(sug && sug.reps)} id="repsL-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsL',${ei},${s})">
+          <input class="bi-val${src}" type="text" inputmode="numeric" placeholder="tk"${hint(phL)} data-prev="${escapeHtml(ps.repsL || '')}"${sugAttr(sug && sug.reps)} id="repsL-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'repsL',${ei},${s})">
         </div>
       </div>`
     : `<div class="reps-stepper">
         <button class="stepper-btn" onclick="stepReps(${ei},${s},-1)" type="button">−</button>
-        <input class="reps-val${src}" type="text" inputmode="numeric" placeholder="${escapeHtml(phReps || 'tk')}" data-prev="${escapeHtml(ps.reps || '')}"${sugAttr(sug && sug.reps)} id="reps-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'reps',${ei},${s})">
+        <input class="reps-val${src}" type="text" inputmode="numeric" placeholder="tk"${hint(phReps)} data-prev="${escapeHtml(ps.reps || '')}"${sugAttr(sug && sug.reps)} id="reps-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'reps',${ei},${s})">
         <button class="stepper-btn" onclick="stepReps(${ei},${s},1)" type="button">+</button>
       </div>`;
   return `<div class="set-wrap" id="set-wrap-${id}"><div class="set-row${sug && sug.up ? ' sug-up' : ''}" id="set-row-${id}">
@@ -289,7 +291,7 @@ function buildSetRow(ei, s, ex, ps, sug) {
     ${prevCell(ei, s, ps)}
     <div class="kg-stepper">
       <button class="stepper-btn" onclick="stepKg(${ei},${s},-1)" type="button">−</button>
-      <input class="kg-val${src}" type="text" inputmode="decimal" placeholder="${escapeHtml(phKg || 'kg')}" data-prev="${escapeHtml(prevKg)}"${sugAttr(sug && sug.kg)} id="kg-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'kg',${ei},${s})">
+      <input class="kg-val${src}" type="text" inputmode="decimal" placeholder="kg"${hint(phKg)} data-prev="${escapeHtml(prevKg)}"${sugAttr(sug && sug.kg)} id="kg-${id}" oninput="onSetInput(${ei},${s})" onkeydown="handleSetNav(event,'kg',${ei},${s})">
       <button class="stepper-btn" onclick="stepKg(${ei},${s},1)" type="button">+</button>
     </div>
     ${repsHtml}
@@ -977,14 +979,14 @@ function inheritForward(ei, s) {
     const deviated = own && orig === own && num(own) !== kg;
     if (!noSource && !deviated) continue;
     const v = String(kg);
-    next.dataset.sug = v; next.placeholder = v;
+    next.dataset.sug = v; next.dataset.hint = v;
     next.classList.remove('src-prev'); next.classList.add('src-sug', 'src-inh');
     if (noSource) {
       // tekrar da yoksa bu setin tekrarı ipucu olsun
       ['reps', 'repsR', 'repsL'].forEach(k => {
         const from = document.getElementById(`${k}-${ei}-${s}`), to = document.getElementById(`${k}-${ei}-${t}`);
         if (from && to && to.value === '' && !to.dataset.sug && !to.dataset.prev && from.value) {
-          to.dataset.sug = from.value; to.placeholder = from.value; to.classList.add('src-sug', 'src-inh');
+          to.dataset.sug = from.value; to.dataset.hint = from.value; to.classList.add('src-sug', 'src-inh');
         }
       });
     }

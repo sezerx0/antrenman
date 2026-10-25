@@ -1,4 +1,4 @@
-const CACHE = 'antrenman-assets-v14';
+const CACHE = 'antrenman-assets-v15';
 
 const PRECACHE = [
   '/antrenman/',

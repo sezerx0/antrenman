@@ -1034,3 +1034,10 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .side-done-btn .ic path { stroke-width: 3; }
 .side-done-btn.done { background: var(--done); border-color: var(--done); color: var(--on-done); }
 .set-done-btn.bi-main { display: none; }
+/* Kutular boş başlar: "kg" / "tk" yazısı her zaman nötr gri */
+.set-row .kg-val::placeholder, .set-row .reps-val::placeholder, .set-row.sug-up .kg-val::placeholder,
+[data-palette="lime"] .set-row.sug-up .kg-val::placeholder,
+.set-row .kg-val.src-sug::placeholder, .set-row .reps-val.src-sug::placeholder,
+[data-palette="lime"] .set-row .kg-val.src-sug::placeholder, [data-palette="lime"] .set-row .reps-val.src-sug::placeholder,
+[data-palette="lime"][data-theme="dark"] .set-row .kg-val.src-sug::placeholder, [data-palette="lime"][data-theme="dark"] .set-row .reps-val.src-sug::placeholder { color: var(--text-tertiary); font-size: 13px; font-weight: 500; }
+.set-row .bi-val::placeholder, [data-palette="lime"] .set-row .bi-val.src-sug::placeholder, [data-palette="lime"][data-theme="dark"] .set-row .bi-val.src-sug::placeholder, .set-row .bi-val.src-sug::placeholder { color: var(--text-tertiary); font-size: 10px; font-weight: 500; }

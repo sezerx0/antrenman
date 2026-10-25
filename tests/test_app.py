@@ -95,7 +95,7 @@ with sync_playwright() as p:
     hint = page.inner_text('#ex-card-0 .ex-prev-hint')
     prev_cells = page.evaluate("[...document.querySelectorAll('#ex-card-0 .set-prev')].map(e => e.innerText.replace(/\\s+/g, ''))")
     check('önceki performans sütunda ve not görünüyor', prev_cells == ['40×10', '42.5×8'] and 'Önceki:' in hint and 'koltuk 4' in page.inner_text('#ex-card-0'), (prev_cells, hint))
-    check('placeholder önceki değerden', page.get_attribute('#kg-0-1', 'placeholder') == '42.5')
+    check('placeholder önceki değerden', page.get_attribute('#kg-0-1', 'data-hint') == '42.5')
     page.fill('#kg-0-0', '22,5')
     page.fill('#reps-0-0', '8')
     page.click('#set-done-0-0')
@@ -140,9 +140,9 @@ with sync_playwright() as p:
     # ── 6. Atlanan hareket önceki değeri silmemeli ──
     page.evaluate("openWorkoutScreen('torso-a')")
     check('Incline için önceki değer hâlâ 30 (önceki antrenmanda boştu → 2 log geride değil, son dolu kayıt)',
-          page.get_attribute('#kg-1-0', 'placeholder') == '30', page.get_attribute('#kg-1-0', 'placeholder'))
+          page.get_attribute('#kg-1-0', 'data-hint') == '30', page.get_attribute('#kg-1-0', 'data-hint'))
     check('Pec Deck set 2 ipucu eski antrenmandan değil, son dolu kayıttan',
-          page.get_attribute('#kg-0-0', 'placeholder') == '25')
+          page.get_attribute('#kg-0-0', 'data-hint') == '25')
     page.evaluate("discardActive()")
 
     # ── 7. Bilateral + set ekleme ──
@@ -511,15 +511,15 @@ with sync_playwright() as p:
         {exId:'pec-deck', exName:'Pec Deck Fly', setIdx:1, kg:42.5, reps:9}], notes:{}});
       openWorkoutScreen('torso-a'); }""")
     page.wait_for_timeout(300)
-    check('hedef kapalıyken placeholder geçen sefer', page.get_attribute('#kg-0-0', 'placeholder') == '40' and page.inner_text('#range-chip-0').strip() == 'Hedef')
+    check('hedef kapalıyken placeholder geçen sefer', page.get_attribute('#kg-0-0', 'data-hint') == '40' and page.inner_text('#range-chip-0').strip() == 'Hedef')
     page.click('#range-chip-0'); page.wait_for_timeout(200)
     page.click('#ex-sheet .range-chip:has-text("8–12")'); page.wait_for_timeout(150)
     page.evaluate("closeExSheet()"); page.wait_for_timeout(300)
     check('çip 8–12', page.inner_text('#range-chip-0').strip() == '8–12', page.inner_text('#range-chip-0'))
-    check('40×12 + 42,5×9: hafif set 42,5\'e çıkar, ağır set +1 tekrar', page.get_attribute('#kg-0-0', 'placeholder') == '42.5' and page.get_attribute('#reps-0-0', 'placeholder') == '8' and page.get_attribute('#reps-0-1', 'placeholder') == '10')
+    check('40×12 + 42,5×9: hafif set 42,5\'e çıkar, ağır set +1 tekrar', page.get_attribute('#kg-0-0', 'data-hint') == '42.5' and page.get_attribute('#reps-0-0', 'data-hint') == '8' and page.get_attribute('#reps-0-1', 'data-hint') == '10')
     check('öneri satırı ve hafif set açıklaması', '42.5×8' in page.inner_text('#ex-card-0 .ex-sug') and 'Hafif set' in page.inner_text('#ex-card-0 .ex-sug-why'))
     page.evaluate("setProgressMode('perSet')"); page.wait_for_timeout(150)
-    check('"her set" modunda üst sınırdaki set ağırlaşıyor', page.get_attribute('#kg-0-0', 'placeholder') == '42.5' and page.get_attribute('#reps-0-0', 'placeholder') == '8' and page.get_attribute('#reps-0-1', 'placeholder') == '10')
+    check('"her set" modunda üst sınırdaki set ağırlaşıyor', page.get_attribute('#kg-0-0', 'data-hint') == '42.5' and page.get_attribute('#reps-0-0', 'data-hint') == '8' and page.get_attribute('#reps-0-1', 'data-hint') == '10')
     page.fill('#kg-0-0', '42,5'); page.fill('#reps-0-0', '8'); page.click('#set-done-0-0')
     check('set elle girilip kaydedildi', page.input_value('#kg-0-0') == '42,5' and page.evaluate("document.getElementById('set-done-0-0').classList.contains('done')"))
     page.evaluate("setProgressMode('all')"); page.wait_for_timeout(150)
@@ -1047,7 +1047,8 @@ with sync_playwright() as p:
       openWorkoutScreen('torso-a'); }""")
     page.wait_for_timeout(300)
     check('meta satırı: set · tekrar aralığı · dinlenme', '3 set' in page.inner_text('#ex-card-0 .ex-meta') and '8–12' in page.inner_text('#ex-card-0 .ex-meta') and page.query_selector('#rest-chip-0') is not None)
-    check('öneri placeholder (renkli sınıf)', page.get_attribute('#kg-0-0', 'placeholder') == '50' and 'src-sug' in page.get_attribute('#kg-0-0', 'class') and page.get_attribute('#reps-0-1', 'placeholder') == '10')
+    check('kutular boş başlıyor (sadece kg / tk)', page.get_attribute('#kg-0-0', 'placeholder') == 'kg' and page.get_attribute('#reps-0-0', 'placeholder') == 'tk' and page.input_value('#kg-0-0') == '')
+    check('öneri ipucu (± için)', page.get_attribute('#kg-0-0', 'data-hint') == '50' and 'src-sug' in page.get_attribute('#kg-0-0', 'class') and page.get_attribute('#reps-0-1', 'data-hint') == '10')
     check('açıklamalar varsayılan gizli, Detaylar ile açılıyor', not page.is_visible('#ex-details-0'))
     page.click('#details-chip-0'); page.wait_for_timeout(100)
     check('Detaylar açıldı (son antrenmanlar)', page.is_visible('#ex-details-0') and 'Son antrenmanlar' in page.text_content('#ex-details-0'))
@@ -1064,10 +1065,10 @@ with sync_playwright() as p:
     check('tamamlanan set düzenlenebilir', page.evaluate("collectWorkoutSets().find(s => s.exName === 'Hızlı Test' && s.setIdx === 0).kg") == 47.5)
     # 2. sette öneriden farklı kilo → 3. set devralır
     page.fill('#kg-0-1', '47,5'); page.fill('#reps-0-1', '10'); page.click('#set-done-0-1'); page.wait_for_timeout(150)
-    check('öneriden farklı kilo sonraki sete devredildi', page.get_attribute('#kg-0-2', 'placeholder') == '47.5' and 'src-inh' in page.get_attribute('#kg-0-2', 'class'))
+    check('öneriden farklı kilo sonraki sete devredildi', page.get_attribute('#kg-0-2', 'data-hint') == '47.5' and 'src-inh' in page.get_attribute('#kg-0-2', 'class'))
     # Geçmişi olmayan hareket: ilk setin kilosu ve tekrarı devralınır
     page.fill('#kg-1-0', '30'); page.fill('#reps-1-0', '12'); page.click('#set-done-1-0'); page.wait_for_timeout(150)
-    check('geçmişsiz harekette ilk set devralındı', page.get_attribute('#kg-1-1', 'placeholder') == '30' and page.get_attribute('#reps-1-1', 'placeholder') == '12')
+    check('geçmişsiz harekette ilk set devralındı', page.get_attribute('#kg-1-1', 'data-hint') == '30' and page.get_attribute('#reps-1-1', 'data-hint') == '12')
     page.click('#set-row-1-1 .kg-stepper .stepper-btn >> nth=1'); page.fill('#reps-1-1', '12'); page.click('#set-done-1-1'); page.wait_for_timeout(150)
     check('geçmişsiz harekette ± devralınan kiloyu getiriyor', page.input_value('#kg-1-1') == '30')
     # yeniden çizimde (makine/ayar) kaydırma korunuyor
@@ -1077,7 +1078,7 @@ with sync_playwright() as p:
     y0 = page.evaluate(pos)
     page.evaluate("refreshCardsAfterSetting()")
     check('yeniden çizimde sayfa zıplamıyor (aynı set yerinde)', abs(page.evaluate(pos) - y0) < 2 and page.evaluate("document.getElementById('ws-body').scrollTop") > 200, (y0, page.evaluate(pos)))
-    check('yeniden çizimde devralma/tamamlandı korunuyor', page.get_attribute('#kg-0-2', 'placeholder') == '47.5' and page.evaluate("document.getElementById('set-done-1-1').classList.contains('done')"))
+    check('yeniden çizimde devralma/tamamlandı korunuyor', page.get_attribute('#kg-0-2', 'data-hint') == '47.5' and page.evaluate("document.getElementById('set-done-1-1').classList.contains('done')"))
     # Sıradaki set dinlenme sayacının arkasında kalmıyor
     page.evaluate("document.getElementById('ws-body').scrollTop = 0; stopRest()")
     page.fill('#kg-0-2', '47,5'); page.fill('#reps-0-2', '9'); page.click('#set-done-0-2'); page.wait_for_timeout(600)
