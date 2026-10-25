@@ -1,4 +1,4 @@
-const CACHE = 'antrenman-assets-v15';
+const CACHE = 'antrenman-assets-v16';
 
 const PRECACHE = [
   '/antrenman/',
@@ -20,7 +20,8 @@ const PRECACHE = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting())
+    // cache: 'reload' → tarayıcının HTTP önbelleğindeki eski kopyayı değil, sunucudakini al
+    caches.open(CACHE).then(c => c.addAll(PRECACHE.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting())
   );
 });
 
@@ -57,8 +58,11 @@ self.addEventListener('fetch', e => {
 
   // Aynı-origin (index.html, manifest, ikonlar): önce ağ, ağ yoksa önbellek
   // Bu sayede index.html her zaman güncel sürümü yükler
+  // cache: 'no-cache' → GitHub Pages'in 10 dakikalık HTTP önbelleği yüzünden yeni sürüm
+  // gecikmesin; sunucuya her seferinde sorulur (değişmediyse kısa 304 yanıtı döner)
+  const fresh = new Request(e.request.url, { cache: 'no-cache', credentials: 'same-origin' });
   e.respondWith(
-    fetch(e.request)
+    fetch(fresh)
       .then(res => { cachePut(e.request, res); return res; })
       .catch(() => caches.match(e.request).then(r => r || (e.request.mode === 'navigate' ? caches.match('/antrenman/index.html') : undefined)))
   );
