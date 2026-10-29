@@ -1120,6 +1120,43 @@ with sync_playwright() as p:
     check('gelişmede arka plan yok, ↑ işareti var', after[0] and '↑' in after[1] and after[2] in ('rgba(0, 0, 0, 0)', 'transparent'), after)
     page.evaluate("""() => { discardActive(); getDayById('torso-a').exercises.shift(); saveData('workoutDays', DB.workoutDays); DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); }""")
 
+
+    # ── 52. Antrenman içinde hareket ekleme ──
+    page.evaluate("discardActive(); stopRest(); openWorkoutScreen('torso-a')"); page.wait_for_timeout(300)
+    n0 = page.evaluate("active.day.exercises.length"); prog0 = page.evaluate("getDayById('torso-a').exercises.length")
+    page.fill('#kg-0-0', '40'); page.fill('#reps-0-0', '10'); page.click('#set-done-0-0'); page.evaluate("stopRest()")
+    page.click('#ws-add-ex'); page.wait_for_timeout(200)
+    check('hareket ekle ekranı açıldı', page.is_visible('#add-ex-input') and page.inner_text('#ex-sheet-title') == 'Hareket ekle')
+    page.fill('#add-ex-input', 'Hammer Curl'); page.click('#ex-sheet .add-ex-opts .dur-stepper button >> nth=0')
+    page.click('#ex-sheet .btn-primary'); page.wait_for_timeout(300)
+    check('hareket sadece bu antrenmana eklendi (2 set)', page.evaluate("active.day.exercises.length") == n0 + 1 and page.evaluate("active.sets[active.sets.length - 1]") == 2 and page.evaluate("getDayById('torso-a').exercises.length") == prog0)
+    check('eklenen hareketin kartı görünüyor', 'Hammer Curl' in page.inner_text(f'#ex-card-{n0}'))
+    check('önceki girişler korundu', page.input_value('#kg-0-0') == '40' and page.evaluate("document.getElementById('set-done-0-0').classList.contains('done')"))
+    page.fill(f'#kg-{n0}-0', '12'); page.fill(f'#reps-{n0}-0', '12'); page.evaluate(f"onSetInput({n0},0)")
+    page.click('#ws-add-ex'); page.wait_for_timeout(200)
+    page.fill('#add-ex-input', 'Wrist Curl'); page.click('#add-ex-keep + .ios-toggle-track')
+    page.click('#ex-sheet .btn-primary'); page.wait_for_timeout(300)
+    check('"Programa da ekle" ile gün programına eklendi', page.evaluate("getDayById('torso-a').exercises.some(e => e.name === 'Wrist Curl')") and not page.evaluate("active.day.exercises[active.day.exercises.length - 1].added"))
+    # İlk ekleneni çıkar: sonraki hareketin girişleri kayar
+    page.evaluate(f"document.getElementById('kg-{n0 + 1}-0').value = '8'; captureActive(); openExSheet({n0})"); page.wait_for_timeout(200)
+    page.click('#ex-sheet .sheet-row.danger-text'); page.wait_for_timeout(300)
+    check('eklenen hareket çıkarıldı, sonraki hareketin değeri kaydı', 'Hammer Curl' not in page.inner_text('#ws-body') and page.input_value(f'#kg-{n0}-0') == '8' and page.input_value('#kg-0-0') == '40')
+    sets = page.evaluate("collectWorkoutSets().map(s => s.exName)")
+    check('kayıtta eklenen hareket (Wrist Curl) var', 'Wrist Curl' in sets and 'Hammer Curl' not in sets, sets)
+    page.evaluate("""() => { discardActive(); const d = getDayById('torso-a'); d.exercises = d.exercises.filter(e => e.name !== 'Wrist Curl'); saveData('workoutDays', DB.workoutDays); }""")
+
+    # ── 53. Pull B: Incline Dumbbell Curl → Bayesian (tek seferlik düzeltme) ──
+    r = page.evaluate("""() => { lsRemove('fix-pullb-bayesian');
+      const saved = deepCopy(DB.workoutDays);
+      DB.workoutDays = myProgramDays(); DB.workoutDays.find(d => d.id === 'pull-b').exercises[3] = {id:'x', name:'Incline Dumbbell Curl', sets:2};
+      DB.workoutLogs.push({date:'2020-08-01', dayId:'pull-a', __test:1, sets:[{exId:'b', exName:'Bayesian Curl Cable', setIdx:0, kg:15, reps:12}], notes:{}});
+      applyProgramFixes();
+      const out = { name: DB.workoutDays.find(d => d.id === 'pull-b').exercises[3].name, logs: getLogsByExName('Bayesian Cable Curl').length, old: getLogsByExName('Bayesian Curl Cable').length, flag: lsGet('fix-pullb-bayesian') };
+      DB.workoutDays = saved; saveData('workoutDays', DB.workoutDays); DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs);
+      return out; }""")
+    check('Pull B\'de Bayesian, eski adlı kayıtlar taşındı', r['name'] == 'Bayesian Cable Curl' and r['logs'] >= 1 and r['old'] == 0 and r['flag'] == '1', r)
+    check('şablonda Pull B Bayesian', page.evaluate("myProgramDays().find(d => d.id === 'pull-b').exercises.map(e => e.name).includes('Bayesian Cable Curl')"))
+
     check('sayfa hatası yok', not errors, errors)
 
     # ── 35. Antrenman bildirimi ──

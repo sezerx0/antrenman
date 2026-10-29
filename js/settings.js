@@ -606,7 +606,7 @@ const MY_PROGRAM = {
       ['Cable Lateral Raise', 4, [12, 20]], ['Smith Machine JM Press', 2, [8, 12]], ['Cable Overhead Triceps Extension', 2, [10, 15]]]],
     ['pull-b', 'Pull B', [
       ['Chest Supported T-Bar Row', 3, [8, 12]], ['Lat Pulldown', 2, [8, 12]], ['Reverse Pec Deck', 2, [12, 20]],
-      ['Incline Dumbbell Curl', 2, [10, 15]], ['Preacher Curl Machine', 2, [8, 12]], ['EZ Bar Reverse Curl (Preacher Pad)', 2, [10, 15]]]],
+      ['Bayesian Cable Curl', 2, [10, 15]], ['Preacher Curl Machine', 2, [8, 12]], ['EZ Bar Reverse Curl (Preacher Pad)', 2, [10, 15]]]],
     ['legs', 'Legs', [
       ['Leg Press', 2, [8, 12]], ['Leg Extension', 2, [10, 15]], ['Lying Leg Curl', 2, [10, 15]], ['Romanian Deadlift', 2, [8, 12]]]],
   ],
@@ -623,6 +623,27 @@ const MY_PROGRAM = {
 function myProgramDays() {
   return MY_PROGRAM.days.map(([id, name, list]) => ({ id, name,
     exercises: list.map(([n, sets, range], i) => ({ id: `${id}-${i + 1}`, name: n, sets, repRange: range })) }));
+}
+// Tek seferlik düzeltme (açılışta): Pull B'de Incline Dumbbell Curl → Bayesian Cable Curl.
+// Eski adla ("Bayesian Curl Cable") kalan Bayesian kayıtları da yeni isme taşınır;
+// böylece "Önceki", öneriler ve rekorlar Bayesian geçmişiyle devam eder.
+function applyProgramFixes() {
+  if (lsGet('fix-pullb-bayesian')) return;
+  const NEW = 'Bayesian Cable Curl', OLD = 'Bayesian Curl Cable';
+  const used = n => DB.workoutDays.some(d => d.exercises.some(e => normName(e.name) === normName(n)));
+  if (getLogsByExName(OLD).length && !used(OLD)) {
+    migrateExName(OLD, NEW);
+    saveData('workoutLogs', DB.workoutLogs);
+    saveData('settings', DB.settings);
+  }
+  const day = getDayById('pull-b');
+  const ex = day && day.exercises.find(e => normName(e.name) === 'incline dumbbell curl');
+  if (ex) {
+    ex.name = NEW;
+    if (!repRangeFor(NEW) && ex.repRange == null) ex.repRange = [10, 15];
+    saveData('workoutDays', DB.workoutDays);
+  }
+  lsSet('fix-pullb-bayesian', '1');
 }
 // Hareketin adını her yerde değiştir: kayıtlar, notlar, hareket ayarları
 function migrateExName(from, to) {

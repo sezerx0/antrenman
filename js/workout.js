@@ -606,7 +606,7 @@ function renderExerciseCards() {
         <textarea class="ex-note-input" placeholder="Bu hareket için not…" id="note-${ei}" oninput="onNoteInput(${ei})" rows="2"></textarea>
       </div>
     </div>`;
-  }).join('') + renderCardioCard();
+  }).join('') + `<button class="ws-add-ex" id="ws-add-ex" onclick="openAddExSheet()">${icon('plus')}Hareket ekle</button>` + renderCardioCard();
   body.scrollTop = scrollY;
   updateProgress();
   updateNextSet();
@@ -772,6 +772,7 @@ function renderExSheet(view) {
       : `<button class="sheet-row" onclick="renderExSheet('swap')">${icon('swap')}Bu antrenmanda değiştir</button>`);
     rows.push(`<button class="sheet-row" onclick="toggleSkipEx(${ei}); closeExSheet();">${icon(skipped ? 'undo' : 'skip')}${skipped ? 'Atlamayı geri al' : 'Bu antrenmanda atla'}</button>`);
   }
+  if (ex.added) rows.push(`<button class="sheet-row danger-text" onclick="removeAddedEx(${ei})">${icon('x')}Bu antrenmandan çıkar</button>`);
   body.innerHTML = `<div class="sheet-list">${rows.join('')}</div>` + exSettingsHtml(ex);
 }
 
@@ -922,6 +923,83 @@ function undoSwapEx() {
   replaceExercise(exSheetIdx, ex.swappedFrom, null);
   closeExSheet();
 }
+// ── Antrenman sırasında hareket ekleme ──
+function openAddExSheet() {
+  if (!active) return;
+  exSheetIdx = -1;
+  const isEdit = active.mode === 'edit';
+  document.getElementById('ex-sheet-title').textContent = 'Hareket ekle';
+  document.getElementById('ex-sheet-sub').textContent = isEdit ? 'Bu kayda eklenir.' : `${active.day.name} antrenmanına eklenir.`;
+  fillExNameList();
+  document.getElementById('ex-sheet-body').innerHTML = `<input class="sheet-input" id="add-ex-input" list="ex-names-list" placeholder="Hareket adı" autocomplete="off" onkeydown="if(event.key==='Enter')confirmAddEx()">
+    <div class="sheet-list add-ex-opts">
+      <div class="sheet-row">${icon('list')}Set sayısı
+        <div class="dur-stepper sheet-stepper"><button onclick="stepAddExSets(-1)" aria-label="Azalt">${icon('minus')}</button><span id="add-ex-sets">3</span><button onclick="stepAddExSets(1)" aria-label="Artır">${icon('plus')}</button></div>
+      </div>
+      ${isEdit ? '' : `<label class="sheet-row">${icon('dumbbell')}Programa da ekle
+        <span class="ios-toggle sheet-toggle"><input type="checkbox" id="add-ex-keep"><span class="ios-toggle-track"></span><span class="ios-toggle-thumb"></span></span></label>`}
+    </div>
+    <div class="sheet-hint">${isEdit ? '' : 'Kapalıysa sadece bugün. Açıksa her '}${isEdit ? 'Daha önce yaptığın bir hareketi seçersen geçmişi görünür.' : `${escapeHtml(active.day.name)} antrenmanında da olur. Daha önce yaptığın bir hareketi seçersen geçmişi ve önerileri görünür.`}</div>
+    <button class="btn-primary" onclick="confirmAddEx()">Ekle</button>
+    <button class="btn-secondary" onclick="closeExSheet()">Vazgeç</button>`;
+  document.getElementById('ex-sheet').classList.add('open');
+  pushLayer('exSheet');
+  setTimeout(() => document.getElementById('add-ex-input')?.focus(), 50);
+}
+function stepAddExSets(d) {
+  const el = document.getElementById('add-ex-sets');
+  el.textContent = Math.max(1, Math.min(10, (parseInt(el.textContent) || 3) + d));
+}
+function confirmAddEx() {
+  if (!active) return;
+  const name = (document.getElementById('add-ex-input').value || '').trim();
+  if (!name) { toast('Hareket adı gir.'); return; }
+  const sets = parseInt(document.getElementById('add-ex-sets').textContent) || 3;
+  const keep = !!document.getElementById('add-ex-keep')?.checked && active.mode !== 'edit';
+  captureActive();
+  const ex = { id: uid(), name, sets, ...(knownBilateral(name) ? { bilateral: true } : {}) };
+  if (keep) {
+    const day = getDayById(active.dayId);
+    if (day) { day.exercises.push({ ...ex }); saveData('workoutDays', DB.workoutDays); }
+  } else ex.added = true;
+  active.day.exercises.push(ex);
+  active.sets.push(sets);
+  saveActive();
+  closeExSheet();
+  keepPosition(() => { renderExerciseCards(); applyActiveValues(); });
+  const card = document.getElementById(`ex-card-${active.day.exercises.length - 1}`);
+  if (card) setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  toast(keep ? `${name} eklendi (programa da)` : `${name} eklendi`, 1800);
+}
+// Sadece bu antrenmana eklenen hareketi çıkar; sonraki hareketlerin girişleri kaydırılır
+function removeAddedEx(ei) {
+  const ex = active && active.day.exercises[ei];
+  if (!ex || !ex.added) return;
+  captureActive();
+  const has = Object.keys(active.values || {}).some(k => new RegExp(`^(kg|reps|repsR|repsL)-${ei}-\\d+$`).test(k));
+  if (has && !confirm(`${ex.name} için girilen değerler silinecek. Çıkarılsın mı?`)) return;
+  const shiftKey = k => k.replace(/^((?:kg|reps|repsR|repsL|set-done|set-doneR|set-doneL|note)-)(\d+)(-\d+)?$/, (m, p, e, rest = '') => {
+    const n = +e; return n > ei ? `${p}${n - 1}${rest}` : m;
+  });
+  const own = k => new RegExp(`^(?:kg|reps|repsR|repsL|set-done|set-doneR|set-doneL)-${ei}-\\d+$|^note-${ei}$`).test(k);
+  const values = {};
+  Object.entries(active.values || {}).forEach(([k, v]) => { if (!own(k)) values[shiftKey(k)] = v; });
+  active.values = values;
+  active.done = (active.done || []).filter(id => !own(id)).map(shiftKey);
+  active.auto = (active.auto || []).filter(id => !own(id)).map(shiftKey);
+  const shiftPair = obj => { const out = {}; Object.entries(obj || {}).forEach(([k, v]) => { const [e, s] = k.split('-').map(Number); if (e !== ei) out[`${e > ei ? e - 1 : e}-${s}`] = v; }); return out; };
+  active.rir = shiftPair(active.rir);
+  active.prs = shiftPair(active.prs);
+  active.skipped = (active.skipped || []).filter(i => i !== ei).map(i => i > ei ? i - 1 : i);
+  if (active.lastDone) active.lastDone = active.lastDone[0] === ei ? null : [active.lastDone[0] > ei ? active.lastDone[0] - 1 : active.lastDone[0], active.lastDone[1]];
+  active.day.exercises.splice(ei, 1);
+  active.sets.splice(ei, 1);
+  saveActive();
+  closeExSheet();
+  keepPosition(() => { renderExerciseCards(); applyActiveValues(); });
+  toast(`${ex.name} çıkarıldı`, 1500);
+}
+
 function toggleSkipEx(ei) {
   if (!active) return;
   captureActive();

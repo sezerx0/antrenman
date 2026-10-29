@@ -6,6 +6,7 @@
 hydrateIcons();
 applyTheme();
 applyModules();
+applyProgramFixes();
 setGender('male', true);
 loadProfile();
 renderHome();
