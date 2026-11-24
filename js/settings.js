@@ -645,6 +645,36 @@ function applyProgramFixes() {
   }
   lsSet('fix-pullb-bayesian', '1');
 }
+// Aynı hareketin farklı yazımları (ör. "JM Press", "Smith JM Press", "Bayesian Curl"):
+// programdaki adla kaydedilmemiş geçmiş, programdaki ada taşınır. Sadece eski ad
+// programda yoksa ve hedef ad programdaysa çalışır; açılışta ve program değişince.
+const EX_ALIASES = [
+  [/\bjm ?press\b/, 'Smith Machine JM Press'],
+  [/\bbayesian\b/, 'Bayesian Cable Curl'],
+];
+function loggedExNames() {
+  const names = new Map();   // normName → { name, count }
+  DB.workoutLogs.forEach(l => (l.sets || []).forEach(s => {
+    if (!s.exName) return;
+    const k = normName(s.exName);
+    const e = names.get(k) || { name: s.exName, count: 0 };
+    e.count++; names.set(k, e);
+  }));
+  return names;
+}
+function mergeAliasHistory() {
+  const used = new Set();
+  DB.workoutDays.forEach(d => d.exercises.forEach(e => used.add(normName(e.name))));
+  let moved = 0;
+  loggedExNames().forEach(({ name }, k) => {
+    EX_ALIASES.forEach(([re, target]) => {
+      const t = normName(target);
+      if (re.test(k) && k !== t && used.has(t) && !used.has(k)) { migrateExName(name, target); moved++; }
+    });
+  });
+  if (moved) { saveData('workoutLogs', DB.workoutLogs); saveData('settings', DB.settings); }
+  return moved;
+}
 // Hareketin adını her yerde değiştir: kayıtlar, notlar, hareket ayarları
 function migrateExName(from, to) {
   const f = normName(from), t = normName(to);
@@ -779,6 +809,7 @@ function applyTemplate(key) {
   syncOrder();
   saveData('workoutDays', DB.workoutDays);
   saveData('workoutOrder', DB.workoutOrder);
+  mergeAliasHistory();
 
   closeTemplateSheet();
   renderHome();

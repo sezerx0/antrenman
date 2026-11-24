@@ -7,6 +7,7 @@ hydrateIcons();
 applyTheme();
 applyModules();
 applyProgramFixes();
+mergeAliasHistory();
 setGender('male', true);
 loadProfile();
 renderHome();

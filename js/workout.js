@@ -752,6 +752,18 @@ function renderExSheet(view) {
   const skipped = (active.skipped || []).includes(ei);
   document.getElementById('ex-sheet-title').textContent = ex.name;
   const body = document.getElementById('ex-sheet-body');
+  if (view === 'merge') {
+    document.getElementById('ex-sheet-sub').textContent = 'Aynı hareketi başka bir adla kaydettiysen, o kayıtları bu harekete taşı.';
+    const used = new Set();
+    DB.workoutDays.forEach(d => d.exercises.forEach(e => used.add(normName(e.name))));
+    const list = [...loggedExNames().entries()].filter(([k]) => k !== normName(ex.name) && !used.has(k))
+      .sort((a, b) => a[1].name.localeCompare(b[1].name, 'tr'));
+    body.innerHTML = (list.length
+      ? `<div class="sheet-list">${list.map(([k, v]) => `<button class="sheet-row" onclick="mergeHistoryInto(${JSON.stringify(v.name).replace(/"/g, '&quot;')})">${icon('history')}<span style="flex:1;">${escapeHtml(v.name)}</span><span class="sheet-count">${v.count} set</span></button>`).join('')}</div>`
+      : `<div class="sheet-hint">Programda olmayan, başka adla kaydedilmiş bir hareket yok.</div>`)
+      + `<button class="btn-secondary" onclick="renderExSheet('menu')">Vazgeç</button>`;
+    return;
+  }
   if (view === 'swap') {
     document.getElementById('ex-sheet-sub').textContent = 'Sadece bu antrenman için. Programın değişmez.';
     fillExNameList();
@@ -772,6 +784,7 @@ function renderExSheet(view) {
       : `<button class="sheet-row" onclick="renderExSheet('swap')">${icon('swap')}Bu antrenmanda değiştir</button>`);
     rows.push(`<button class="sheet-row" onclick="toggleSkipEx(${ei}); closeExSheet();">${icon(skipped ? 'undo' : 'skip')}${skipped ? 'Atlamayı geri al' : 'Bu antrenmanda atla'}</button>`);
   }
+  rows.push(`<button class="sheet-row" onclick="renderExSheet('merge')">${icon('history')}Başka addaki geçmişi aktar</button>`);
   if (ex.added) rows.push(`<button class="sheet-row danger-text" onclick="removeAddedEx(${ei})">${icon('x')}Bu antrenmandan çıkar</button>`);
   body.innerHTML = `<div class="sheet-list">${rows.join('')}</div>` + exSettingsHtml(ex);
 }
@@ -880,6 +893,17 @@ function exSheetGraph() {
   const name = active.day.exercises[exSheetIdx].name;
   if (!swapTopLayer('exSheet', 'progressModal')) LAYER_CLOSERS.exSheet();
   openProgressModal(name);
+}
+function mergeHistoryInto(fromName) {
+  const ex = active && active.day.exercises[exSheetIdx];
+  if (!ex) return;
+  if (!confirm(`"${fromName}" kayıtları "${ex.name}" adına taşınsın mı?\n\nGeçmiş, rekorlar ve "Önceki" değerleri bu hareketle birleşir.`)) return;
+  migrateExName(fromName, ex.name);
+  saveData('workoutLogs', DB.workoutLogs);
+  saveData('settings', DB.settings);
+  closeExSheet();
+  refreshCardsAfterSetting();
+  toast(`${fromName} → ${ex.name} aktarıldı`, 2000);
 }
 function fillExNameList() {
   const nameSet = new Set();

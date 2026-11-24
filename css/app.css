@@ -1053,3 +1053,4 @@ body.awb-on .screen > .nav-header { padding-top: 84px; }
 .ws-add-ex:active { background: var(--bg-secondary); }
 .add-ex-opts { margin-top: 10px; }
 .add-ex-opts .sheet-row { cursor: default; }
+.sheet-count { font-size: 13px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }

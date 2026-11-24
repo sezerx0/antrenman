@@ -1158,6 +1158,24 @@ with sync_playwright() as p:
       return out; }""")
     check('Pull B\'de Bayesian, eski adlı kayıtlar taşındı', r['name'] == 'Bayesian Cable Curl' and r['logs'] >= 1 and r['old'] == 0 and r['flag'] == '1', r)
 
+
+    # ── 54. Farklı yazımla kaydedilmiş geçmiş (JM Press, Bayesian) ──
+    page.evaluate("""() => { discardActive(); DB.workoutDays = myProgramDays().map(d => (d.exercises.forEach(e => delete e.repRange), d)); saveData('workoutDays', DB.workoutDays);
+      DB.workoutLogs.push({date:'2020-09-01', dayId:'push-a', __test:1, sets:[
+        {exId:'j', exName:'Smith JM Press', setIdx:0, kg:30, reps:10}, {exId:'b', exName:'Bayesian Curl', setIdx:0, kg:12.5, reps:11},
+        {exId:'z', exName:'Hammer Curl Eski', setIdx:0, kg:14, reps:10}], notes:{}});
+      saveData('workoutLogs', DB.workoutLogs); }""")
+    moved = page.evaluate("mergeAliasHistory()")
+    check('JM Press ve Bayesian farklı yazımları programdaki ada taşındı', moved == 2 and page.evaluate("getLogsByExName('Smith JM Press').length === 0 && getLogsByExName('Bayesian Curl').length === 0 && getLogsByExName('Smith Machine JM Press').some(e => e.log.date === '2020-09-01') && getLogsByExName('Bayesian Cable Curl').some(e => e.log.date === '2020-09-01')"), moved)
+    page.evaluate("openWorkoutScreen('limbs-b')"); page.wait_for_timeout(300)
+    page.evaluate("openExSheet(0)"); page.wait_for_timeout(150)
+    page.click('#ex-sheet .sheet-row:has-text("Başka addaki geçmişi aktar")'); page.wait_for_timeout(150)
+    check('aktarılabilecek eski adlar listeleniyor', 'Hammer Curl Eski' in page.inner_text('#ex-sheet-body'))
+    page.click('#ex-sheet .sheet-row:has-text("Hammer Curl Eski")'); page.wait_for_timeout(300)
+    check('elle aktarma: geçmiş bu harekete geçti', page.evaluate("getLogsByExName('Hammer Curl Eski').length") == 0 and page.evaluate("getLogsByExName('Preacher Curl Machine').some(e => e.log.date === '2020-09-01')"))
+    page.evaluate("""() => { discardActive(); DB.workoutDays = deepCopy(DEFAULT_DAYS); saveData('workoutDays', DB.workoutDays); DB.workoutOrder = DB.workoutDays.map(d => d.id); saveData('workoutOrder', DB.workoutOrder);
+      DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); }""")
+
     check('sayfa hatası yok', not errors, errors)
 
     # ── 35. Antrenman bildirimi ──
