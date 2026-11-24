@@ -592,23 +592,23 @@ function resetData() {
 // ── Programın: tek program (Push / Pull + Legs, 5 gün) ──
 // [hareket, set, tekrar aralığı]
 const MY_PROGRAM = {
-  id: 'ppl5', name: 'Push / Pull + Legs',
-  desc: 'Pzt Push A · Sal Pull A · Çar dinlenme · Per Push B · Cum Pull B · Cmt Legs · Paz dinlenme. Uygulama sırayla bir sonraki günü önerir; dinlenme günlerini girmen gerekmez.',
+  id: 'tl4', name: 'Torso / Limbs',
+  desc: 'Torso A · Limbs A · Off · Torso B · Limbs B · Off. Belirli gün yok; uygulama sırayla bir sonraki antrenmanı önerir, off günlerini girmen gerekmez.',
   days: [
-    ['push-a', 'Push A', [
-      ['Incline Chest Press Machine', 3, [6, 10]], ['Pec Deck Fly', 2, [10, 15]], ['Cable Lateral Raise', 4, [12, 20]],
-      ['Smith Machine JM Press', 2, [8, 12]], ['Cable Overhead Triceps Extension', 2, [10, 15]]]],
-    ['pull-a', 'Pull A', [
-      ['Lat Pulldown', 3, [6, 12]], ['Chest Supported Machine Row', 3, [8, 12]], ['Reverse Pec Deck', 2, [12, 20]],
-      ['Preacher Curl Machine', 2, [8, 12]], ['Bayesian Cable Curl', 2, [10, 15]]]],
-    ['push-b', 'Push B', [
-      ['Horizontal Chest Press Machine', 3, [6, 10]], ['Shoulder Press Machine', 2, [8, 12]], ['Pec Deck Fly', 2, [10, 15]],
-      ['Cable Lateral Raise', 4, [12, 20]], ['Smith Machine JM Press', 2, [8, 12]], ['Cable Overhead Triceps Extension', 2, [10, 15]]]],
-    ['pull-b', 'Pull B', [
-      ['Chest Supported T-Bar Row', 3, [8, 12]], ['Lat Pulldown', 2, [8, 12]], ['Reverse Pec Deck', 2, [12, 20]],
-      ['Bayesian Cable Curl', 2, [10, 15]], ['Preacher Curl Machine', 2, [8, 12]], ['EZ Bar Reverse Curl (Preacher Pad)', 2, [10, 15]]]],
-    ['legs', 'Legs', [
-      ['Leg Press', 2, [8, 12]], ['Leg Extension', 2, [10, 15]], ['Lying Leg Curl', 2, [10, 15]], ['Romanian Deadlift', 2, [8, 12]]]],
+    ['torso-a', 'Torso A', [
+      ['Incline Chest Press Machine', 3, [6, 8]], ['Pec Deck Fly', 2, [8, 12]], ['Lat Pulldown', 2, [6, 8]],
+      ['Chest Supported Machine Row', 2, [6, 8]], ['Chest Supported T-Bar Row', 2, [6, 8]], ['Cable Lateral Raise', 3, [8, 12]]]],
+    ['limbs-a', 'Limbs A', [
+      ['Preacher Curl Machine', 2, [8, 12]], ['Bayesian Cable Curl', 2, [8, 12]], ['Smith Machine JM Press', 2, [8, 12]],
+      ['Cable Overhead Triceps Extension', 2, [8, 12]], ['Reverse Pec Deck', 2, [8, 12]], ['Cable Lateral Raise', 2, [8, 12]],
+      ['Leg Extension', 2, [8, 12]], ['Lying Leg Curl', 2, [8, 12]]]],
+    ['torso-b', 'Torso B', [
+      ['Incline Chest Press Machine', 3, [6, 8]], ['Pec Deck Fly', 2, [8, 12]], ['Lat Pulldown', 2, [6, 8]],
+      ['Chest Supported Machine Row', 2, [6, 8]], ['Chest Supported T-Bar Row', 2, [6, 8]], ['Cable Lateral Raise', 3, [8, 12]]]],
+    ['limbs-b', 'Limbs B', [
+      ['Preacher Curl Machine', 2, [8, 12]], ['Bayesian Cable Curl', 2, [8, 12]], ['EZ Bar Reverse Curl (Preacher Pad)', 2, [8, 12]],
+      ['Smith Machine JM Press', 2, [8, 12]], ['Cable Overhead Triceps Extension', 2, [8, 12]], ['Reverse Pec Deck', 2, [8, 12]],
+      ['Hip Adductor Machine', 2, [8, 12]], ['Hip Abductor Machine', 2, [8, 12]]]],
   ],
   // Eski adı → yeni adı (aynı hareket; geçmiş, rekor ve ayarlar yeni isme taşınır)
   renames: {

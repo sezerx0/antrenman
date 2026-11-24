@@ -113,7 +113,7 @@ function filterPR(query) {
 // ── Kas grupları ──
 const MUSCLES = {
   chest: 'Göğüs', back: 'Sırt', shoulders: 'Omuz', rearDelts: 'Arka omuz', biceps: 'Biceps', triceps: 'Triceps',
-  quads: 'Ön bacak', hamstrings: 'Arka bacak', glutes: 'Kalça', calves: 'Baldır', abs: 'Karın', traps: 'Trapez',
+  quads: 'Ön bacak', hamstrings: 'Arka bacak', adductors: 'İç bacak', glutes: 'Kalça', calves: 'Baldır', abs: 'Karın', traps: 'Trapez',
   forearms: 'Ön kol', other: 'Diğer',
 };
 // Sıra önemli: özel kalıplar genel kalıplardan önce ("leg curl" → arka bacak, "curl" → biceps)
@@ -122,6 +122,7 @@ const MUSCLE_RULES = [
   ['hamstrings', /leg curl|hamstring|\brdl\b|romanian|nordic|good ?morning|arka bacak/],
   ['quads', /leg ext|squat|leg press|lunge|hack|sissy|step ?up|ön bacak|bacak pres/],
   ['calves', /calf|baldır/],
+  ['adductors', /adduct|iç bacak/],
   ['triceps', /tricep|pushdown|push ?down|skull|jm press|tate press|\bdips?\b|close ?grip|arka kol|french press/],
   ['glutes', /hip thrust|glute|kick ?back|abduct|kalça/],
   ['shoulders', /lateral raise|shoulder|overhead press|military|\bohp\b|arnold|front raise|upright row|omuz/],
@@ -173,7 +174,7 @@ const VOLUME_GROUPS = [
   { id: 'back', name: 'Sırt', muscles: ['back', 'traps'] },
   { id: 'shoulders', name: 'Omuz', muscles: ['shoulders', 'rearDelts'] },
   { id: 'arms', name: 'Kol', muscles: ['biceps', 'triceps', 'forearms'] },
-  { id: 'legs', name: 'Bacak', muscles: ['quads', 'hamstrings', 'glutes', 'calves'] },
+  { id: 'legs', name: 'Bacak', muscles: ['quads', 'hamstrings', 'adductors', 'glutes', 'calves'] },
   { id: 'abs', name: 'Karın', muscles: ['abs'] },
   { id: 'other', name: 'Diğer', muscles: ['other'] },
 ];

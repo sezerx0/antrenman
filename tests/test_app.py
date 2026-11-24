@@ -665,10 +665,13 @@ with sync_playwright() as p:
     page.evaluate("discardActive(); DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs)")
 
 
-    # ── 36. Tek program: Push / Pull + Legs ──
+    # ── 36. Tek program: Torso / Limbs (Push/Pull'dan geçiş) ──
     page.evaluate("""() => { discardActive(); localStorage.removeItem('antrenman:programBackup'); localStorage.removeItem('antrenman:programHistory');
-      DB.workoutDays = deepCopy(DEFAULT_DAYS); DB.workoutDays[1].exercises[0].bilateral = true;
+      DB.workoutDays = [
+        {id:'push-a', name:'Push A', exercises:[{id:'p1', name:'Incline Chest Press Machine', sets:3}, {id:'p2', name:'Cable Lateral Raise', sets:4}]},
+        {id:'pull-a', name:'Pull A', exercises:[{id:'q1', name:'Preacher Curl Machine', sets:2, bilateral:true}, {id:'q2', name:'Bayesian Cable Curl', sets:2}]}];
       saveData('workoutDays', DB.workoutDays); DB.workoutOrder = DB.workoutDays.map(d => d.id); saveData('workoutOrder', DB.workoutOrder);
+      DB.settings.repRangeByEx = Object.assign({}, DB.settings.repRangeByEx, {'cable lateral raise': [12,20], 'lat pulldown': [6,12]});
       DB.workoutLogs.push({date: '2099-03-01', dayId:'push-a', dayName:'Push A', __test:1, sets:[
         {exId:'x1', exName:'Incline Chest Press', setIdx:0, kg:90, reps:8}, {exId:'x2', exName:'Bayesian Curl Cable', setIdx:0, kg:15, reps:12}], notes:{}, exNotes:{'incline chest press':'koltuk 4'}});
       DB.settings.restByEx = Object.assign({}, DB.settings.restByEx, {'incline chest press': 180});
@@ -677,37 +680,36 @@ with sync_playwright() as p:
     layers_before = page.evaluate("layers.length")
     page.click('#tab-settings .settings-row:has(#program-label)'); page.wait_for_timeout(300)
     check('program ekranında tek şablon', page.is_visible('#template-sheet') and page.evaluate("document.querySelectorAll('#template-list .tpl-card:not(.backup)').length") == 1)
-    check('kartta set ve tekrar aralığı', 'Lat Pulldown 3×6–12' in page.inner_text('#template-list .tpl-card >> nth=0'), page.inner_text('#template-list .tpl-card >> nth=0')[:300])
+    card = page.inner_text('#template-list .tpl-card >> nth=0')
+    check('kartta set ve tekrar aralığı', 'Incline Chest Press Machine 3×6–8' in card and 'Reverse Pec Deck 2×8–12' in card, card[:300])
     page.click('#template-list .tpl-apply >> nth=0'); page.wait_for_timeout(400)
-    check('programa geçildi', page.evaluate("DB.workoutDays.map(d => d.name).join('|')") == 'Push A|Pull A|Push B|Pull B|Legs' and not page.is_visible('#template-sheet'))
+    check('programa geçildi', page.evaluate("DB.workoutDays.map(d => d.name).join('|')") == 'Torso A|Limbs A|Torso B|Limbs B' and not page.is_visible('#template-sheet'))
     check('katman kapandı', page.evaluate("layers.length") == layers_before, (layers_before, page.evaluate("layers.join(',')")))
     sets = page.evaluate("DB.workoutDays.map(d => d.exercises.reduce((a, e) => a + e.sets, 0)).join(',')")
-    check('set sayıları (13, 12, 15, 13, 8)', sets == '13,12,15,13,8', sets)
-    check('sıra Push A → … → Legs', page.evaluate("DB.workoutOrder.join(',')") == 'push-a,pull-a,push-b,pull-b,legs')
-    check('ayarlarda program adı', page.inner_text('#program-label') == 'Push / Pull + Legs')
-    check('sağ/sol ayarı korundu', page.evaluate("getDayById('pull-a').exercises.find(e => e.name === 'Preacher Curl Machine').bilateral") is True)
+    check('set sayıları (14, 16, 14, 16)', sets == '14,16,14,16', sets)
+    check('sıra Torso A → Limbs A → Torso B → Limbs B', page.evaluate("DB.workoutOrder.join(',')") == 'torso-a,limbs-a,torso-b,limbs-b')
+    check('ayarlarda program adı', page.inner_text('#program-label') == 'Torso / Limbs')
+    check('sağ/sol ayarı korundu', page.evaluate("getDayById('limbs-a').exercises.find(e => e.name === 'Preacher Curl Machine').bilateral") is True)
     check('eski isim yeni isme taşındı (kayıt, not, dinlenme)', page.evaluate("""getLogsByExName('Incline Chest Press Machine').length === 1 && getLogsByExName('Incline Chest Press').length === 0
       && DB.workoutLogs.find(l => l.date === '2099-03-01').exNotes['incline chest press machine'] === 'koltuk 4' && restFor('Incline Chest Press Machine') === 180"""))
     check('Bayesian geçmişi devam ediyor', page.evaluate("exerciseRecords('Bayesian Cable Curl').heaviest") is not None)
-    rr = page.evaluate("[repRangeFor('Cable Lateral Raise'), repRangeFor('Pec Deck Fly'), repRangeFor('Lat Pulldown', getDayById('pull-a').exercises[0]), repRangeFor('Lat Pulldown', getDayById('pull-b').exercises[1])].map(r => r.join('-')).join(',')")
-    check('tekrar aralıkları (gün bazlı Lat Pulldown dahil)', rr == '12-20,10-15,6-12,8-12', rr)
-    check('ortak aralıklar hareket ayarında, günde kopya yok', page.evaluate("getDayById('push-a').exercises.every(e => !e.repRange)") and page.evaluate("!!getDayById('pull-a').exercises[0].repRange"))
-    check('JM Press triceps sayılıyor', page.evaluate("muscleFor('Smith Machine JM Press')") == 'triceps')
+    rr = page.evaluate("['Incline Chest Press Machine', 'Lat Pulldown', 'Cable Lateral Raise', 'Pec Deck Fly', 'Reverse Pec Deck', 'Hip Adductor Machine'].map(n => repRangeFor(n).join('-')).join(',')")
+    check('tekrar aralıkları: compound 6–8, izolasyon 8–12 (eskiler güncellendi)', rr == '6-8,6-8,8-12,8-12,8-12,8-12', rr)
+    check('ortak aralıklar hareket ayarında, günde kopya yok', page.evaluate("DB.workoutDays.every(d => d.exercises.every(e => !e.repRange))"))
+    check('kas grupları (JM triceps, reverse pec deck arka omuz)', page.evaluate("[muscleFor('Smith Machine JM Press'), muscleFor('Reverse Pec Deck'), muscleFor('Hip Adductor Machine'), muscleFor('Hip Abductor Machine')].join(',')") == 'triceps,rearDelts,adductors,glutes')
     codes = page.evaluate("Object.values(dayCodes())")
-    check('gün kodları ayırt edici', len(set(codes)) == 5, codes)
-    page.evaluate("openWorkoutScreen('pull-b')"); page.wait_for_timeout(300)
-    check('Pull B Lat Pulldown kartında 8–12', '8–12' in page.inner_text('#ex-card-1'))
-    page.evaluate("openExSheet(1)"); page.wait_for_timeout(200)
-    page.click('#ex-sheet .range-chip:has-text("10–12")'); page.wait_for_timeout(200)
-    check('güne özel aralık değişince diğer gün etkilenmiyor', page.evaluate("[repRangeFor('Lat Pulldown', getDayById('pull-b').exercises[1]).join('-'), repRangeFor('Lat Pulldown', getDayById('pull-a').exercises[0]).join('-')].join(',')") == '10-12,6-12')
-    page.evaluate("closeExSheet()"); page.wait_for_timeout(200)
+    check('gün kodları ayırt edici', len(set(codes)) == 4, codes)
+    page.evaluate("openWorkoutScreen('limbs-a')"); page.wait_for_timeout(300)
+    check('Limbs A kartında 8–12', '8–12' in page.inner_text('#ex-card-1 .ex-meta'))
+    # Güne özel aralık (gün hareketinde repRange varsa o geçerli)
+    page.evaluate("discardActive(); getDayById('limbs-a').exercises[1].repRange = [10,12]")
+    check('güne özel aralık önce gelir', page.evaluate("[repRangeFor('Bayesian Cable Curl', getDayById('limbs-a').exercises[1]).join('-'), repRangeFor('Bayesian Cable Curl', getDayById('limbs-b').exercises[1]).join('-')].join(',')") == '10-12,8-12')
+    page.evaluate("delete getDayById('limbs-a').exercises[1].repRange; saveData('workoutDays', DB.workoutDays)")
     page.evaluate("switchTab('settings'); openTemplateSheet()"); page.wait_for_timeout(200)
     check('uygulanan program işaretli', page.evaluate("document.querySelectorAll('#template-list .tpl-card.current').length") == 1)
-    page.evaluate("closeTemplateSheet()"); page.wait_for_timeout(200)
-    page.evaluate("discardActive(); openTemplateSheet()"); page.wait_for_timeout(200)
     check('önceki program geri dönüş için duruyor', page.evaluate("document.querySelectorAll('#template-list .tpl-card.backup').length") == 1)
     page.click('#template-list .tpl-card.backup .tpl-apply'); page.wait_for_timeout(300)
-    check('önceki programa tek dokunuşla dönüş', page.evaluate("DB.workoutDays.map(d => d.id).join(',')") == 'torso-a,limbs-a,torso-b,limbs-b')
+    check('önceki programa tek dokunuşla dönüş', page.evaluate("DB.workoutDays.map(d => d.id).join(',')") == 'push-a,pull-a')
     page.evaluate("""() => { DB.workoutDays = deepCopy(DEFAULT_DAYS); saveData('workoutDays', DB.workoutDays); DB.workoutOrder = DB.workoutDays.map(d => d.id); saveData('workoutOrder', DB.workoutOrder);
       localStorage.removeItem('antrenman:programBackup'); localStorage.removeItem('antrenman:programHistory'); DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs); renderHome(); renderSettings(); }""")
     page.wait_for_timeout(300)
@@ -1148,14 +1150,13 @@ with sync_playwright() as p:
     # ── 53. Pull B: Incline Dumbbell Curl → Bayesian (tek seferlik düzeltme) ──
     r = page.evaluate("""() => { lsRemove('fix-pullb-bayesian');
       const saved = deepCopy(DB.workoutDays);
-      DB.workoutDays = myProgramDays(); DB.workoutDays.find(d => d.id === 'pull-b').exercises[3] = {id:'x', name:'Incline Dumbbell Curl', sets:2};
+      DB.workoutDays = [{id:'pull-a', name:'Pull A', exercises:[{id:'a', name:'Bayesian Cable Curl', sets:2}]}, {id:'pull-b', name:'Pull B', exercises:[{id:'1',name:'A',sets:2},{id:'2',name:'B',sets:2},{id:'3',name:'C',sets:2},{id:'x', name:'Incline Dumbbell Curl', sets:2}]}];
       DB.workoutLogs.push({date:'2020-08-01', dayId:'pull-a', __test:1, sets:[{exId:'b', exName:'Bayesian Curl Cable', setIdx:0, kg:15, reps:12}], notes:{}});
       applyProgramFixes();
       const out = { name: DB.workoutDays.find(d => d.id === 'pull-b').exercises[3].name, logs: getLogsByExName('Bayesian Cable Curl').length, old: getLogsByExName('Bayesian Curl Cable').length, flag: lsGet('fix-pullb-bayesian') };
       DB.workoutDays = saved; saveData('workoutDays', DB.workoutDays); DB.workoutLogs = DB.workoutLogs.filter(l => !l.__test); saveData('workoutLogs', DB.workoutLogs);
       return out; }""")
     check('Pull B\'de Bayesian, eski adlı kayıtlar taşındı', r['name'] == 'Bayesian Cable Curl' and r['logs'] >= 1 and r['old'] == 0 and r['flag'] == '1', r)
-    check('şablonda Pull B Bayesian', page.evaluate("myProgramDays().find(d => d.id === 'pull-b').exercises.map(e => e.name).includes('Bayesian Cable Curl')"))
 
     check('sayfa hatası yok', not errors, errors)
 
